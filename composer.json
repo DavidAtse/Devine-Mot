@@ -1,5 +1,5 @@
 {
-    "name": "devineMotCI",
+    "name": "davidatse/devine-mot",
     "description": "Jeu de mots quotidien ivoirien",
     "require": {
         "php": ">=8.1",
@@ -7,8 +7,7 @@
         "ext-curl": "*",
         "ext-mbstring": "*",
         "ext-openssl": "*",
-        "ext-json": "*",
-        "ext-session": "*"
+        "ext-json": "*"
     },
     "config": {
         "platform": {
