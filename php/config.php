@@ -11,7 +11,7 @@
  */
 
 // 1. Tente de lire une URL complète (ex: mysql://user:pass@host:port/db)
-$dbUrl = getenv('MYSQL_URL') ?: getenv('DATABASE_URL');
+$dbUrl = getenv('MYSQL_PUBLIC_URL') ?: getenv('MYSQL_URL') ?: getenv('DATABASE_URL');
 if ($dbUrl) {
     $parsed = parse_url($dbUrl);
     define('DB_HOST', $parsed['host'] ?? 'localhost');
