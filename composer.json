@@ -1,0 +1,18 @@
+{
+    "name": "devineMotCI",
+    "description": "Jeu de mots quotidien ivoirien",
+    "require": {
+        "php": ">=8.1",
+        "ext-mysqli": "*",
+        "ext-curl": "*",
+        "ext-mbstring": "*",
+        "ext-openssl": "*",
+        "ext-json": "*",
+        "ext-session": "*"
+    },
+    "config": {
+        "platform": {
+            "php": "8.3"
+        }
+    }
+}
