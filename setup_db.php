@@ -13,6 +13,15 @@ if (!file_exists($sql_file)) {
 
 $sql = file_get_contents($sql_file);
 
+// Supprime le BOM UTF-8 ajouté par PowerShell lors de l'export
+if (strpos($sql, "\xEF\xBB\xBF") === 0) {
+    $sql = substr($sql, 3);
+}
+// Supprime aussi l'éventuel BOM UTF-16LE au cas où
+if (strpos($sql, "\xFF\xFE") === 0) {
+    $sql = mb_convert_encoding(substr($sql, 2), 'UTF-8', 'UTF-16LE');
+}
+
 // On autorise l'exécution de requêtes multiples
 try {
     if ($conn->multi_query($sql)) {
