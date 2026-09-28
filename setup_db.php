@@ -14,17 +14,22 @@ if (!file_exists($sql_file)) {
 $sql = file_get_contents($sql_file);
 
 // On autorise l'exécution de requêtes multiples
-if ($conn->multi_query($sql)) {
-    do {
-        // Vider les résultats pour passer à la requête suivante
-        if ($result = $conn->store_result()) {
-            $result->free();
-        }
-    } while ($conn->more_results() && $conn->next_result());
-    echo "<p style='color:green;font-weight:bold;'>✅ Importation réussie ! La base de données est prête.</p>";
-    echo "<p>Tu peux maintenant jouer au jeu.</p>";
-} else {
-    echo "<p style='color:red;'>Erreur lors de l'importation : " . $conn->error . "</p>";
+try {
+    if ($conn->multi_query($sql)) {
+        do {
+            if ($result = $conn->store_result()) {
+                $result->free();
+            }
+        } while ($conn->more_results() && $conn->next_result());
+        echo "<p style='color:green;font-weight:bold;'>✅ Importation réussie ! La base de données est prête.</p>";
+        echo "<p><a href='index.php'>Aller jouer au jeu</a></p>";
+    } else {
+        echo "<p style='color:red;'>Erreur lors de l'importation : " . htmlspecialchars($conn->error) . "</p>";
+    }
+} catch (Exception $e) {
+    // Si une exception est levée (par exemple si les tables existent déjà et qu'il y a un conflit)
+    echo "<p style='color:orange;'>Info (ou erreur) pendant l'importation : " . htmlspecialchars($e->getMessage()) . "</p>";
+    echo "<p><a href='index.php'>Retourner au jeu pour vérifier</a></p>";
 }
 
 $conn->close();
