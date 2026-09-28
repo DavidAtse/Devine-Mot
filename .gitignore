@@ -1,0 +1,22 @@
+# ==========================================
+# DevineMot CI — .gitignore
+# ==========================================
+
+# Clés VAPID sensibles (ne JAMAIS envoyer sur GitHub)
+/keys/
+
+# Documents Word générés localement
+*.docx
+
+# Fichiers de config XAMPP locaux
+.claude/
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Fichiers temporaires de style
+/style-generation/

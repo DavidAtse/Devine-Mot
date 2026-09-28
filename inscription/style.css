@@ -1,0 +1,391 @@
+@import url('https://fonts.googleapis.com/css2?family=Paytone+One&family=Nunito:wght@400;600;700;800&display=swap');
+
+/* ===== RESET & BASE ===== */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --orange:    #F77F00;
+    --orange2:   #D62828;
+    --vert:      #009E60;
+    --vert2:     #006B40;
+    --blanc:     #FDF8F0;
+    --sombre:    #1A1008;
+    --sombre2:   #2A1A0E;
+    --gold:      #FFD700;
+    --texte:     #FDF8F0;
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    background-color: var(--sombre);
+    color: var(--texte);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* ===== FOND DÉCORATIF KENTE ===== */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 40px,
+            rgba(247, 127, 0, 0.06) 40px,
+            rgba(247, 127, 0, 0.06) 42px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 40px,
+            rgba(0, 158, 96, 0.06) 40px,
+            rgba(0, 158, 96, 0.06) 42px
+        );
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Triangles décoratifs coins */
+body::after {
+    content: "";
+    position: fixed;
+    top: 0; right: 0;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle at top right, rgba(247,127,0,0.18), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ===== CARTE PRINCIPALE ===== */
+.card {
+    position: relative;
+    z-index: 1;
+    background: var(--sombre2);
+    border-radius: 24px;
+    padding: 44px 40px 36px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow:
+        0 0 0 3px var(--orange),
+        0 0 0 6px var(--vert),
+        0 24px 64px rgba(0,0,0,0.7);
+    animation: slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(40px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ===== BANDE DRAPEAU EN HAUT ===== */
+.flag-stripe {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    border-radius: 24px 24px 0 0;
+    background: linear-gradient(to right,
+        var(--orange) 33.3%,
+        var(--blanc)  33.3% 66.6%,
+        var(--vert)   66.6%
+    );
+}
+
+/* ===== EN-TÊTE ===== */
+.card-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.card-header .emoji {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 8px;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.card-header h1 {
+    font-family: 'Paytone One', sans-serif;
+    font-size: 28px;
+    color: var(--orange);
+    letter-spacing: 1px;
+    text-shadow: 0 2px 12px rgba(247,127,0,0.4);
+    line-height: 1.1;
+}
+
+.card-header h1 span {
+    color: var(--vert);
+}
+
+.card-header p {
+    margin-top: 6px;
+    font-size: 13px;
+    color: rgba(253,248,240,0.55);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* ===== MESSAGES D'ERREUR / SUCCESS ===== */
+.msg {
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 18px;
+    text-align: center;
+}
+
+.msg.erreur {
+    background: rgba(214, 40, 40, 0.2);
+    border: 1px solid var(--orange2);
+    color: #ff8080;
+}
+
+.msg.succes {
+    background: rgba(0, 158, 96, 0.2);
+    border: 1px solid var(--vert);
+    color: #6effc3;
+}
+
+/* ===== FORMULAIRE ===== */
+.form-group {
+    margin-bottom: 18px;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--orange);
+    margin-bottom: 7px;
+}
+
+.form-group .input-wrap {
+    position: relative;
+}
+
+.form-group .input-wrap i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(253,248,240,0.3);
+    font-size: 15px;
+    pointer-events: none;
+    transition: color 0.2s;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 13px 14px 13px 42px;
+    background: rgba(253,248,240,0.06);
+    border: 2px solid rgba(247,127,0,0.2);
+    border-radius: 12px;
+    color: var(--texte);
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    outline: none;
+    transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+}
+
+.form-group input::placeholder {
+    color: rgba(253,248,240,0.25);
+}
+
+.form-group input:focus {
+    border-color: var(--orange);
+    background: rgba(247,127,0,0.07);
+    box-shadow: 0 0 0 3px rgba(247,127,0,0.15);
+}
+
+.form-group input:focus + i,
+.form-group .input-wrap:focus-within i {
+    color: var(--orange);
+}
+
+/* ===== BOUTON PRINCIPAL ===== */
+.btn-principal {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 14px;
+    font-family: 'Paytone One', sans-serif;
+    font-size: 17px;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--orange), #e06000);
+    color: #fff;
+    box-shadow: 0 6px 24px rgba(247,127,0,0.4);
+    transition: transform 0.15s, box-shadow 0.15s;
+    margin-top: 6px;
+}
+
+.btn-principal:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 32px rgba(247,127,0,0.55);
+}
+
+.btn-principal:active {
+    transform: translateY(0);
+}
+
+/* Shimmer sur hover */
+.btn-principal::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%);
+    transform: translateX(-100%);
+    transition: transform 0.5s;
+}
+
+.btn-principal:hover::after {
+    transform: translateX(100%);
+}
+
+/* ===== LIEN BAS DE FORMULAIRE ===== */
+.card-footer {
+    text-align: center;
+    margin-top: 22px;
+    font-size: 13.5px;
+    color: rgba(253,248,240,0.5);
+}
+
+.card-footer a {
+    color: var(--vert);
+    font-weight: 800;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.card-footer a:hover {
+    color: #00cc7a;
+    text-decoration: underline;
+}
+
+/* ===== SÉPARATEUR ===== */
+.separator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 20px 0;
+    color: rgba(253,248,240,0.2);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.separator::before,
+.separator::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(253,248,240,0.1);
+}
+
+/* ===== PAGE LOGOUT ===== */
+.logout-icon {
+    font-size: 64px;
+    text-align: center;
+    display: block;
+    margin-bottom: 16px;
+}
+
+.logout-text {
+    text-align: center;
+    font-size: 16px;
+    color: rgba(253,248,240,0.65);
+    margin-bottom: 28px;
+    line-height: 1.6;
+}
+
+.btn-secondaire {
+    width: 100%;
+    padding: 13px;
+    border: 2px solid var(--vert);
+    border-radius: 14px;
+    font-family: 'Paytone One', sans-serif;
+    font-size: 15px;
+    cursor: pointer;
+    background: transparent;
+    color: var(--vert);
+    transition: background 0.2s, color 0.2s;
+    text-align: center;
+    display: block;
+    text-decoration: none;
+    letter-spacing: 1px;
+    margin-top: 12px;
+}
+
+.btn-secondaire:hover {
+    background: var(--vert);
+    color: #fff;
+}
+
+/* ===== MOTIFS DÉCORATIFS FLOTTANTS ===== */
+.deco {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.07;
+    animation: float 8s ease-in-out infinite;
+}
+
+.deco-1 {
+    width: 320px; height: 320px;
+    background: var(--orange);
+    top: -100px; left: -100px;
+    animation-duration: 9s;
+}
+
+.deco-2 {
+    width: 200px; height: 200px;
+    background: var(--vert);
+    bottom: -60px; right: -60px;
+    animation-duration: 7s;
+    animation-delay: -3s;
+}
+
+.deco-3 {
+    width: 100px; height: 100px;
+    background: var(--gold);
+    top: 40%; left: 10%;
+    animation-duration: 11s;
+    animation-delay: -5s;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-20px) scale(1.05); }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 480px) {
+    .card {
+        margin: 16px;
+        padding: 36px 24px 28px;
+    }
+    .card-header h1 { font-size: 24px; }
+}

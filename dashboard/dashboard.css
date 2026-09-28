@@ -1,0 +1,178 @@
+@import url('https://fonts.googleapis.com/css2?family=Paytone+One&family=Nunito:wght@400;600;700;800&display=swap');
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --orange: #F77F00;
+    --vert:   #009E60;
+    --fond:   #0F0C07;
+    --fond2:  #1e293b;
+    --texte:  #e2e8f0;
+    --gold:   #FFD700;
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--fond);
+    color: var(--texte);
+    min-height: 100vh;
+    padding-bottom: 40px;
+}
+
+/* ===== NAVIGATION ===== */
+.dash-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 24px;
+    background: rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(247,127,0,0.15);
+    flex-wrap: wrap;
+}
+
+.dash-nav a {
+    color: var(--texte);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: background 0.2s, color 0.2s;
+}
+
+.dash-nav a:hover {
+    background: rgba(247,127,0,0.15);
+    color: var(--orange);
+}
+
+.dash-nav .btn-logout {
+    margin-left: auto;
+    border-color: rgba(214,40,40,0.4);
+    color: #ff7070;
+}
+
+.dash-nav .btn-logout:hover {
+    background: rgba(214,40,40,0.2);
+    color: #fff;
+}
+
+/* ===== TITRES ===== */
+h1 {
+    text-align: center;
+    margin: 30px 0 6px;
+    color: var(--orange);
+    font-family: 'Paytone One', sans-serif;
+    font-size: 28px;
+    letter-spacing: 1px;
+}
+
+.pseudo {
+    text-align: center;
+    font-size: 14px;
+    color: rgba(226,232,240,0.55);
+    margin-bottom: 24px;
+}
+
+/* ===== CARTE PROFIL ===== */
+.card {
+    background: var(--fond2);
+    border-radius: 18px;
+    padding: 28px 24px;
+    margin: 0 auto 30px;
+    width: 90%;
+    max-width: 460px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    border: 1px solid rgba(247,127,0,0.15);
+}
+
+.stat {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.stat:last-child { border-bottom: none; }
+
+.stat-icon { font-size: 22px; }
+
+.stat-label {
+    flex: 1;
+    font-size: 14px;
+    color: rgba(226,232,240,0.65);
+    font-weight: 600;
+}
+
+.highlight {
+    color: var(--vert);
+    font-weight: 800;
+    font-size: 18px;
+    font-family: 'Paytone One', sans-serif;
+}
+
+/* ===== CLASSEMENT ===== */
+.container {
+    width: 90%;
+    max-width: 580px;
+    margin: 0 auto;
+    background: var(--fond2);
+    padding: 8px 0 16px;
+    border-radius: 18px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    border: 1px solid rgba(247,127,0,0.15);
+    overflow: hidden;
+}
+
+.leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.leaderboard-table thead tr {
+    background: linear-gradient(135deg, var(--orange), #e06000);
+}
+
+.leaderboard-table th {
+    padding: 12px 14px;
+    text-align: center;
+    font-family: 'Paytone One', sans-serif;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: #fff;
+}
+
+.leaderboard-table th:nth-child(2) { text-align: left; }
+
+.leaderboard-table tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background 0.15s;
+}
+.leaderboard-table tbody tr:last-child { border-bottom: none; }
+.leaderboard-table tbody tr:hover { background: rgba(247,127,0,0.06); }
+
+.leaderboard-table td {
+    padding: 13px 14px;
+    text-align: center;
+    font-weight: 700;
+}
+
+.leaderboard-table td:nth-child(1) { font-size: 20px; }
+.leaderboard-table td:nth-child(2) { text-align: left; font-size: 15px; }
+.leaderboard-table td:nth-child(3) { color: var(--orange); font-family: 'Paytone One', sans-serif; }
+
+.top-1 td { background: rgba(255,215,0,0.07); }
+.top-2 td { background: rgba(192,192,192,0.04); }
+.top-3 td { background: rgba(205,127,50,0.04); }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 540px) {
+    .card { padding: 20px 16px; }
+    h1 { font-size: 22px; }
+    .leaderboard-table th:nth-child(4),
+    .leaderboard-table td:nth-child(4) { display: none; }
+    .dash-nav { padding: 10px 14px; }
+    .dash-nav a { font-size: 12px; padding: 6px 12px; }
+}
