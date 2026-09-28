@@ -1,9 +1,9 @@
 <?php
 session_start();
+require_once __DIR__ . '/../php/config.php';
 require_once __DIR__ . '/../php/csrf.php';
 
-$conn = new mysqli('localhost', 'root', '', 'jeu_mot');
-if ($conn->connect_error) die('Erreur de connexion.');
+$conn = db_connect();
 
 $erreur = '';
 
