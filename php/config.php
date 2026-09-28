@@ -10,11 +10,24 @@
  * En local (XAMPP), les valeurs de fallback sont utilisées.
  */
 
-define('DB_HOST', getenv('MYSQLHOST')     ?: 'localhost');
-define('DB_PORT', (int)(getenv('MYSQLPORT') ?: 3306));
-define('DB_USER', getenv('MYSQLUSER')     ?: 'root');
-define('DB_PASS', getenv('MYSQLPASSWORD') ?: '');
-define('DB_NAME', getenv('MYSQLDATABASE') ?: 'jeu_mot');
+// 1. Tente de lire une URL complète (ex: mysql://user:pass@host:port/db)
+$dbUrl = getenv('MYSQL_URL') ?: getenv('DATABASE_URL');
+if ($dbUrl) {
+    $parsed = parse_url($dbUrl);
+    define('DB_HOST', $parsed['host'] ?? 'localhost');
+    define('DB_PORT', (int)($parsed['port'] ?? 3306));
+    define('DB_USER', $parsed['user'] ?? 'root');
+    define('DB_PASS', $parsed['pass'] ?? '');
+    define('DB_NAME', ltrim($parsed['path'], '/') ?: 'jeu_mot');
+} else {
+    // 2. Sinon, utilise les variables séparées ou les valeurs locales
+    define('DB_HOST', getenv('MYSQLHOST')     ?: 'localhost');
+    define('DB_PORT', (int)(getenv('MYSQLPORT') ?: 3306));
+    define('DB_USER', getenv('MYSQLUSER')     ?: 'root');
+    define('DB_PASS', getenv('MYSQLPASSWORD') ?: '');
+    define('DB_NAME', getenv('MYSQLDATABASE') ?: 'jeu_mot');
+}
+
 define('GAME_LAUNCH_DATE', '2026-01-01'); // date de référence pour le calcul du jour
 define('TIMEZONE', 'Africa/Abidjan');
 
