@@ -25,9 +25,11 @@ date_default_timezone_set(TIMEZONE);
  * En cas d'erreur, répond proprement (JSON ou HTML) et arrête.
  */
 function db_connect(): mysqli {
-    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT);
-
-    if ($conn->connect_error) {
+    try {
+        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT);
+        $conn->set_charset('utf8mb4');
+        return $conn;
+    } catch (Exception $e) {
         $isAjax = (
             (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') ||
             (isset($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) ||
@@ -36,17 +38,18 @@ function db_connect(): mysqli {
         if ($isAjax) {
             header('Content-Type: application/json');
             http_response_code(500);
-            echo json_encode(['erreur' => 'Erreur serveur.']);
+            echo json_encode(['erreur' => 'Erreur de connexion BDD.']);
         } else {
             http_response_code(500);
-            echo '<!DOCTYPE html><html><body style="font-family:sans-serif;text-align:center;margin-top:80px">
-                <h2>⚠️ Erreur serveur</h2><p>Impossible de joindre la base de données.</p></body></html>';
+            $debugEnv = "HOST: " . DB_HOST . " | PORT: " . DB_PORT . " | USER: " . DB_USER . " | DB: " . DB_NAME;
+            echo '<!DOCTYPE html><html><body style="font-family:sans-serif;text-align:center;margin-top:80px;background:#1a1a1a;color:#fff;">
+                <h2>⚠️ Erreur de connexion à la base de données</h2>
+                <p>L\'application n\'arrive pas à se connecter à MySQL.</p>
+                <p style="color:#ff6b6b;font-size:14px;background:#000;padding:10px;display:inline-block;">DEBUG: ' . htmlspecialchars($debugEnv) . '<br>Erreur: ' . htmlspecialchars($e->getMessage()) . '</p>
+                </body></html>';
         }
         exit;
     }
-
-    $conn->set_charset('utf8mb4');
-    return $conn;
 }
 
 /**
