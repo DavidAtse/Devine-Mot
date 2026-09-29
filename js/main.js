@@ -515,3 +515,71 @@ function _urlBase64ToUint8Array(base64String) {
     const raw     = atob(base64);
     return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
 }
+
+// ======================
+// MODAL DONATION & PAIEMENT SIMULÉ
+// ======================
+function ouvrirDonate() {
+    const modal = document.getElementById('donateModal');
+    if (modal) {
+        document.getElementById('donateStep1').style.display = 'block';
+        document.getElementById('donateStep2').style.display = 'none';
+        document.getElementById('donateLoading').style.display = 'none';
+        document.getElementById('donateSuccess').style.display = 'none';
+        modal.style.display = 'flex';
+    }
+}
+
+// Gestion des boutons de montants
+document.querySelectorAll('.btn-amount').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.btn-amount').forEach(b => {
+            b.style.background = 'transparent';
+            b.style.color = 'var(--orange)';
+        });
+        this.style.background = 'var(--orange)';
+        this.style.color = '#1a1008';
+        window.selectedDonationAmount = this.dataset.amount;
+    });
+});
+
+if (document.getElementById('btnProceedDonate')) {
+    document.getElementById('btnProceedDonate').addEventListener('click', () => {
+        const amt = window.selectedDonationAmount || '1000';
+        document.getElementById('donateAmountStr').textContent = amt;
+        document.getElementById('donateStep1').style.display = 'none';
+        document.getElementById('donateStep2').style.display = 'block';
+    });
+}
+
+function processSimulatedPayment(methodName) {
+    document.getElementById('donateStep2').style.display = 'none';
+    document.getElementById('donateLoading').style.display = 'block';
+    
+    // Simulation du paiement (API CinetPay / Wave Link)
+    setTimeout(() => {
+        document.getElementById('donateLoading').style.display = 'none';
+        document.getElementById('donateSuccess').style.display = 'block';
+        console.log('Paiement simulé réussi avec ' + methodName + ' : ' + (window.selectedDonationAmount || 1000) + ' FCFA');
+    }, 2500);
+}
+
+if (document.getElementById('payWave')) {
+    document.getElementById('payWave').addEventListener('click', () => processSimulatedPayment('Wave'));
+}
+if (document.getElementById('payOrange')) {
+    document.getElementById('payOrange').addEventListener('click', () => processSimulatedPayment('Orange Money'));
+}
+
+// Fermeture des modales
+document.querySelectorAll('.close, .close-modal').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const id = this.dataset.close;
+        if (id && document.getElementById(id)) {
+            document.getElementById(id).style.display = 'none';
+        } else {
+            const m = this.closest('.modal') || this.closest('.modal-overlay');
+            if (m) m.style.display = 'none';
+        }
+    });
+});

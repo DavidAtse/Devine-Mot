@@ -217,9 +217,56 @@ $conn->close();
                 <button id="notifBtn" onclick="toggleNotification()" style="width:100%;background:rgba(247,127,0,0.12);border:1px solid rgba(247,127,0,0.35);color:#F77F00;display:none">
                     &#128276; Activer les rappels quotidiens
                 </button>
+                <button id="donateOpenBtn" onclick="ouvrirDonate()" style="width:100%;background:linear-gradient(135deg, #FFD700, #F77F00);border:none;color:#1A1008;font-weight:900;margin-top:10px;">
+                    ❤️ Soutenir le jeu
+                </button>
             </div>
         </div>
     </main>
+
+    <!-- MODAL SOUTENIR (Dons) -->
+    <div class="modal" id="donateModal">
+        <div class="modal-content def-modal-content">
+            <span class="close" data-close="donateModal">&times;</span>
+            <div class="def-header">
+                <span class="def-icon" style="font-size:42px;">☕</span>
+                <h3 style="font-size:20px;">Soutenir le jeu</h3>
+            </div>
+            <div class="def-corps" style="text-align: center; padding: 15px;">
+                <p style="font-size: 14px; margin-bottom: 20px; color: var(--texte);">Le jeu est 100% gratuit et sans pub. Offrez-nous un garba pour payer les serveurs !</p>
+                
+                <div id="donateStep1">
+                    <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
+                        <button class="btn-amount" data-amount="500" style="padding: 10px 15px; border-radius: 8px; border: 2px solid var(--orange); background: transparent; color: var(--orange); font-weight: bold; cursor: pointer;">500 F</button>
+                        <button class="btn-amount" data-amount="1000" style="padding: 10px 15px; border-radius: 8px; border: 2px solid var(--orange); background: var(--orange); color: #1a1008; font-weight: bold; cursor: pointer;">1000 F</button>
+                        <button class="btn-amount" data-amount="2000" style="padding: 10px 15px; border-radius: 8px; border: 2px solid var(--orange); background: transparent; color: var(--orange); font-weight: bold; cursor: pointer;">2000 F</button>
+                    </div>
+                    <button id="btnProceedDonate" class="btn-principal" style="width:100%;">Continuer</button>
+                </div>
+
+                <div id="donateStep2" style="display:none; padding: 10px 0;">
+                    <p style="font-size: 13px; margin-bottom: 15px;">Moyen de paiement pour <strong id="donateAmountStr" style="color:var(--orange)">1000</strong> FCFA :</p>
+                    <button id="payWave" class="btn-principal" style="background: #14B9FC; color: white; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;">
+                        Wave Mobile Money
+                    </button>
+                    <button id="payOrange" class="btn-principal" style="background: #FF6600; color: white; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;">
+                        Orange Money
+                    </button>
+                </div>
+
+                <div id="donateLoading" style="display:none; padding: 20px;">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size: 34px; color: var(--orange); margin-bottom: 12px;"></i>
+                    <p style="font-size:14px;">Ouverture de l'application...</p>
+                </div>
+
+                <div id="donateSuccess" style="display:none; padding: 20px;">
+                    <span class="def-icon" style="font-size: 46px; margin-bottom: 10px;">🎉</span>
+                    <h4 style="color: var(--vert); margin-bottom: 10px; font-size:18px;">Merci beaucoup !</h4>
+                    <p style="font-size: 14px;">Ton soutien fait toute la différence.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <footer style="text-align:center;padding:20px 16px 32px;">
         <nav aria-label="Liens légaux" style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;">
