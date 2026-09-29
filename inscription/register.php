@@ -2,6 +2,8 @@
 session_start();
 require_once __DIR__ . '/../php/config.php';
 require_once __DIR__ . '/../php/csrf.php';
+require_once __DIR__ . '/../php/security.php';
+appliquer_headers_securite();
 
 $conn = db_connect();
 

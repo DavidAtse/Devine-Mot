@@ -1,14 +1,41 @@
 <?php
-// Script temporaire pour importer la base de données sur Railway en interne
+/**
+ * setup_db.php — Import de la base de données (accès admin uniquement).
+ * PROTÉGÉ : accessible uniquement par l'administrateur connecté.
+ */
+session_start();
 require_once __DIR__ . '/php/config.php';
 
-echo "<h1>Importation de la Base de Données</h1>";
+// Protection : uniquement accessible par un administrateur connecté
+if (!isset($_SESSION['user_id'])) {
+    header('Location: inscription/login.php');
+    exit;
+}
 
-$conn = db_connect();
+// Vérifier que l'utilisateur est admin
+$conn  = db_connect();
+$stmt  = $conn->prepare('SELECT is_admin FROM users WHERE id = ?');
+$uid   = (int) $_SESSION['user_id'];
+$stmt->bind_param('i', $uid);
+$stmt->execute();
+$row   = $stmt->get_result()->fetch_assoc();
+if (!$row || !$row['is_admin']) {
+    http_response_code(403);
+    echo '<h2>403 — Accès refusé</h2><p>Réservé à l\'administrateur.</p>';
+    $conn->close();
+    exit;
+}
+
+echo "<!DOCTYPE html><html lang='fr'><head><meta charset='UTF-8'><title>Setup DB</title>
+<style>body{font-family:sans-serif;background:#1a1a1a;color:#fff;text-align:center;padding:60px 20px;}
+a{color:#F77F00;}p{max-width:600px;margin:auto;}</style></head><body>";
+echo "<h1>🗄️ Importation de la Base de Données</h1>";
 
 $sql_file = __DIR__ . '/railway_import.sql';
 if (!file_exists($sql_file)) {
-    die("Le fichier railway_import.sql est introuvable.");
+    echo "<p style='color:red;'>❌ Le fichier railway_import.sql est introuvable.</p>";
+    $conn->close();
+    exit;
 }
 
 $sql = file_get_contents($sql_file);
@@ -17,12 +44,10 @@ $sql = file_get_contents($sql_file);
 if (strpos($sql, "\xEF\xBB\xBF") === 0) {
     $sql = substr($sql, 3);
 }
-// Supprime aussi l'éventuel BOM UTF-16LE au cas où
 if (strpos($sql, "\xFF\xFE") === 0) {
     $sql = mb_convert_encoding(substr($sql, 2), 'UTF-8', 'UTF-16LE');
 }
 
-// On autorise l'exécution de requêtes multiples
 try {
     if ($conn->multi_query($sql)) {
         do {
@@ -30,16 +55,16 @@ try {
                 $result->free();
             }
         } while ($conn->more_results() && $conn->next_result());
-        echo "<p style='color:green;font-weight:bold;'>✅ Importation réussie ! La base de données est prête.</p>";
-        echo "<p><a href='index.php'>Aller jouer au jeu</a></p>";
+        echo "<p style='color:#22c55e;font-weight:bold;font-size:18px;'>✅ Importation réussie !</p>";
+        echo "<p><a href='index.php'>← Retour au jeu</a></p>";
     } else {
-        echo "<p style='color:red;'>Erreur lors de l'importation : " . htmlspecialchars($conn->error) . "</p>";
+        echo "<p style='color:red;'>❌ Erreur : " . htmlspecialchars($conn->error) . "</p>";
     }
 } catch (Exception $e) {
-    // Si une exception est levée (par exemple si les tables existent déjà et qu'il y a un conflit)
-    echo "<p style='color:orange;'>Info (ou erreur) pendant l'importation : " . htmlspecialchars($e->getMessage()) . "</p>";
-    echo "<p><a href='index.php'>Retourner au jeu pour vérifier</a></p>";
+    echo "<p style='color:orange;'>⚠️ Info : " . htmlspecialchars($e->getMessage()) . "</p>";
+    echo "<p><a href='index.php'>← Retour au jeu</a></p>";
 }
 
 $conn->close();
+echo "</body></html>";
 ?>

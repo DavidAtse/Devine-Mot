@@ -1,22 +1,44 @@
-# ==========================================
-# DevineMot CI — .gitignore
-# ==========================================
+# =============================================
+# .gitignore — DevineMot CI
+# =============================================
 
-# Clés VAPID sensibles (ne JAMAIS envoyer sur GitHub)
+# Clés VAPID privées (NE JAMAIS pousser sur Git !)
+/keys/vapid_private.pem
 /keys/
 
-# Documents Word générés localement
-*.docx
+# Fichiers de config locaux
+*.env
+.env.local
+.env.production
 
-# Fichiers de config XAMPP locaux
-.claude/
+# Données d'export de la base (peuvent contenir des mots de passe hashés)
+railway_import.sql
+jeu_mot.sql
+*.sql.bak
+
+# Documents Word / PDF générés
+*.docx
+*.pdf
+
+# Fichiers de développement Next.js / style-generation
+/style-generation/
+
+# Fichiers de cache Composer
+/vendor/
+composer.lock
 
 # Fichiers système
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Logs
 *.log
 
-# Fichiers temporaires de style
-/style-generation/
+# Fichiers Claude/Gemini
+.claude/
+.gemini/
+
+# Données locales
+/data/historique.json
+/data/mot.txt

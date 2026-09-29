@@ -43,6 +43,9 @@ function db_connect(): mysqli {
         $conn->set_charset('utf8mb4');
         return $conn;
     } catch (Exception $e) {
+        // Journaliser l'erreur côté serveur SANS exposer les infos sensibles
+        error_log('[DevineMot] DB connexion échouée : ' . $e->getMessage());
+
         $isAjax = (
             (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') ||
             (isset($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) ||
@@ -51,14 +54,14 @@ function db_connect(): mysqli {
         if ($isAjax) {
             header('Content-Type: application/json');
             http_response_code(500);
-            echo json_encode(['erreur' => 'Erreur de connexion BDD.']);
+            echo json_encode(['erreur' => 'Erreur serveur. Réessaie dans quelques instants.']);
         } else {
             http_response_code(500);
-            $debugEnv = "HOST: " . DB_HOST . " | PORT: " . DB_PORT . " | USER: " . DB_USER . " | DB: " . DB_NAME;
-            echo '<!DOCTYPE html><html><body style="font-family:sans-serif;text-align:center;margin-top:80px;background:#1a1a1a;color:#fff;">
-                <h2>⚠️ Erreur de connexion à la base de données</h2>
-                <p>L\'application n\'arrive pas à se connecter à MySQL.</p>
-                <p style="color:#ff6b6b;font-size:14px;background:#000;padding:10px;display:inline-block;">DEBUG: ' . htmlspecialchars($debugEnv) . '<br>Erreur: ' . htmlspecialchars($e->getMessage()) . '</p>
+            echo '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Erreur — DevineMot CI</title></head>
+                <body style="font-family:sans-serif;text-align:center;margin-top:80px;background:#1a1a1a;color:#fff;">
+                <h2>⚠️ Service temporairement indisponible</h2>
+                <p>Nous rencontrons un problème technique. Merci de réessayer dans quelques instants.</p>
+                <a href="/" style="color:#F77F00;">← Retour à l\'accueil</a>
                 </body></html>';
         }
         exit;

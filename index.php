@@ -2,8 +2,12 @@
 session_start();
 require_once __DIR__ . '/php/config.php';
 require_once __DIR__ . '/php/csrf.php';
+require_once __DIR__ . '/php/security.php';
 
-// Empêche le cache navigateur — critical pour la sécurité multi-utilisateur
+// Headers de sécurité
+appliquer_headers_securite();
+
+// Empêche le cache navigateur — critique pour la sécurité multi-utilisateur
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 header('Expires: Thu, 01 Jan 1970 00:00:00 GMT');
@@ -188,7 +192,8 @@ $conn->close();
         window.username   = <?= json_encode($username) ?>;
         window.csrfToken  = <?= json_encode($csrfToken) ?>;
         window.vapidKey   = 'BHpcuD9GQ0Q6PoQHujWBr3l-vKzQPr4YhBYY5HqJHK5Z6iFy23f-q8kmN22PKI3F8n3UYcHHpf2leBjP5GDe3-w';
-        window.BASE_PATH  = '/Projets/Jeux/DevineMot/devine-motV1.0';
+        // BASE_PATH calculé dynamiquement : '/' en prod Railway, chemin local en XAMPP
+        window.BASE_PATH  = <?= json_encode(rtrim(dirname($_SERVER['SCRIPT_NAME']), '/')) ?>;
     </script>
     <script src="js/main.js"></script>
 </body>
