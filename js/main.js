@@ -1,4 +1,4 @@
-"use strict";
+﻿"use strict";
 
 // ======================
 // RÉFÉRENCES DOM
@@ -117,6 +117,30 @@ function afficherDefinition(mot, definition) {
             p.textContent = 'Pas encore de définition pour ce mot. L\'administrateur peut en ajouter une via le panel admin.';
         }
         corps.appendChild(p);
+        
+        // Ajout du bouton partager direct
+        const divShare = document.createElement('div');
+        divShare.style.marginTop = "20px";
+        divShare.style.textAlign = "center";
+        
+        const btnShare = document.createElement('button');
+        btnShare.className = "btn-principal";
+        btnShare.style.width = "100%";
+        btnShare.style.background = "#25D366"; // Couleur WhatsApp
+        btnShare.style.color = "#fff";
+        btnShare.innerHTML = '<i class="fa-brands fa-whatsapp"></i> Partager mon score';
+        btnShare.onclick = partagerScore;
+        
+        const btnStats = document.createElement('a');
+        btnStats.href = "dashboard/profile.php";
+        btnStats.className = "btn-secondaire";
+        btnStats.style.display = "block";
+        btnStats.style.marginTop = "10px";
+        btnStats.innerHTML = '📊 Voir mes statistiques';
+        
+        divShare.appendChild(btnShare);
+        divShare.appendChild(btnStats);
+        corps.appendChild(divShare);
     }
     modal.style.display = 'flex';
 }
@@ -145,9 +169,15 @@ function sauvegarder(mot, positions, score, emoji) {
 // AFFICHAGE TABLEAU
 // ======================
 function colorerMot(mot, positions) {
-    return [...mot].map((c, i) =>
-        positions[i] ? `<span class="lettre-ok">${c}</span>` : c
-    ).join("");
+    return [...mot].map((c, i) => {
+        if (positions[i] === 2 || positions[i] === true) {
+            return `<span class="tuile-demo vert" style="padding:2px 4px; border-radius:4px;">${c}</span>`;
+        } else if (positions[i] === 1) {
+            return `<span class="tuile-demo orange" style="padding:2px 4px; border-radius:4px;">${c}</span>`;
+        } else {
+            return `<span class="tuile-demo gris" style="padding:2px 4px; border-radius:4px;">${c}</span>`;
+        }
+    }).join("");
 }
 
 function ajouterLigne(mot, positions, score, emoji, animate = true) {
@@ -393,10 +423,36 @@ function partagerScore() {
     const hist  = chargerHistorique();
     const nb    = hist.length;
     const gagne = hist.some(i => parseFloat(i.score) >= 100);
-    const txt   = gagne
-        ? `🥳 Mot du Jour CI — Trouvé en ${nb} essai${nb > 1 ? "s" : ""} ! Joue sur devine-mot.ci 🇨🇮`
-        : `😅 Mot du Jour CI — Non trouvé après ${nb} essai${nb > 1 ? "s" : ""}. Tente ta chance ! 🇨🇮`;
-    window.open("https://wa.me/?text=" + encodeURIComponent(txt), "_blank");
+    
+    // Génération de la grille (Wordle style)
+    let grille = "";
+    hist.forEach(h => {
+        if (!h.positions) return;
+        h.positions.forEach(p => {
+            if (p === 2 || p === true) grille += "🟩";
+            else if (p === 1) grille += "🟨";
+            else grille += "⬛";
+        });
+        grille += "\n";
+    });
+
+    const jourNode = document.querySelector(".instruction h3");
+    const jourNum = jourNode ? jourNode.innerText.replace("Jour n°", "").trim() : "?";
+    
+    const txt = gagne
+        ? `DevineMot CI Jour ${jourNum} 🇨🇮 — ${nb}/6\n\n${grille}\nJoue sur devinemot.ci 🚀`
+        : `DevineMot CI Jour ${jourNum} 🇨🇮 — Échec 😔\n\n${grille}\nTente ta chance sur devinemot.ci 🚀`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: "DevineMot CI",
+            text: txt
+        }).catch(err => {
+            window.open("https://wa.me/?text=" + encodeURIComponent(txt), "_blank");
+        });
+    } else {
+        window.open("https://wa.me/?text=" + encodeURIComponent(txt), "_blank");
+    }
 }
 
 // ======================
@@ -517,20 +573,20 @@ function _urlBase64ToUint8Array(base64String) {
 }
 
 // ======================
-// MODAL DONATION & PAIEMENT SIMUL�
+// MODAL DONATION & PAIEMENT SIMUL�
 // ======================
 // Paiement via Lien Wave Business
 function openWaveLink() {
     if (!window.wavePaymentLink || window.wavePaymentLink.trim() === '') {
-        alert('Le lien de paiement Wave n\'est pas encore configur� ! Ajoute la variable WAVE_PAYMENT_LINK dans Railway (ex: https://pay.wave.com/m/ton-nom).');
+        alert('Le lien de paiement Wave n\'est pas encore configur� ! Ajoute la variable WAVE_PAYMENT_LINK dans Railway (ex: https://pay.wave.com/m/ton-nom).');
         return;
     }
 
-    // Affiche l'�cran de succ�s
+    // Affiche l'�cran de succ�s
     document.getElementById('donateStep2').style.display = 'none';
     document.getElementById('donateSuccess').style.display = 'block';
     
-    // Le lien Wave officiel peut parfois prendre un param�tre mount selon l'API, on l'ajoute au cas o� (optionnel).
+    // Le lien Wave officiel peut parfois prendre un param�tre mount selon l'API, on l'ajoute au cas o� (optionnel).
     const amt = document.getElementById('customAmount') ? document.getElementById('customAmount').value : '1000';
     let finalLink = window.wavePaymentLink;
     if (finalLink.includes('?')) {
@@ -585,3 +641,6 @@ document.querySelectorAll('.close, .close-modal').forEach(btn => {
         }
     });
 });
+
+
+

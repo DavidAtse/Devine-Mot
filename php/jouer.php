@@ -95,13 +95,36 @@ $lettresMot  = preg_split('//u', $motPropose, -1, PREG_SPLIT_NO_EMPTY);
 $longueurMDJ = count($lettresMDJ);
 $longueurMot = count($lettresMot);
 
-// 1. Positions correctes
-$positions = [];
+// 1. Initialiser le tableau des états (0 = gris, 1 = jaune, 2 = vert)
+$positions = array_fill(0, $longueurMot, 0);
+$lettresRestantesMDJ = [];
+
+// Passe 1 : Trouver les lettres bien placées (Vert = 2)
 for ($i = 0; $i < $longueurMot; $i++) {
-    $positions[] = isset($lettresMDJ[$i]) && $lettresMot[$i] === $lettresMDJ[$i];
+    if (isset($lettresMDJ[$i]) && $lettresMot[$i] === $lettresMDJ[$i]) {
+        $positions[$i] = 2;
+    } else {
+        if (isset($lettresMDJ[$i])) {
+            $lettresRestantesMDJ[] = $lettresMDJ[$i];
+        }
+    }
 }
 
-// 2. Score de proximité (lettres communes, indépendamment de la position)
+// Passe 2 : Trouver les lettres mal placées (Jaune = 1)
+for ($i = 0; $i < $longueurMot; $i++) {
+    if ($positions[$i] !== 2 && in_array($lettresMot[$i], $lettresRestantesMDJ, true)) {
+        $positions[$i] = 1;
+        // Retirer la lettre utilisée pour gérer les doublons
+        $idx = array_search($lettresMot[$i], $lettresRestantesMDJ, true);
+        if ($idx !== false) {
+            unset($lettresRestantesMDJ[$idx]);
+            // Réindexer (optionnel mais propre)
+            $lettresRestantesMDJ = array_values($lettresRestantesMDJ);
+        }
+    }
+}
+
+// 2. Score de proximité global (ancien système gardé pour la rétrocompatibilité des emojis)
 $copie      = $lettresMDJ;
 $communes   = 0;
 $utilises   = [];
