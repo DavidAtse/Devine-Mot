@@ -14,11 +14,11 @@ const tuilesEl    = document.getElementById("tuiles");
 // STOCKAGE PAR UTILISATEUR
 // ======================
 const username        = window.username || "guest";
-const KEY_HISTORIQUE  = `mdj_v3_hist_${username}`;
-const KEY_DATE        = `mdj_v3_date_${username}`;
-const KEY_CONFIRMES   = `mdj_v3_conf_${username}`; // lettres confirm�es {pos: lettre}
-const KEY_LONGUEUR    = `mdj_v3_len_${username}`;  // longueur du mot du jour
-const KEY_DEFINITION  = `mdj_v3_def_${username}`;  // d�finition du mot trouv�
+const KEY_HISTORIQUE  = `mdj_v4_hist_${username}`;
+const KEY_DATE        = `mdj_v4_date_${username}`;
+const KEY_CONFIRMES   = `mdj_v4_conf_${username}`; // lettres confirm�es {pos: lettre}
+const KEY_LONGUEUR    = `mdj_v4_len_${username}`;  // longueur du mot du jour
+const KEY_DEFINITION  = `mdj_v4_def_${username}`;  // d�finition du mot trouv�
 
 // ======================
 // RESET QUOTIDIEN
