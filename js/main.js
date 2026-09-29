@@ -440,14 +440,12 @@ function partagerScore() {
     const jourNum = jourNode ? jourNode.innerText.replace("Jour n�", "").trim() : "?";
     
     const txt = gagne
-        ? `iMots CI Jour ${jourNum} 🇨🇮 — ${nb}/6
+        ? `J'ai trouvé le mot ivoirien du jour sur iMots CI en ${nb} essai${nb > 1 ? "s" : ""} ! 🇨🇮
 
-${grille}
-Joue sur devinemot.ci 🚀`
-        : `iMots CI Jour ${jourNum} 🇨🇮 — Échec 😔
+Viens tester ton vocabulaire et relève le défi ici : https://devine-mot-production.up.railway.app/`
+        : `Le mot ivoirien du jour sur iMots CI est vraiment chaud ! 🇨🇮🔥
 
-${grille}
-Tente ta chance sur devinemot.ci 🚀`;
+Viens tester ton vocabulaire et relève le défi ici : https://devine-mot-production.up.railway.app/`;
     
     if (navigator.share) {
         navigator.share({
