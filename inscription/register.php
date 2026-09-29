@@ -14,13 +14,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // --- CSRF ---
     csrf_check_form();
 
-    $username = trim($_POST['username'] ?? '');
-    $email    = trim($_POST['email']    ?? '');
-    $password = $_POST['password']      ?? '';
+    // --- Rate-limiting (anti-spam mass register) ---
+    $now = time();
+    if (!isset($_SESSION['reg_lockout'])) $_SESSION['reg_lockout'] = 0;
+    if (!isset($_SESSION['reg_attempts'])) $_SESSION['reg_attempts'] = 0;
 
-    // --- Validation ---
-    if ($username === '' || $email === '' || $password === '') {
-        $erreur = '❌ Tous les champs sont obligatoires.';
+    if ($_SESSION['reg_lockout'] > $now) {
+        $reste = ceil(($_SESSION['reg_lockout'] - $now) / 60);
+        $erreur = "Trop de tentatives. Réessaie dans {$reste} minute(s).";
+    } else {
+        $username = trim($_POST['username'] ?? '');
+        $email    = trim($_POST['email']    ?? '');
+        $password = $_POST['password']      ?? '';
+
+        // Honeypot anti-bot : le champ "website" doit rester vide
+        if (!empty($_POST['website'])) {
+            $erreur = '❌ Inscription invalide.';
+        } elseif ($username === '' || $email === '' || $password === '') {
+            $erreur = '❌ Tous les champs sont obligatoires.';
     } elseif (mb_strlen($username) < 2 || mb_strlen($username) > 30) {
         $erreur = '❌ Le pseudo doit faire entre 2 et 30 caractères.';
     } elseif (!preg_match('/^[a-zA-Z0-9_\-]+$/', $username)) {
@@ -51,6 +62,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $erreur = '❌ Erreur lors de la création du compte, réessaie.';
             }
         }
+        }
+    }
+    
+    // Si on arrive ici avec une erreur, c'est un échec d'inscription
+    if ($erreur) {
+        $_SESSION['reg_attempts']++;
+        if ($_SESSION['reg_attempts'] >= 5) {
+            $_SESSION['reg_lockout'] = time() + 5 * 60; // 5 min block
+            $_SESSION['reg_attempts'] = 0;
+            $erreur = '❌ Trop de tentatives. Inscriptions bloquées 5 minutes.';
+        }
+    } else {
+        $_SESSION['reg_attempts'] = 0;
     }
 }
 
@@ -61,10 +85,17 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscription – Mot du Jour CI</title>
+    <title>Inscription – DevineMot CI 🇨🇮</title>
+    <meta name="robots" content="noindex, nofollow">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="icon" type="image/x-icon" href="../assets/1200x630wa-removebg-preview.png">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/svg+xml" href="../assets/icons/icon-192.svg">
+    <link rel="icon" type="image/png" href="../assets/icons/icon-192.png" sizes="192x192">
+    <link rel="apple-touch-icon" href="../assets/icons/icon-192.png">
+    <link rel="mask-icon" href="../assets/icons/icon-192.svg" color="#F77F00">
+    <meta name="theme-color" content="#1A1008">
 </head>
 <body>
     <div class="deco deco-1"></div>
@@ -84,8 +115,13 @@ $conn->close();
             <div class="msg erreur"><?= htmlspecialchars($erreur) ?></div>
         <?php endif; ?>
 
-        <form method="POST" autocomplete="off">
+        <form method="POST" autocomplete="off" novalidate>
             <?= csrf_field() ?>
+            <!-- Honeypot anti-bot (ne pas supprimer) -->
+            <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;" aria-hidden="true" tabindex="-1">
+                <label for="website">Ne pas remplir</label>
+                <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+            </div>
 
             <div class="form-group">
                 <label for="username">Pseudo</label>

@@ -59,8 +59,8 @@ $conn->close();
 
     <!-- ===== Favicons complets ===== -->
     <link rel="icon"             type="image/svg+xml" href="/assets/icons/icon-192.svg">
-    <link rel="icon"             type="image/png"     href="/assets/icons/icon-192.svg" sizes="192x192">
-    <link rel="apple-touch-icon"                      href="/assets/icons/icon-192.svg">
+    <link rel="icon"             type="image/png"     href="/assets/icons/icon-192.png" sizes="192x192">
+    <link rel="apple-touch-icon"                      href="/assets/icons/icon-192.png">
     <link rel="mask-icon"                             href="/assets/icons/icon-192.svg" color="#F77F00">
 
     <!-- ===== PWA ===== -->
