@@ -591,7 +591,7 @@ function openWaveLink() {
     document.getElementById('donateSuccess').style.display = 'block';
     
     // Le lien Wave officiel peut parfois prendre un param?tre mount selon l'API, on l'ajoute au cas o? (optionnel).
-    const amt = document.getElementById('customAmount') ? document.getElementById('customAmount').value : '1000';
+    const amt = document.getElementById('customAmount') ? document.getElementById('customAmount').value : '';
     let finalLink = window.wavePaymentLink;
     if (finalLink.includes('?')) {
         finalLink += '&amount=' + amt;
@@ -614,9 +614,15 @@ function ouvrirDonate() {
 }
 
 if (document.getElementById('btnProceedDonate')) {
-    document.getElementById('btnProceedDonate').addEventListener('click', () => {
+        document.getElementById('btnProceedDonate').addEventListener('click', () => {
         const amtInput = document.getElementById('customAmount');
-        const amt = amtInput ? (amtInput.value || '1000') : '1000';
+        const amt = amtInput ? amtInput.value.trim() : '';
+        
+        if (!amt || parseInt(amt) < 100) {
+            alert("Merci d'entrer un montant (minimum 100 FCFA) pour soutenir le jeu !");
+            return;
+        }
+
         document.getElementById('donateAmountStr').textContent = amt;
         
         document.getElementById('donateStep1').style.display = 'none';

@@ -243,13 +243,13 @@ $conn->close();
                 
                 <div id="donateStep1">
                     <p style="font-size:13px; text-align:left; color:var(--orange); margin-bottom:5px; font-weight:bold;">Montant de ton don (FCFA) :</p>
-                    <input type="number" id="customAmount" placeholder="Saisis le montant..." value="1000" min="100" style="width:100%; padding:12px; border-radius:8px; border:2px solid rgba(247,127,0,0.5); background:rgba(253,248,240,0.05); color:var(--texte); font-size:18px; font-weight:bold; margin-bottom:20px; text-align:center; outline:none;">
+                    <input type="number" id="customAmount" placeholder="Saisis le montant..." value="" min="100" style="width:100%; padding:12px; border-radius:8px; border:2px solid rgba(247,127,0,0.5); background:rgba(253,248,240,0.05); color:var(--texte); font-size:18px; font-weight:bold; margin-bottom:20px; text-align:center; outline:none;">
                     
                     <button id="btnProceedDonate" class="btn-principal" style="width:100%;">Continuer</button>
                 </div>
 
                 <div id="donateStep2" style="display:none; padding: 10px 0;">
-                    <p style="font-size: 13px; margin-bottom: 15px;">Moyen de paiement pour <strong id="donateAmountStr" style="color:var(--orange)">1000</strong> FCFA :</p>
+                    <p style="font-size: 13px; margin-bottom: 15px;">Moyen de paiement pour <strong id="donateAmountStr" style="color:var(--orange)"></strong> FCFA :</p>
                     <button id="payWave" class="btn-principal" style="background: #14B9FC; color: white; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;">
                         Wave Mobile Money
                     </button>
