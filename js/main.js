@@ -432,9 +432,9 @@ function partagerScore() {
     hist.forEach(h => {
         if (!h.positions) return;
         h.positions.forEach(p => {
-            if (p === 2 || p === true) grille += "??";
-            else if (p === 1) grille += "??";
-            else grille += "?";
+            if (p === 2 || p === true) grille += "🟩";
+            else if (p === 1) grille += "🟩";
+            else grille += "⬛";
         });
         grille += "\n";
     });
@@ -443,8 +443,14 @@ function partagerScore() {
     const jourNum = jourNode ? jourNode.innerText.replace("Jour n�", "").trim() : "?";
     
     const txt = gagne
-        ? `DevineMot CI Jour ${jourNum} ???? � ${nb}/6\n\n${grille}\nJoue sur devinemot.ci ??`
-        : `DevineMot CI Jour ${jourNum} ???? � �chec ??\n\n${grille}\nTente ta chance sur devinemot.ci ??`;
+        ? `DevineMot CI Jour ${jourNum} 🇨🇮 — ${nb}/6
+
+${grille}
+Joue sur devinemot.ci 🚀`
+        : `DevineMot CI Jour ${jourNum} 🇨🇮 — Échec 😔
+
+${grille}
+Tente ta chance sur devinemot.ci 🚀`;
     
     if (navigator.share) {
         navigator.share({
