@@ -519,6 +519,29 @@ function _urlBase64ToUint8Array(base64String) {
 // ======================
 // MODAL DONATION & PAIEMENT SIMULÉ
 // ======================
+// Paiement via Lien Wave Business
+function openWaveLink() {
+    if (!window.wavePaymentLink || window.wavePaymentLink.trim() === '') {
+        alert('Le lien de paiement Wave n\'est pas encore configuré ! Ajoute la variable WAVE_PAYMENT_LINK dans Railway (ex: https://pay.wave.com/m/ton-nom).');
+        return;
+    }
+
+    // Affiche l'écran de succès
+    document.getElementById('donateStep2').style.display = 'none';
+    document.getElementById('donateSuccess').style.display = 'block';
+    
+    // Le lien Wave officiel peut parfois prendre un paramètre mount selon l'API, on l'ajoute au cas où (optionnel).
+    const amt = document.getElementById('customAmount') ? document.getElementById('customAmount').value : '1000';
+    let finalLink = window.wavePaymentLink;
+    if (finalLink.includes('?')) {
+        finalLink += '&amount=' + amt;
+    } else {
+        finalLink += '?amount=' + amt;
+    }
+
+    window.open(finalLink, '_blank');
+}
+
 function ouvrirDonate() {
     const modal = document.getElementById('donateModal');
     if (modal) {
@@ -530,41 +553,15 @@ function ouvrirDonate() {
     }
 }
 
-// Gestion des boutons de montants
-document.querySelectorAll('.btn-amount').forEach(btn => {
-    btn.addEventListener('click', function() {
-        document.querySelectorAll('.btn-amount').forEach(b => {
-            b.style.background = 'transparent';
-            b.style.color = 'var(--orange)';
-        });
-        this.style.background = 'var(--orange)';
-        this.style.color = '#1a1008';
-        window.selectedDonationAmount = this.dataset.amount;
-    });
-});
-
 if (document.getElementById('btnProceedDonate')) {
     document.getElementById('btnProceedDonate').addEventListener('click', () => {
-        const amt = window.selectedDonationAmount || '1000';
+        const amtInput = document.getElementById('customAmount');
+        const amt = amtInput ? (amtInput.value || '1000') : '1000';
         document.getElementById('donateAmountStr').textContent = amt;
+        
         document.getElementById('donateStep1').style.display = 'none';
         document.getElementById('donateStep2').style.display = 'block';
     });
-}
-
-// Paiement via Lien Wave Business
-function openWaveLink() {
-    if (!window.wavePaymentLink || window.wavePaymentLink.trim() === '') {
-        alert('Le lien de paiement Wave n\'est pas encore configuré ! Ajoute la variable WAVE_PAYMENT_LINK dans Railway (ex: https://pay.wave.com/m/ton-nom).');
-        return;
-    }
-
-    // Le lien Wave gère lui-même le montant, mais on peut rediriger le joueur
-    document.getElementById('donateStep2').style.display = 'none';
-    document.getElementById('donateSuccess').style.display = 'block';
-    
-    // Ouvre le lien de paiement officiel Wave dans un nouvel onglet
-    window.open(window.wavePaymentLink, '_blank');
 }
 
 if (document.getElementById('payWave')) {

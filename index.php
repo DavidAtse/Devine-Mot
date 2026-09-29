@@ -240,11 +240,9 @@ $conn->close();
                 <p style="font-size: 14px; margin-bottom: 20px; color: var(--texte);">Le jeu est 100% gratuit et sans pub. Offrez-nous un garba pour payer les serveurs !</p>
                 
                 <div id="donateStep1">
-                    <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
-                        <button class="btn-amount" data-amount="500" style="padding: 10px 15px; border-radius: 8px; border: 2px solid var(--orange); background: transparent; color: var(--orange); font-weight: bold; cursor: pointer;">500 F</button>
-                        <button class="btn-amount" data-amount="1000" style="padding: 10px 15px; border-radius: 8px; border: 2px solid var(--orange); background: var(--orange); color: #1a1008; font-weight: bold; cursor: pointer;">1000 F</button>
-                        <button class="btn-amount" data-amount="2000" style="padding: 10px 15px; border-radius: 8px; border: 2px solid var(--orange); background: transparent; color: var(--orange); font-weight: bold; cursor: pointer;">2000 F</button>
-                    </div>
+                    <p style="font-size:13px; text-align:left; color:var(--orange); margin-bottom:5px; font-weight:bold;">Montant de ton don (FCFA) :</p>
+                    <input type="number" id="customAmount" placeholder="Saisis le montant..." value="1000" min="100" style="width:100%; padding:12px; border-radius:8px; border:2px solid rgba(247,127,0,0.5); background:rgba(253,248,240,0.05); color:var(--texte); font-size:18px; font-weight:bold; margin-bottom:20px; text-align:center; outline:none;">
+                    
                     <button id="btnProceedDonate" class="btn-principal" style="width:100%;">Continuer</button>
                 </div>
 
