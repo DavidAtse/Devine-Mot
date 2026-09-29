@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * jouer.php — endpoint principal du jeu.
  *
@@ -103,24 +103,6 @@ $lettresRestantesMDJ = [];
 for ($i = 0; $i < $longueurMot; $i++) {
     if (isset($lettresMDJ[$i]) && $lettresMot[$i] === $lettresMDJ[$i]) {
         $positions[$i] = 2;
-    } else {
-        if (isset($lettresMDJ[$i])) {
-            $lettresRestantesMDJ[] = $lettresMDJ[$i];
-        }
-    }
-}
-
-// Passe 2 : Trouver les lettres mal placées (Jaune = 1)
-for ($i = 0; $i < $longueurMot; $i++) {
-    if ($positions[$i] !== 2 && in_array($lettresMot[$i], $lettresRestantesMDJ, true)) {
-        $positions[$i] = 1;
-        // Retirer la lettre utilisée pour gérer les doublons
-        $idx = array_search($lettresMot[$i], $lettresRestantesMDJ, true);
-        if ($idx !== false) {
-            unset($lettresRestantesMDJ[$idx]);
-            // Réindexer (optionnel mais propre)
-            $lettresRestantesMDJ = array_values($lettresRestantesMDJ);
-        }
     }
 }
 

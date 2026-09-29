@@ -171,9 +171,7 @@ function sauvegarder(mot, positions, score, emoji) {
 function colorerMot(mot, positions) {
     return [...mot].map((c, i) => {
         if (positions[i] === 2 || positions[i] === true) {
-            return `<span class="tuile-demo vert" style="padding:2px 4px; border-radius:4px;">${c}</span>`;
-        } else if (positions[i] === 1) {
-            return `<span class="tuile-demo orange" style="padding:2px 4px; border-radius:4px;">${c}</span>`;
+            return `<span class="tuile-demo vert" style="padding:2px 4px; border-radius:4px; color:#22c55e;">${c}</span>`;
         } else {
             return `<span class="tuile-demo gris" style="padding:2px 4px; border-radius:4px;">${c}</span>`;
         }
