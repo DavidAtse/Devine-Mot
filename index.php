@@ -28,8 +28,8 @@ $isAdmin   = (bool) ($user['is_admin'] ?? false);
 $csrfToken = csrf_token();
 $jourNum   = jour_numero();
 
-// Lien de paiement Wave (Wave Business) depuis les variables d'environnement (Railway)
-$wave_payment_link = getenv('WAVE_PAYMENT_LINK') ?: '';
+// Lien de paiement Wave (Wave Business)
+$wave_payment_link = getenv('WAVE_PAYMENT_LINK') ?: 'https://pay.wave.com/m/M_ci_gIE7L0jQ-bpx/c/ci/';
 
 $conn->close();
 ?>
