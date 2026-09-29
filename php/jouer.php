@@ -28,8 +28,31 @@ $aujourdhui = date('Y-m-d');
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $motDuJour = _obtenir_mot_du_jour($conn, $aujourdhui);
     $longueur  = $motDuJour ? mb_strlen($motDuJour, 'UTF-8') : 0;
+
+    // Vérifier si l'utilisateur a déjà gagné aujourd'hui (sync multi-appareils)
+    $userId   = (int) $_SESSION['user_id'];
+    $chkScore = $conn->prepare('SELECT tentatives FROM scores WHERE user_id = ? AND date_jour = ? AND trouve = 1');
+    $chkScore->bind_param('is', $userId, $aujourdhui);
+    $chkScore->execute();
+    $scoreRow  = $chkScore->get_result()->fetch_assoc();
+    $dejaGagne = !!$scoreRow;
+
+    $definition = '';
+    if ($dejaGagne && $motDuJour) {
+        $defStmt = $conn->prepare('SELECT definition FROM mots WHERE UPPER(mot) = ?');
+        $defStmt->bind_param('s', $motDuJour);
+        $defStmt->execute();
+        $defRow     = $defStmt->get_result()->fetch_assoc();
+        $definition = $defRow ? ($defRow['definition'] ?? '') : '';
+    }
+
     $conn->close();
-    echo json_encode(['longueur' => $longueur]);
+    echo json_encode([
+        'longueur'   => $longueur,
+        'deja_gagne' => $dejaGagne,
+        'tentatives' => $scoreRow ? (int)$scoreRow['tentatives'] : 0,
+        'definition' => $definition,
+    ]);
     exit;
 }
 

@@ -197,28 +197,38 @@ async function init() {
     reconstruireTableau();
     chargerTuiles();
 
-    // Si la partie est déjà gagnée aujourd'hui, afficher le bouton définition
-    const hist   = chargerHistorique();
-    const gagne  = hist.some(i => parseFloat(i.score) >= 100);
+    // Si la partie est déjà gagnée aujourd'hui (localStorage), afficher le bouton définition
+    const hist  = chargerHistorique();
+    const gagne = hist.some(i => parseFloat(i.score) >= 100);
     if (gagne) {
         const defData = _chargerDefinition();
         _montrerBoutonDef(!!defData);
     }
 
-    // Charger la longueur depuis le serveur si pas en cache
-    if (!localStorage.getItem(KEY_LONGUEUR)) {
-        try {
-            const res  = await fetch("php/jouer.php", { credentials: "same-origin" });
-            if (res.ok) {
-                const data = await res.json();
-                if (data.longueur) {
-                    localStorage.setItem(KEY_LONGUEUR, data.longueur);
-                    renderTuiles(data.longueur, _chargerConfirmes());
-                }
+    // Appel serveur : récupère la longueur ET vérifie si déjà gagné (sync multi-appareils)
+    try {
+        const res  = await fetch("php/jouer.php", { credentials: "same-origin" });
+        if (res.ok) {
+            const data = await res.json();
+
+            if (data.longueur) {
+                localStorage.setItem(KEY_LONGUEUR, data.longueur);
+                renderTuiles(data.longueur, _chargerConfirmes());
             }
-        } catch (e) {
-            console.warn("Longueur indisponible :", e);
+
+            // SYNC MULTI-APPAREILS : si le serveur dit que l'utilisateur a déjà gagné
+            // mais que le localStorage de cet appareil ne le sait pas encore
+            if (data.deja_gagne && !gagne) {
+                // Bloquer le jeu proprement
+                bloquerJeu(data.tentatives || 1);
+                // Sauvegarder la définition localement pour ce device
+                const motGagne = ""; // on n'a pas le mot côté client (sécurité), on affiche juste la définition
+                _sauvegarderDefinition(motGagne, data.definition || '');
+                _montrerBoutonDef(true);
+            }
         }
+    } catch (e) {
+        console.warn("Init serveur indisponible :", e);
     }
 }
 
