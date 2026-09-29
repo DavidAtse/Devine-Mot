@@ -18,7 +18,7 @@ const KEY_HISTORIQUE  = `mdj_v4_hist_${username}`;
 const KEY_DATE        = `mdj_v4_date_${username}`;
 const KEY_CONFIRMES   = `mdj_v4_conf_${username}`; // lettres confirm�es {pos: lettre}
 const KEY_LONGUEUR    = `mdj_v4_len_${username}`;  // longueur du mot du jour
-const KEY_DEFINITION  = `mdj_v4_def_${username}`;  // d�finition du mot trouv�
+const KEY_DEFINITION  = `mdj_v4_def_${username}`;  // définition du mot trouvé
 
 // ======================
 // RESET QUOTIDIEN
@@ -114,7 +114,7 @@ function afficherDefinition(mot, definition) {
             p.textContent = definition.trim();
         } else {
             p.className   = 'def-vide';
-            p.textContent = 'Pas encore de d�finition pour ce mot. L\'administrateur peut en ajouter une via le panel admin.';
+            p.textContent = 'Pas encore de définition pour ce mot. L\'administrateur peut en ajouter une via le panel admin.';
         }
         corps.appendChild(p);
         
@@ -136,7 +136,7 @@ function afficherDefinition(mot, definition) {
         btnStats.className = "btn-secondaire";
         btnStats.style.display = "block";
         btnStats.style.marginTop = "10px";
-        btnStats.innerHTML = '?? Voir mes statistiques';
+        btnStats.innerHTML = '📊 Voir mes statistiques';
         
         divShare.appendChild(btnShare);
         divShare.appendChild(btnStats);
@@ -225,7 +225,7 @@ async function init() {
     reconstruireTableau();
     chargerTuiles();
 
-    // Si la partie est d�j� gagn�e aujourd'hui (localStorage), afficher le bouton d�finition
+    // Si la partie est déjà gagn�e aujourd'hui (localStorage), afficher le bouton définition
     const hist  = chargerHistorique();
     const gagne = hist.some(i => parseFloat(i.score) >= 100);
     if (gagne) {
@@ -233,7 +233,7 @@ async function init() {
         _montrerBoutonDef(!!defData);
     }
 
-    // Appel serveur : r�cup�re la longueur ET v�rifie si d�j� gagn� (sync multi-appareils)
+    // Appel serveur : r�cup�re la longueur ET v�rifie si déjà gagn� (sync multi-appareils)
     try {
         const res  = await fetch("php/jouer.php", { credentials: "same-origin" });
         if (res.ok) {
@@ -249,13 +249,13 @@ async function init() {
                 renderTuiles(data.longueur, _chargerConfirmes());
             }
 
-            // SYNC MULTI-APPAREILS : si le serveur dit que l'utilisateur a d�j� gagn�
+            // SYNC MULTI-APPAREILS : si le serveur dit que l'utilisateur a déjà gagn�
             // mais que le localStorage de cet appareil ne le sait pas encore
             if (data.deja_gagne && !gagne) {
                 // Bloquer le jeu proprement
                 bloquerJeu(data.tentatives || 1);
-                // Sauvegarder la d�finition localement pour ce device
-                const motGagne = ""; // on n'a pas le mot c�t� client (s�curit�), on affiche juste la d�finition
+                // Sauvegarder la définition localement pour ce device
+                const motGagne = ""; // on n'a pas le mot côté client (s�curit�), on affiche juste la définition
                 _sauvegarderDefinition(motGagne, data.definition || '');
                 _montrerBoutonDef(true);
             }
@@ -279,13 +279,13 @@ bouton.addEventListener("click", async () => {
     }
 
     if (!/^[A-Z���������������]{2,30}$/u.test(motPropose)) {
-        showMsg("?? Lettres uniquement (2�30 caract�res).", "orange");
+        showMsg("⚠️ Lettres uniquement (2 à 30 caractères).", "orange");
         return;
     }
 
     const hist = chargerHistorique();
     if (hist.some(i => i.mot === motPropose)) {
-        showMsg("?? Mot d�j� propos�.", "orange");
+        showMsg("?? Mot déjà proposé.", "orange");
         return;
     }
 
@@ -316,7 +316,7 @@ bouton.addEventListener("click", async () => {
         }
 
         if (!data.ok) {
-            showMsg(data.message || "? Mot inconnu.", "#ff6b6b");
+            showMsg(data.message || "❌ Mot inconnu.", "#ff6b6b");
             return;
         }
 
@@ -330,7 +330,7 @@ bouton.addEventListener("click", async () => {
         if (data.gagne) {
             bloquerJeu(numEssai);
             animationVictoire();
-            // Sauvegarder la d�finition et l'afficher apr�s les confettis
+            // Sauvegarder la définition et l'afficher apr�s les confettis
             _sauvegarderDefinition(motPropose, data.definition || '');
             _montrerBoutonDef(true);
             setTimeout(() => afficherDefinition(motPropose, data.definition || ''), 2500);
@@ -340,7 +340,7 @@ bouton.addEventListener("click", async () => {
 
     } catch (err) {
         console.error(err);
-        showMsg("?? Impossible de joindre le serveur.", "red");
+        showMsg("⚠️ Impossible de joindre le serveur.", "red");
     } finally {
         if (!input.disabled) {
             bouton.disabled    = false;
@@ -364,7 +364,7 @@ function bloquerJeu(nbEssais) {
 }
 
 function animationVictoire() {
-    const items = ["??", "??", "?", "??", "????", "??"];
+    const items = ["🎉", "🎊", "🥳", "✨", "🔥", "🤩", "🙌"];
     for (let i = 0; i < 50; i++) {
         const el = document.createElement("span");
         el.textContent = items[Math.floor(Math.random() * items.length)];
@@ -498,22 +498,22 @@ async function _updateNotifButton() {
         const reg = window._swReg;
         const sub = reg ? await reg.pushManager.getSubscription() : null;
         if (sub) {
-            btn.textContent = '?? D�sactiver les rappels';
+            btn.textContent = '?? Désactiver les rappels';
             btn.style.background = 'rgba(255,80,80,0.1)';
             btn.style.borderColor = 'rgba(255,80,80,0.35)';
             btn.style.color = '#ff5050';
         } else {
-            btn.textContent = '?? Activer les rappels quotidiens';
+            btn.textContent = '🔔 Activer les rappels quotidiens';
             btn.style.background = '';
             btn.style.borderColor = '';
             btn.style.color = '#F77F00';
         }
     } else if (perm === 'denied') {
-        btn.textContent = '?? Notifications bloqu�es';
+        btn.textContent = '?? Notifications bloquées';
         btn.disabled = true;
         btn.style.opacity = '0.5';
     } else {
-        btn.textContent = '?? Activer les rappels quotidiens';
+        btn.textContent = '🔔 Activer les rappels quotidiens';
     }
 }
 
@@ -560,7 +560,7 @@ async function toggleNotification() {
     }
 }
 
-/* D�clenche l'envoi des notifs du jour c�t� serveur (une fois par jour) */
+/* D�clenche l'envoi des notifs du jour côté serveur (une fois par jour) */
 async function _triggerDailyPush() {
     const todayKey = 'mdj_push_triggered_' + new Date().toISOString().split('T')[0];
     if (sessionStorage.getItem(todayKey)) return;
@@ -570,7 +570,7 @@ async function _triggerDailyPush() {
     } catch (_) {}
 }
 
-/* Utilitaire : convertit la cl� VAPID base64url ? Uint8Array */
+/* Utilitaire : convertit la clé VAPID base64url ? Uint8Array */
 function _urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
     const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
