@@ -264,7 +264,7 @@
                 <h3>Responsable du traitement des données</h3>
                 <p><strong>Projet :</strong> DevineMot CI</p>
                 <p><strong>Pays :</strong> Côte d'Ivoire</p>
-                <p><strong>Contact :</strong> <a href="mailto:udje266@gmail.com">udje266@gmail.com</a></p>
+                <p><strong>Contact :</strong> <a href="mailto:daatsey24@gmail.com">daatsey24@gmail.com</a></p>
             </div>
         </div>
     </section>
@@ -415,7 +415,7 @@
         </ul>
         <p>
             Pour exercer ces droits, contactez-nous à l'adresse :
-            <a href="mailto:udje266@gmail.com" style="color:#F77F00;">udje266@gmail.com</a>.
+            <a href="mailto:daatsey24@gmail.com" style="color:#F77F00;">daatsey24@gmail.com</a>.
             Nous nous engageons à répondre dans un délai de <strong>30 jours</strong>.
         </p>
     </section>
@@ -467,7 +467,7 @@
             <div>
                 <h3>Nous contacter</h3>
                 <p>Pour toute question relative à cette politique ou pour exercer vos droits :</p>
-                <p><a href="mailto:udje266@gmail.com">udje266@gmail.com</a></p>
+                <p><a href="mailto:daatsey24@gmail.com">daatsey24@gmail.com</a></p>
             </div>
         </div>
         <p style="margin-top:20px;">

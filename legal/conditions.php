@@ -556,7 +556,7 @@
             <div>
                 <h3>Une question sur ces CGU ?</h3>
                 <p>Contactez-nous à l'adresse :</p>
-                <p><a href="mailto:udje266@gmail.com">udje266@gmail.com</a></p>
+                <p><a href="mailto:daatsey24@gmail.com">daatsey24@gmail.com</a></p>
                 <p style="font-size:0.85rem;color:#888;margin-top:8px;">
                     Nous nous efforçons de répondre dans un délai de 7 jours ouvrés.
                 </p>

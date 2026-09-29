@@ -107,7 +107,7 @@ http_response_code(404);
         <p>Tu t'es peut-être trompé de chemin...<br>
         Mais le mot du jour, lui, t'attend ! 🔥</p>
         <a href="/inscription/login.php" class="btn-home">🇨🇮 Retour au jeu</a>
-        <p class="hint">Si tu penses que c'est une erreur, contacte-nous à udje266@gmail.com</p>
+        <p class="hint">Si tu penses que c'est une erreur, contacte-nous à daatsey24@gmail.com</p>
     </div>
 </body>
 </html>

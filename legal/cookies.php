@@ -538,7 +538,7 @@
             <div>
                 <h3>Une question sur les cookies ?</h3>
                 <p>Contactez-nous à l'adresse :</p>
-                <p><a href="mailto:udje266@gmail.com">udje266@gmail.com</a></p>
+                <p><a href="mailto:daatsey24@gmail.com">daatsey24@gmail.com</a></p>
             </div>
         </div>
     </section>
