@@ -552,23 +552,65 @@ if (document.getElementById('btnProceedDonate')) {
     });
 }
 
-function processSimulatedPayment(methodName) {
+// Initialisation de CinetPay
+function startCinetPayPayment() {
     document.getElementById('donateStep2').style.display = 'none';
-    document.getElementById('donateLoading').style.display = 'block';
     
-    // Simulation du paiement (API CinetPay / Wave Link)
-    setTimeout(() => {
-        document.getElementById('donateLoading').style.display = 'none';
-        document.getElementById('donateSuccess').style.display = 'block';
-        console.log('Paiement simulé réussi avec ' + methodName + ' : ' + (window.selectedDonationAmount || 1000) + ' FCFA');
-    }, 2500);
+    // Si l'utilisateur n'a pas encore configuré ses clés API dans Railway
+    if (window.cinetpayApiKey === 'AJOUTER_APIKEY_DANS_RAILWAY' || window.cinetpaySiteId === 'AJOUTER_SITEID_DANS_RAILWAY') {
+        alert('CinetPay n\'est pas encore configuré ! Ajoute CINETPAY_APIKEY et CINETPAY_SITE_ID dans Railway.');
+        window.location.reload();
+        return;
+    }
+
+    const amt = parseInt(window.selectedDonationAmount || '1000');
+    const transactionId = 'MDJ_DON_' + Math.floor(Math.random() * 100000000).toString();
+
+    CinetPay.setConfig({
+        apikey: window.cinetpayApiKey,
+        site_id: window.cinetpaySiteId,
+        notify_url: 'https://devine-mot-production.up.railway.app/',
+        mode: 'PRODUCTION' // Mettre 'TEST' si test
+    });
+
+    CinetPay.getCheckout({
+        transaction_id: transactionId,
+        amount: amt,
+        currency: 'XOF',
+        channels: 'ALL',
+        description: 'Soutien pour le jeu DevineMot CI',
+        customer_name: window.username || 'Joueur',
+        customer_surname: 'CI',
+        customer_email: 'hello@devinemot.ci',
+        customer_phone_number: '',
+        customer_address: 'Abidjan',
+        customer_city: 'Abidjan',
+        customer_country: 'CI',
+        customer_state: 'CI',
+        customer_zip_code: '225',
+    });
+
+    CinetPay.waitResponse(function(data) {
+        if (data.status == "REFUSED") {
+            alert("Le paiement a échoué ou a été annulé.");
+            window.location.reload();
+        } else if (data.status == "ACCEPTED") {
+            document.getElementById('donateSuccess').style.display = 'block';
+        }
+    });
+
+    CinetPay.onError(function(data) {
+        console.error("Erreur CinetPay:", data);
+        alert("Erreur lors de l'initialisation du paiement.");
+        window.location.reload();
+    });
 }
 
 if (document.getElementById('payWave')) {
-    document.getElementById('payWave').addEventListener('click', () => processSimulatedPayment('Wave'));
+    document.getElementById('payWave').addEventListener('click', startCinetPayPayment);
 }
 if (document.getElementById('payOrange')) {
-    document.getElementById('payOrange').addEventListener('click', () => processSimulatedPayment('Orange Money'));
+    document.getElementById('payOrange').addEventListener('click', startCinetPayPayment);
 }
 
 // Fermeture des modales

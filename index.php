@@ -27,6 +27,11 @@ $username  = htmlspecialchars($user['username'] ?? 'Joueur');
 $isAdmin   = (bool) ($user['is_admin'] ?? false);
 $csrfToken = csrf_token();
 $jourNum   = jour_numero();
+
+// Configuration CinetPay depuis les variables d'environnement (Railway)
+$cinetpay_apikey  = getenv('CINETPAY_APIKEY')  ?: 'AJOUTER_APIKEY_DANS_RAILWAY';
+$cinetpay_site_id = getenv('CINETPAY_SITE_ID') ?: 'AJOUTER_SITEID_DANS_RAILWAY';
+
 $conn->close();
 ?>
 <!DOCTYPE html>
@@ -77,6 +82,9 @@ $conn->close();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- ===== CinetPay SDK ===== -->
+    <script src="https://cdn.cinetpay.com/seamless/main.js"></script>
 </head>
 <body>
     <main>
@@ -281,6 +289,11 @@ $conn->close();
         window.username   = <?= json_encode($username) ?>;
         window.csrfToken  = <?= json_encode($csrfToken) ?>;
         window.vapidKey   = 'BHpcuD9GQ0Q6PoQHujWBr3l-vKzQPr4YhBYY5HqJHK5Z6iFy23f-q8kmN22PKI3F8n3UYcHHpf2leBjP5GDe3-w';
+        
+        // CinetPay Credentials
+        window.cinetpayApiKey = <?= json_encode($cinetpay_apikey) ?>;
+        window.cinetpaySiteId = <?= json_encode($cinetpay_site_id) ?>;
+        
         // BASE_PATH calculé dynamiquement : '/' en prod Railway, chemin local en XAMPP
         window.BASE_PATH  = <?= json_encode(rtrim(dirname($_SERVER['SCRIPT_NAME']), '/')) ?>;
     </script>
