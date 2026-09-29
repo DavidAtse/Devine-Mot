@@ -10,11 +10,15 @@ class WebPush
     private string $vapidPrivateKeyPem;
     private string $subject;
 
-    public function __construct(string $subject, string $vapidPublicKeyBase64url, string $vapidPrivateKeyPemPath)
+    public function __construct(string $subject, string $vapidPublicKeyBase64url, string $vapidPrivateKeyOrPath)
     {
         $this->subject           = $subject;
         $this->vapidPublicKey    = $vapidPublicKeyBase64url;
-        $this->vapidPrivateKeyPem = file_get_contents($vapidPrivateKeyPemPath);
+        if (str_starts_with(trim($vapidPrivateKeyOrPath), '-----BEGIN')) {
+            $this->vapidPrivateKeyPem = trim($vapidPrivateKeyOrPath);
+        } else {
+            $this->vapidPrivateKeyPem = file_get_contents($vapidPrivateKeyOrPath);
+        }
     }
 
     /**

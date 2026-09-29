@@ -9,7 +9,7 @@ require_once __DIR__ . '/../php/webpush/WebPush.php';
 
 define('VAPID_SUBJECT',     'mailto:udje266@gmail.com');
 define('VAPID_PUBLIC_KEY',  'BHpcuD9GQ0Q6PoQHujWBr3l-vKzQPr4YhBYY5HqJHK5Z6iFy23f-q8kmN22PKI3F8n3UYcHHpf2leBjP5GDe3-w');
-define('VAPID_PRIVATE_KEY', __DIR__ . '/../keys/vapid_private.pem');
+define('VAPID_PRIVATE_KEY', getenv('VAPID_PRIVATE_KEY') ?: __DIR__ . '/../keys/vapid_private.pem');
 define('LOCK_FILE',         sys_get_temp_dir() . '/mdj_push_' . date('Y-m-d') . '.lock');
 
 header('Content-Type: application/json; charset=utf-8');
