@@ -28,8 +28,8 @@ $isAdmin   = (bool) ($user['is_admin'] ?? false);
 $csrfToken = csrf_token();
 $jourNum   = jour_numero();
 
-// Configuration Paystack depuis les variables d'environnement (Railway)
-$paystack_public_key = getenv('PAYSTACK_PUBLIC_KEY') ?: 'AJOUTER_PAYSTACK_KEY_DANS_RAILWAY';
+// Lien de paiement Wave (Wave Business) depuis les variables d'environnement (Railway)
+$wave_payment_link = getenv('WAVE_PAYMENT_LINK') ?: '';
 
 $conn->close();
 ?>
@@ -81,9 +81,6 @@ $conn->close();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <!-- ===== Paystack SDK ===== -->
-    <script src="https://js.paystack.co/v1/inline.js"></script>
 </head>
 <body>
     <main>
@@ -289,8 +286,8 @@ $conn->close();
         window.csrfToken  = <?= json_encode($csrfToken) ?>;
         window.vapidKey   = 'BHpcuD9GQ0Q6PoQHujWBr3l-vKzQPr4YhBYY5HqJHK5Z6iFy23f-q8kmN22PKI3F8n3UYcHHpf2leBjP5GDe3-w';
         
-        // Paystack Credentials
-        window.paystackPublicKey = <?= json_encode($paystack_public_key) ?>;
+        // Lien Wave Business
+        window.wavePaymentLink = <?= json_encode($wave_payment_link) ?>;
         
         // BASE_PATH calculé dynamiquement : '/' en prod Railway, chemin local en XAMPP
         window.BASE_PATH  = <?= json_encode(rtrim(dirname($_SERVER['SCRIPT_NAME']), '/')) ?>;

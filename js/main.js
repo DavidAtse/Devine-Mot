@@ -552,43 +552,28 @@ if (document.getElementById('btnProceedDonate')) {
     });
 }
 
-// Initialisation de Paystack
-function startPaystackPayment() {
-    document.getElementById('donateStep2').style.display = 'none';
-    
-    // Si l'utilisateur n'a pas encore configuré sa clé API dans Railway
-    if (!window.paystackPublicKey || window.paystackPublicKey === 'AJOUTER_PAYSTACK_KEY_DANS_RAILWAY') {
-        alert('Paystack n\'est pas encore configuré ! Ajoute PAYSTACK_PUBLIC_KEY dans Railway.');
-        window.location.reload();
+// Paiement via Lien Wave Business
+function openWaveLink() {
+    if (!window.wavePaymentLink || window.wavePaymentLink.trim() === '') {
+        alert('Le lien de paiement Wave n\'est pas encore configuré ! Ajoute la variable WAVE_PAYMENT_LINK dans Railway (ex: https://pay.wave.com/m/ton-nom).');
         return;
     }
 
-    const amt = parseInt(window.selectedDonationAmount || '1000');
-
-    let handler = PaystackPop.setup({
-      key: window.paystackPublicKey,
-      email: 'hello@devinemot.ci', // Paystack a besoin d'un email
-      amount: amt * 100, // Paystack prend le montant en plus petite unité (ex: centimes, mais pour XOF c'est souvent * 100 dans leur SDK)
-      currency: 'XOF',
-      ref: 'MDJ_DON_' + Math.floor((Math.random() * 1000000000) + 1),
-      callback: function(response) {
-          // Succès
-          document.getElementById('donateSuccess').style.display = 'block';
-      },
-      onClose: function() {
-          alert('Le paiement a été annulé ou fermé.');
-          window.location.reload();
-      }
-    });
-
-    handler.openIframe();
+    // Le lien Wave gère lui-même le montant, mais on peut rediriger le joueur
+    document.getElementById('donateStep2').style.display = 'none';
+    document.getElementById('donateSuccess').style.display = 'block';
+    
+    // Ouvre le lien de paiement officiel Wave dans un nouvel onglet
+    window.open(window.wavePaymentLink, '_blank');
 }
 
 if (document.getElementById('payWave')) {
-    document.getElementById('payWave').addEventListener('click', startPaystackPayment);
+    document.getElementById('payWave').addEventListener('click', openWaveLink);
 }
+
+// On cache le bouton Orange Money puisqu'on utilise le lien Wave
 if (document.getElementById('payOrange')) {
-    document.getElementById('payOrange').addEventListener('click', startPaystackPayment);
+    document.getElementById('payOrange').style.display = 'none';
 }
 
 // Fermeture des modales
