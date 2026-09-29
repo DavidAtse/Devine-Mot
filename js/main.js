@@ -1,7 +1,7 @@
 ﻿"use strict";
 
 // ======================
-// RÉFÉRENCES DOM
+// R�F�RENCES DOM
 // ======================
 const resultsBody = document.getElementById("resultsBody");
 const input       = document.getElementById("guessInput");
@@ -16,9 +16,9 @@ const tuilesEl    = document.getElementById("tuiles");
 const username        = window.username || "guest";
 const KEY_HISTORIQUE  = `mdj_v3_hist_${username}`;
 const KEY_DATE        = `mdj_v3_date_${username}`;
-const KEY_CONFIRMES   = `mdj_v3_conf_${username}`; // lettres confirmées {pos: lettre}
+const KEY_CONFIRMES   = `mdj_v3_conf_${username}`; // lettres confirm�es {pos: lettre}
 const KEY_LONGUEUR    = `mdj_v3_len_${username}`;  // longueur du mot du jour
-const KEY_DEFINITION  = `mdj_v3_def_${username}`;  // définition du mot trouvé
+const KEY_DEFINITION  = `mdj_v3_def_${username}`;  // d�finition du mot trouv�
 
 // ======================
 // RESET QUOTIDIEN
@@ -44,7 +44,7 @@ function clearMsg() { message.innerHTML = ""; }
 
 // ======================
 // TUILES D'INDICES
-// Affiche N cases avec les lettres confirmées en vert et les cases vides en gris
+// Affiche N cases avec les lettres confirm�es en vert et les cases vides en gris
 // ======================
 function renderTuiles(longueur, confirmes = {}) {
     if (!longueur || !tuilesEl) return;
@@ -70,7 +70,7 @@ function mettreAJourTuiles(longueur, positions, motPropose) {
     const lettres  = [...motPropose];
     const confirmes = _chargerConfirmes();
     positions.forEach((ok, i) => {
-        if (ok && lettres[i]) confirmes[i] = lettres[i];
+        if (ok === 2 && lettres[i]) confirmes[i] = lettres[i];
     });
     localStorage.setItem(KEY_CONFIRMES, JSON.stringify(confirmes));
     renderTuiles(longueur, confirmes);
@@ -82,7 +82,7 @@ function _chargerConfirmes() {
 }
 
 // ======================
-// DÉFINITION DU MOT GAGNÉ
+// D�FINITION DU MOT GAGN�
 // ======================
 function _chargerDefinition() {
     try { return JSON.parse(localStorage.getItem(KEY_DEFINITION) || 'null'); }
@@ -114,7 +114,7 @@ function afficherDefinition(mot, definition) {
             p.textContent = definition.trim();
         } else {
             p.className   = 'def-vide';
-            p.textContent = 'Pas encore de définition pour ce mot. L\'administrateur peut en ajouter une via le panel admin.';
+            p.textContent = 'Pas encore de d�finition pour ce mot. L\'administrateur peut en ajouter une via le panel admin.';
         }
         corps.appendChild(p);
         
@@ -136,7 +136,7 @@ function afficherDefinition(mot, definition) {
         btnStats.className = "btn-secondaire";
         btnStats.style.display = "block";
         btnStats.style.marginTop = "10px";
-        btnStats.innerHTML = '📊 Voir mes statistiques';
+        btnStats.innerHTML = '?? Voir mes statistiques';
         
         divShare.appendChild(btnShare);
         divShare.appendChild(btnStats);
@@ -227,7 +227,7 @@ async function init() {
     reconstruireTableau();
     chargerTuiles();
 
-    // Si la partie est déjà gagnée aujourd'hui (localStorage), afficher le bouton définition
+    // Si la partie est d�j� gagn�e aujourd'hui (localStorage), afficher le bouton d�finition
     const hist  = chargerHistorique();
     const gagne = hist.some(i => parseFloat(i.score) >= 100);
     if (gagne) {
@@ -235,24 +235,29 @@ async function init() {
         _montrerBoutonDef(!!defData);
     }
 
-    // Appel serveur : récupère la longueur ET vérifie si déjà gagné (sync multi-appareils)
+    // Appel serveur : r�cup�re la longueur ET v�rifie si d�j� gagn� (sync multi-appareils)
     try {
         const res  = await fetch("php/jouer.php", { credentials: "same-origin" });
         if (res.ok) {
             const data = await res.json();
 
             if (data.longueur) {
+                const ancienneLongueur = localStorage.getItem(KEY_LONGUEUR);
+                if (ancienneLongueur && parseInt(ancienneLongueur) !== data.longueur) {
+                    [KEY_HISTORIQUE, KEY_CONFIRMES, KEY_LONGUEUR, KEY_DEFINITION].forEach(k => localStorage.removeItem(k));
+                    document.getElementById('resultsBody').innerHTML = '';
+                }
                 localStorage.setItem(KEY_LONGUEUR, data.longueur);
                 renderTuiles(data.longueur, _chargerConfirmes());
             }
 
-            // SYNC MULTI-APPAREILS : si le serveur dit que l'utilisateur a déjà gagné
+            // SYNC MULTI-APPAREILS : si le serveur dit que l'utilisateur a d�j� gagn�
             // mais que le localStorage de cet appareil ne le sait pas encore
             if (data.deja_gagne && !gagne) {
                 // Bloquer le jeu proprement
                 bloquerJeu(data.tentatives || 1);
-                // Sauvegarder la définition localement pour ce device
-                const motGagne = ""; // on n'a pas le mot côté client (sécurité), on affiche juste la définition
+                // Sauvegarder la d�finition localement pour ce device
+                const motGagne = ""; // on n'a pas le mot c�t� client (s�curit�), on affiche juste la d�finition
                 _sauvegarderDefinition(motGagne, data.definition || '');
                 _montrerBoutonDef(true);
             }
@@ -271,25 +276,25 @@ bouton.addEventListener("click", async () => {
     const motPropose = [...input.value].map(c => c.toUpperCase()).join("").trim();
 
     if (!motPropose) {
-        showMsg("⚠️ Entre un mot pour jouer.", "orange");
+        showMsg("?? Entre un mot pour jouer.", "orange");
         return;
     }
 
-    if (!/^[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ]{2,30}$/u.test(motPropose)) {
-        showMsg("⚠️ Lettres uniquement (2–30 caractères).", "orange");
+    if (!/^[A-Z���������������]{2,30}$/u.test(motPropose)) {
+        showMsg("?? Lettres uniquement (2�30 caract�res).", "orange");
         return;
     }
 
     const hist = chargerHistorique();
     if (hist.some(i => i.mot === motPropose)) {
-        showMsg("⚠️ Mot déjà proposé.", "orange");
+        showMsg("?? Mot d�j� propos�.", "orange");
         return;
     }
 
     const numEssai = hist.length + 1;
 
     bouton.disabled    = true;
-    bouton.textContent = "…";
+    bouton.textContent = "�";
     clearMsg();
 
     try {
@@ -308,16 +313,16 @@ bouton.addEventListener("click", async () => {
         const data = await res.json();
 
         if (!res.ok || data.erreur) {
-            showMsg("⚠️ " + (data.erreur || "Erreur serveur."), "red");
+            showMsg("?? " + (data.erreur || "Erreur serveur."), "red");
             return;
         }
 
         if (!data.ok) {
-            showMsg(data.message || "❌ Mot inconnu.", "#ff6b6b");
+            showMsg(data.message || "? Mot inconnu.", "#ff6b6b");
             return;
         }
 
-        // Succès
+        // Succ�s
         input.value = "";
         input.focus();
         ajouterLigne(motPropose, data.positions, data.score, data.emoji, true);
@@ -327,7 +332,7 @@ bouton.addEventListener("click", async () => {
         if (data.gagne) {
             bloquerJeu(numEssai);
             animationVictoire();
-            // Sauvegarder la définition et l'afficher après les confettis
+            // Sauvegarder la d�finition et l'afficher apr�s les confettis
             _sauvegarderDefinition(motPropose, data.definition || '');
             _montrerBoutonDef(true);
             setTimeout(() => afficherDefinition(motPropose, data.definition || ''), 2500);
@@ -337,7 +342,7 @@ bouton.addEventListener("click", async () => {
 
     } catch (err) {
         console.error(err);
-        showMsg("⚠️ Impossible de joindre le serveur.", "red");
+        showMsg("?? Impossible de joindre le serveur.", "red");
     } finally {
         if (!input.disabled) {
             bouton.disabled    = false;
@@ -356,7 +361,7 @@ function bloquerJeu(nbEssais) {
     bouton.disabled = true;
     bouton.textContent = "Valider";
     showMsg(
-        `🎉 Bravo ! Trouvé en ${nbEssais} essai${nbEssais > 1 ? "s" : ""} ! Reviens demain 🇨🇮`,
+        `?? Bravo ! Trouv� en ${nbEssais} essai${nbEssais > 1 ? "s" : ""} ! Reviens demain ????`,
         "#22c55e"
     );
     message.style.fontSize   = "16px";
@@ -364,7 +369,7 @@ function bloquerJeu(nbEssais) {
 }
 
 function animationVictoire() {
-    const items = ["🎉", "🎊", "✨", "🥳", "🇨🇮", "🔥"];
+    const items = ["??", "??", "?", "??", "????", "??"];
     for (let i = 0; i < 50; i++) {
         const el = document.createElement("span");
         el.textContent = items[Math.floor(Math.random() * items.length)];
@@ -390,7 +395,7 @@ function updateCountdown() {
     const now = new Date();
     const minuit = new Date(); minuit.setHours(24, 0, 0, 0);
     const diff = minuit - now;
-    if (diff <= 0) { countdownEl.textContent = "Nouveau mot ! 🔄"; setTimeout(() => location.reload(), 1500); return; }
+    if (diff <= 0) { countdownEl.textContent = "Nouveau mot ! ??"; setTimeout(() => location.reload(), 1500); return; }
     const h = Math.floor(diff / 3_600_000);
     const m = Math.floor((diff % 3_600_000) / 60_000);
     const s = Math.floor((diff % 60_000) / 1000);
@@ -424,24 +429,24 @@ function partagerScore() {
     const nb    = hist.length;
     const gagne = hist.some(i => parseFloat(i.score) >= 100);
     
-    // Génération de la grille (Wordle style)
+    // G�n�ration de la grille (Wordle style)
     let grille = "";
     hist.forEach(h => {
         if (!h.positions) return;
         h.positions.forEach(p => {
-            if (p === 2 || p === true) grille += "🟩";
-            else if (p === 1) grille += "🟨";
-            else grille += "⬛";
+            if (p === 2 || p === true) grille += "??";
+            else if (p === 1) grille += "??";
+            else grille += "?";
         });
         grille += "\n";
     });
 
     const jourNode = document.querySelector(".instruction h3");
-    const jourNum = jourNode ? jourNode.innerText.replace("Jour n°", "").trim() : "?";
+    const jourNum = jourNode ? jourNode.innerText.replace("Jour n�", "").trim() : "?";
     
     const txt = gagne
-        ? `DevineMot CI Jour ${jourNum} 🇨🇮 — ${nb}/6\n\n${grille}\nJoue sur devinemot.ci 🚀`
-        : `DevineMot CI Jour ${jourNum} 🇨🇮 — Échec 😔\n\n${grille}\nTente ta chance sur devinemot.ci 🚀`;
+        ? `DevineMot CI Jour ${jourNum} ???? � ${nb}/6\n\n${grille}\nJoue sur devinemot.ci ??`
+        : `DevineMot CI Jour ${jourNum} ???? � �chec ??\n\n${grille}\nTente ta chance sur devinemot.ci ??`;
     
     if (navigator.share) {
         navigator.share({
@@ -456,7 +461,7 @@ function partagerScore() {
 }
 
 // ======================
-// PWA — SERVICE WORKER + PUSH NOTIFICATIONS
+// PWA � SERVICE WORKER + PUSH NOTIFICATIONS
 // ======================
 
 /* Enregistrement du Service Worker */
@@ -476,7 +481,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-/* Affiche le bouton notification selon l'état de permission */
+/* Affiche le bouton notification selon l'�tat de permission */
 function _initNotifButton(reg) {
     const btn = document.getElementById('notifBtn');
     if (!btn || !('PushManager' in window)) return;
@@ -492,22 +497,22 @@ async function _updateNotifButton() {
         const reg = window._swReg;
         const sub = reg ? await reg.pushManager.getSubscription() : null;
         if (sub) {
-            btn.textContent = '🔕 Désactiver les rappels';
+            btn.textContent = '?? D�sactiver les rappels';
             btn.style.background = 'rgba(255,80,80,0.1)';
             btn.style.borderColor = 'rgba(255,80,80,0.35)';
             btn.style.color = '#ff5050';
         } else {
-            btn.textContent = '🔔 Activer les rappels quotidiens';
+            btn.textContent = '?? Activer les rappels quotidiens';
             btn.style.background = '';
             btn.style.borderColor = '';
             btn.style.color = '#F77F00';
         }
     } else if (perm === 'denied') {
-        btn.textContent = '🚫 Notifications bloquées';
+        btn.textContent = '?? Notifications bloqu�es';
         btn.disabled = true;
         btn.style.opacity = '0.5';
     } else {
-        btn.textContent = '🔔 Activer les rappels quotidiens';
+        btn.textContent = '?? Activer les rappels quotidiens';
     }
 }
 
@@ -518,7 +523,7 @@ async function toggleNotification() {
     const existing = await reg.pushManager.getSubscription();
 
     if (existing) {
-        /* Désabonnement */
+        /* D�sabonnement */
         await existing.unsubscribe();
         await fetch(window.BASE_PATH + '/php/push-subscribe.php', {
             method: 'POST',
@@ -554,7 +559,7 @@ async function toggleNotification() {
     }
 }
 
-/* Déclenche l'envoi des notifs du jour côté serveur (une fois par jour) */
+/* D�clenche l'envoi des notifs du jour c�t� serveur (une fois par jour) */
 async function _triggerDailyPush() {
     const todayKey = 'mdj_push_triggered_' + new Date().toISOString().split('T')[0];
     if (sessionStorage.getItem(todayKey)) return;
@@ -564,7 +569,7 @@ async function _triggerDailyPush() {
     } catch (_) {}
 }
 
-/* Utilitaire : convertit la clé VAPID base64url → Uint8Array */
+/* Utilitaire : convertit la cl� VAPID base64url ? Uint8Array */
 function _urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
     const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -573,20 +578,20 @@ function _urlBase64ToUint8Array(base64String) {
 }
 
 // ======================
-// MODAL DONATION & PAIEMENT SIMUL�
+// MODAL DONATION & PAIEMENT SIMUL?
 // ======================
 // Paiement via Lien Wave Business
 function openWaveLink() {
     if (!window.wavePaymentLink || window.wavePaymentLink.trim() === '') {
-        alert('Le lien de paiement Wave n\'est pas encore configur� ! Ajoute la variable WAVE_PAYMENT_LINK dans Railway (ex: https://pay.wave.com/m/ton-nom).');
+        alert('Le lien de paiement Wave n\'est pas encore configur? ! Ajoute la variable WAVE_PAYMENT_LINK dans Railway (ex: https://pay.wave.com/m/ton-nom).');
         return;
     }
 
-    // Affiche l'�cran de succ�s
+    // Affiche l'?cran de succ?s
     document.getElementById('donateStep2').style.display = 'none';
     document.getElementById('donateSuccess').style.display = 'block';
     
-    // Le lien Wave officiel peut parfois prendre un param�tre mount selon l'API, on l'ajoute au cas o� (optionnel).
+    // Le lien Wave officiel peut parfois prendre un param?tre mount selon l'API, on l'ajoute au cas o? (optionnel).
     const amt = document.getElementById('customAmount') ? document.getElementById('customAmount').value : '1000';
     let finalLink = window.wavePaymentLink;
     if (finalLink.includes('?')) {
@@ -641,6 +646,7 @@ document.querySelectorAll('.close, .close-modal').forEach(btn => {
         }
     });
 });
+
 
 
 
