@@ -678,20 +678,28 @@ header > p:first-of-type {
     #shareButton { padding: 12px 20px; font-size: 14px; }
 }
 
-@media (max-width: 640px) {
-    main { padding: 10px; gap: 10px; }
+/* ===== CORRECTIF CONTRASTES WCAG AA ===== */
+/* --gris (#FDF8F0 à 45%) sur fond sombre = ratio ~3.5:1 → pas WCAG AA */
+/* On force un ratio ≥4.5:1 sur les textes importants */
+.nav-links a        { color: rgba(253,248,240,0.80); }
+th                  { color: rgba(253,248,240,0.85); font-weight:700; }
+.tuiles-hint        { color: rgba(253,248,240,0.75); }
+#countdown          { color: rgba(253,248,240,0.80); }
 
-    .infos { flex-direction: column; }
-
-    .guess-box { padding: 14px 14px 0; flex-direction: column; }
-    .guess-box input,
-    .guess-box button { width: 100%; }
-
-    .results-wrapper { padding: 12px 12px 20px; }
-
-    header { padding: 20px 14px 16px; }
-    header img { width: 160px; }
+/* ===== RESPONSIVE TRÈS PETIT ÉCRAN (375px - iPhone SE) ===== */
+@media (max-width: 400px) {
+    main { padding: 6px; gap: 6px; }
+    .info-logo { padding: 8px 10px; }
+    .nav-links a { font-size: 11px; padding: 4px 8px; }
+    header img { width: 120px; }
+    .guess-box input  { font-size: 16px; padding: 12px 14px; }
+    .guess-box button { font-size: 15px; padding: 12px; }
+    .tuile { width: 30px; height: 30px; font-size: 12px; }
+    .results td { font-size: 12px; padding: 7px 4px; }
+    h3 { font-size: 14px; }
+    #shareButton { font-size: 13px; padding: 10px 16px; }
 }
+
 
 /* ===== MODAL DÉFINITION DU MOT GAGNÉ ===== */
 .def-modal-content {

@@ -34,16 +34,49 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mot du Jour CI 🇨🇮</title>
-    <link rel="stylesheet" href="style/main.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="icon" type="image/svg+xml" href="assets/icons/icon-192.svg">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#F77F00">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>DevineMot CI 🇨🇮 — Le mot ivoirien du jour</title>
+    <meta name="description" content="Devine le mot ivoirien du jour ! Un jeu de culture et de langue 100% ivoirien. Un nouveau défi chaque jour.">
+    <meta name="robots" content="noindex, nofollow"><!-- Protège les pages authentifiées des moteurs de recherche -->
+
+    <!-- ===== Open Graph (Facebook, WhatsApp, LinkedIn) ===== -->
+    <meta property="og:type"        content="website">
+    <meta property="og:url"         content="https://devine-mot-production.up.railway.app/">
+    <meta property="og:title"       content="DevineMot CI 🇨🇮 — Devine le mot ivoirien du jour">
+    <meta property="og:description" content="Un nouveau mot ivoirien à deviner chaque jour. Teste ta culture et ton vocabulaire !">
+    <meta property="og:image"       content="https://devine-mot-production.up.railway.app/assets/og-preview.jpg">
+    <meta property="og:image:width"  content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt"   content="DevineMot CI — Jeu de mots ivoirien">
+    <meta property="og:locale"      content="fr_CI">
+    <meta property="og:site_name"   content="DevineMot CI">
+
+    <!-- ===== Twitter / X Card ===== -->
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:title"       content="DevineMot CI 🇨🇮 — Devine le mot ivoirien du jour">
+    <meta name="twitter:description" content="Un nouveau mot ivoirien à deviner chaque jour !">
+    <meta name="twitter:image"       content="https://devine-mot-production.up.railway.app/assets/og-preview.jpg">
+    <meta name="twitter:image:alt"   content="DevineMot CI — Jeu de mots ivoirien">
+
+    <!-- ===== Favicons complets ===== -->
+    <link rel="icon"             type="image/svg+xml" href="/assets/icons/icon-192.svg">
+    <link rel="icon"             type="image/png"     href="/assets/icons/icon-192.svg" sizes="192x192">
+    <link rel="apple-touch-icon"                      href="/assets/icons/icon-192.svg">
+    <link rel="mask-icon"                             href="/assets/icons/icon-192.svg" color="#F77F00">
+
+    <!-- ===== PWA ===== -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color"                   content="#F77F00">
+    <meta name="apple-mobile-web-app-capable"  content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="MDJ CI">
-    <link rel="apple-touch-icon" href="assets/icons/icon-192.svg">
+    <meta name="apple-mobile-web-app-title"    content="DevineMot CI">
+    <meta name="mobile-web-app-capable"        content="yes">
+    <meta name="application-name"              content="DevineMot CI">
+
+    <!-- ===== Styles ===== -->
+    <link rel="stylesheet" href="/style/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
 <body>
     <main>

@@ -33,7 +33,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
 
-        if ($username === '' || $password === '') {
+        // Honeypot anti-bot : le champ "website" doit rester vide
+        if (!empty($_POST['website'])) {
+            // Un bot a rempli le champ caché → on ignore silencieusement
+            $erreur = '❌ Pseudo ou mot de passe incorrect.';
+        } elseif ($username === '' || $password === '') {
             $erreur = '❌ Pseudo et mot de passe requis.';
         } else {
             $stmt = $conn->prepare('SELECT id, username, password FROM users WHERE username = ?');
@@ -96,8 +100,13 @@ $conn->close();
             <div class="msg succes"><?= htmlspecialchars($succes) ?></div>
         <?php endif; ?>
 
-        <form method="POST" autocomplete="off">
+        <form method="POST" autocomplete="off" novalidate>
             <?= csrf_field() ?>
+            <!-- Honeypot anti-bot (ne pas supprimer) -->
+            <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;" aria-hidden="true" tabindex="-1">
+                <label for="website">Ne pas remplir</label>
+                <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+            </div>
 
             <div class="form-group">
                 <label for="username">Pseudo</label>
