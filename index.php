@@ -188,6 +188,15 @@ $conn->close();
         </div>
     </main>
 
+    <footer style="text-align:center;padding:20px 16px 32px;">
+        <nav aria-label="Liens légaux" style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;">
+            <a href="legal/confidentialite.php" style="color:rgba(232,224,212,0.35);font-size:0.78rem;text-decoration:none;">🔒 Confidentialité</a>
+            <a href="legal/conditions.php"      style="color:rgba(232,224,212,0.35);font-size:0.78rem;text-decoration:none;">📜 CGU</a>
+            <a href="legal/cookies.php"         style="color:rgba(232,224,212,0.35);font-size:0.78rem;text-decoration:none;">🍪 Cookies</a>
+        </nav>
+        <p style="color:rgba(232,224,212,0.2);font-size:0.72rem;margin-top:8px;">© <?= date('Y') ?> DevineMot CI 🇨🇮 — Fait avec ❤️ en Côte d'Ivoire</p>
+    </footer>
+
     <script>
         window.username   = <?= json_encode($username) ?>;
         window.csrfToken  = <?= json_encode($csrfToken) ?>;

@@ -146,5 +146,14 @@ $conn->close();
             Déjà inscrit ? <a href="login.php">Se connecter 🔥</a>
         </div>
     </div>
+
+    <footer style="text-align:center;padding:24px 16px 32px;margin-top:16px;">
+        <nav aria-label="Liens légaux" style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;">
+            <a href="../legal/confidentialite.php" style="color:rgba(232,224,212,0.45);font-size:0.8rem;text-decoration:none;">🔒 Confidentialité</a>
+            <a href="../legal/conditions.php"      style="color:rgba(232,224,212,0.45);font-size:0.8rem;text-decoration:none;">📜 CGU</a>
+            <a href="../legal/cookies.php"         style="color:rgba(232,224,212,0.45);font-size:0.8rem;text-decoration:none;">🍪 Cookies</a>
+        </nav>
+        <p style="color:rgba(232,224,212,0.25);font-size:0.75rem;margin-top:10px;">© <?= date('Y') ?> DevineMot CI 🇨🇮</p>
+    </footer>
 </body>
 </html>
