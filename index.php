@@ -29,7 +29,7 @@ $csrfToken = csrf_token();
 $jourNum   = jour_numero();
 
 // Lien de paiement Wave (Wave Business)
-$wave_payment_link = getenv('WAVE_PAYMENT_LINK') ?: 'https://pay.wave.com/m/M_ci_gIE7L0jQ-bpx/c/ci/';
+$wave_payment_link = getenv('WAVE_PAYMENT_LINK') ?: '';
 
 $conn->close();
 ?>
