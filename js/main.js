@@ -358,10 +358,7 @@ function bloquerJeu(nbEssais) {
     input.disabled  = true;
     bouton.disabled = true;
     bouton.textContent = "Valider";
-    showMsg(
-        `?? Bravo ! Trouv� en ${nbEssais} essai${nbEssais > 1 ? "s" : ""} ! Reviens demain ????`,
-        "#22c55e"
-    );
+    showMsg(`🎉 Bravo ! Trouvé en ${nbEssais} essai${nbEssais > 1 ? "s" : ""} ! Reviens demain 🇨🇮`, "#22c55e");
     message.style.fontSize   = "16px";
     message.style.fontWeight = "bold";
 }

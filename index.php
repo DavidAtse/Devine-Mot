@@ -211,17 +211,17 @@ $conn->close();
             </div>
 
             <!-- Bouton partager + notification -->
-            <div style="padding:16px 24px; display:flex; flex-direction:column; gap:16px;">
-                <button onclick="partagerScore()" id="shareButton" class="btn-principal" style="width:100%; padding: 22px; font-size: 18px; border-radius: 14px; font-weight: 900; background: #22c55e; color: #fff; box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4); text-transform: uppercase;">
+            <div style="padding:16px 24px; display:flex; flex-direction:column; gap:12px;">
+                <button onclick="partagerScore()" id="shareButton" class="btn-principal" style="width:100%; padding: 15px; font-size: 15px; border-radius: 10px; font-weight: 700; background: #22c55e; color: #fff; box-shadow: 0 4px 10px rgba(34, 197, 94, 0.3); text-transform: uppercase;">
                     📤 Partager mon score
                 </button>
-                <button id="defBtn" onclick="ouvrirDefinition()" class="btn-secondaire" style="display:none; width:100%; padding: 20px; font-size: 17px; border-radius: 14px; border: 3px solid #22c55e; color: #22c55e; font-weight: 900;">
+                <button id="defBtn" onclick="ouvrirDefinition()" class="btn-secondaire" style="display:none; width:100%; padding: 15px; font-size: 15px; border-radius: 10px; border: 2px solid #22c55e; color: #22c55e; font-weight: 700;">
                     📚 Voir la définition du mot
                 </button>
-                <button id="notifBtn" onclick="toggleNotification()" class="btn-principal" style="display:none; width:100%; padding: 20px; font-size: 17px; border-radius: 14px; background: #FACC15; color: #1a1008; font-weight: 900; box-shadow: 0 6px 20px rgba(250, 204, 21, 0.4);">
-                    🔔 Activer les rappels quotidiens
+                <button id="notifBtn" onclick="toggleNotification()" class="btn-principal" style="display:none; width:100%; padding: 15px; font-size: 15px; border-radius: 10px; background: #FACC15; color: #1a1008; font-weight: 700; box-shadow: 0 4px 10px rgba(250, 204, 21, 0.3);">
+                    🔔 Activer les rappels
                 </button>
-                <button id="donateOpenBtn" onclick="ouvrirDonate()" class="btn-principal" style="width:100%; padding: 22px; font-size: 18px; border-radius: 14px; background: linear-gradient(135deg, #FF9900, #F77F00); color: #1a1008; font-weight: 900; box-shadow: 0 6px 20px rgba(247, 127, 0, 0.4); text-transform: uppercase;">
+                <button id="donateOpenBtn" onclick="ouvrirDonate()" class="btn-principal" style="width:100%; padding: 15px; font-size: 15px; border-radius: 10px; background: linear-gradient(135deg, #FF9900, #F77F00); color: #1a1008; font-weight: 700; box-shadow: 0 4px 10px rgba(247, 127, 0, 0.3); text-transform: uppercase;">
                     💖 Soutenir le jeu
                 </button>
             </div>
