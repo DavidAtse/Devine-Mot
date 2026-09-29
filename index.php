@@ -62,15 +62,15 @@ $conn->close();
     <meta name="twitter:image:alt"   content="iMots CI — Jeu de mots ivoirien">
 
     <!-- ===== Favicons complets ===== -->
-    <link rel="icon" type="image/png" href="/assets/icons/favicon-32.png" sizes="32x32">
-    <link rel="icon"             type="image/png"     href="/assets/icons/icon-192.png" sizes="192x192">
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/icon-180.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/assets/icons/icon-152.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="/assets/icons/icon-120.png">
+    <link rel="icon" type="image/png" href="assets/icons/favicon-32.png" sizes="32x32">
+    <link rel="icon"             type="image/png"     href="assets/icons/icon-192.png" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/icon-180.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="assets/icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="assets/icons/icon-120.png">
     
 
     <!-- ===== PWA ===== -->
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color"                   content="#1B7A3E">
     <meta name="apple-mobile-web-app-capable"  content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -79,7 +79,7 @@ $conn->close();
     <meta name="application-name"              content="iMots CI">
 
     <!-- ===== Styles ===== -->
-    <link rel="stylesheet" href="/style/main.css">
+    <link rel="stylesheet" href="style/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -176,7 +176,7 @@ $conn->close();
         <!-- ===== ZONE JEU ===== -->
         <div class="game">
             <header>
-                <img src="/assets/logo.png" alt="iMots CI - Les mots d'ici, un défi chaque jour" style="max-height:90px; width:auto;">
+                <img src="assets/logo.png" alt="iMots CI - Les mots d'ici, un défi chaque jour" style="max-height:90px; width:auto;">
                 <p>Trouvez le mot secret du jour !</p>
                 <p id="countdown"></p>
                 <span class="bienvenue">👋 <?= $username ?></span>
