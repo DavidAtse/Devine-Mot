@@ -186,7 +186,7 @@ function ajouterLigne(mot, positions, score, emoji, animate = true) {
     tr.innerHTML = `
         <td class="col-n">${rang}</td>
         <td class="col-mot">${colorerMot(mot, positions)}</td>
-        
+        <td class="col-emoji">${emoji}</td>
         <td class="col-score">${parseFloat(score).toFixed(2)}%</td>
     `;
     resultsBody.appendChild(tr);

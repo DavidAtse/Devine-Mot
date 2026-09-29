@@ -202,7 +202,7 @@ $conn->close();
                         <tr>
                             <th>N°</th>
                             <th>Mot</th>
-                            
+                            <th>🌡️</th>
                             <th>%</th>
                         </tr>
                     </thead>
