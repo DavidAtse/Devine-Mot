@@ -552,65 +552,43 @@ if (document.getElementById('btnProceedDonate')) {
     });
 }
 
-// Initialisation de CinetPay
-function startCinetPayPayment() {
+// Initialisation de Paystack
+function startPaystackPayment() {
     document.getElementById('donateStep2').style.display = 'none';
     
-    // Si l'utilisateur n'a pas encore configuré ses clés API dans Railway
-    if (window.cinetpayApiKey === 'AJOUTER_APIKEY_DANS_RAILWAY' || window.cinetpaySiteId === 'AJOUTER_SITEID_DANS_RAILWAY') {
-        alert('CinetPay n\'est pas encore configuré ! Ajoute CINETPAY_APIKEY et CINETPAY_SITE_ID dans Railway.');
+    // Si l'utilisateur n'a pas encore configuré sa clé API dans Railway
+    if (!window.paystackPublicKey || window.paystackPublicKey === 'AJOUTER_PAYSTACK_KEY_DANS_RAILWAY') {
+        alert('Paystack n\'est pas encore configuré ! Ajoute PAYSTACK_PUBLIC_KEY dans Railway.');
         window.location.reload();
         return;
     }
 
     const amt = parseInt(window.selectedDonationAmount || '1000');
-    const transactionId = 'MDJ_DON_' + Math.floor(Math.random() * 100000000).toString();
 
-    CinetPay.setConfig({
-        apikey: window.cinetpayApiKey,
-        site_id: window.cinetpaySiteId,
-        notify_url: 'https://devine-mot-production.up.railway.app/',
-        mode: 'PRODUCTION' // Mettre 'TEST' si test
+    let handler = PaystackPop.setup({
+      key: window.paystackPublicKey,
+      email: 'hello@devinemot.ci', // Paystack a besoin d'un email
+      amount: amt * 100, // Paystack prend le montant en plus petite unité (ex: centimes, mais pour XOF c'est souvent * 100 dans leur SDK)
+      currency: 'XOF',
+      ref: 'MDJ_DON_' + Math.floor((Math.random() * 1000000000) + 1),
+      callback: function(response) {
+          // Succès
+          document.getElementById('donateSuccess').style.display = 'block';
+      },
+      onClose: function() {
+          alert('Le paiement a été annulé ou fermé.');
+          window.location.reload();
+      }
     });
 
-    CinetPay.getCheckout({
-        transaction_id: transactionId,
-        amount: amt,
-        currency: 'XOF',
-        channels: 'ALL',
-        description: 'Soutien pour le jeu DevineMot CI',
-        customer_name: window.username || 'Joueur',
-        customer_surname: 'CI',
-        customer_email: 'hello@devinemot.ci',
-        customer_phone_number: '',
-        customer_address: 'Abidjan',
-        customer_city: 'Abidjan',
-        customer_country: 'CI',
-        customer_state: 'CI',
-        customer_zip_code: '225',
-    });
-
-    CinetPay.waitResponse(function(data) {
-        if (data.status == "REFUSED") {
-            alert("Le paiement a échoué ou a été annulé.");
-            window.location.reload();
-        } else if (data.status == "ACCEPTED") {
-            document.getElementById('donateSuccess').style.display = 'block';
-        }
-    });
-
-    CinetPay.onError(function(data) {
-        console.error("Erreur CinetPay:", data);
-        alert("Erreur lors de l'initialisation du paiement.");
-        window.location.reload();
-    });
+    handler.openIframe();
 }
 
 if (document.getElementById('payWave')) {
-    document.getElementById('payWave').addEventListener('click', startCinetPayPayment);
+    document.getElementById('payWave').addEventListener('click', startPaystackPayment);
 }
 if (document.getElementById('payOrange')) {
-    document.getElementById('payOrange').addEventListener('click', startCinetPayPayment);
+    document.getElementById('payOrange').addEventListener('click', startPaystackPayment);
 }
 
 // Fermeture des modales
