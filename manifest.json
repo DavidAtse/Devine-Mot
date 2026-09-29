@@ -1,16 +1,20 @@
 {
-    "name": "DevineMot CI 🇨🇮",
-    "short_name": "DevineMot",
-    "description": "Devine le mot ivoirien du jour. Un nouveau défi culturel chaque jour !",
+    "name": "iMots CI",
+    "short_name": "iMots",
+    "description": "Les mots d ici, un defi chaque jour ! Devine le mot ivoirien du jour.",
     "start_url": "/",
     "scope": "/",
     "display": "standalone",
     "orientation": "portrait-primary",
     "background_color": "#0F0C07",
-    "theme_color": "#F77F00",
+    "theme_color": "#1B7A3E",
     "lang": "fr",
     "dir": "ltr",
-    "categories": ["games", "entertainment", "education"],
+    "categories": [
+        "games",
+        "entertainment",
+        "education"
+    ],
     "icons": [
         {
             "src": "/assets/icons/icon-192.png",
@@ -23,6 +27,30 @@
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"
+        },
+        {
+            "src": "/assets/icons/icon-180.png",
+            "sizes": "180x180",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/assets/icons/icon-152.png",
+            "sizes": "152x152",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/assets/icons/icon-120.png",
+            "sizes": "120x120",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/assets/icons/icon-76.png",
+            "sizes": "76x76",
+            "type": "image/png",
+            "purpose": "any"
         }
     ],
     "shortcuts": [
@@ -31,17 +59,34 @@
             "short_name": "Jouer",
             "description": "Aller directement au jeu du jour",
             "url": "/",
-            "icons": [{ "src": "/assets/icons/icon-192.png", "sizes": "192x192" }]
+            "icons": [
+                {
+                    "src": "/assets/icons/icon-192.png",
+                    "sizes": "192x192"
+                }
+            ]
         },
         {
             "name": "Classement",
             "short_name": "Top",
             "description": "Voir le classement des joueurs",
             "url": "/dashboard/leaderboard.php",
-            "icons": [{ "src": "/assets/icons/icon-192.png", "sizes": "192x192" }]
+            "icons": [
+                {
+                    "src": "/assets/icons/icon-192.png",
+                    "sizes": "192x192"
+                }
+            ]
         }
     ],
-    "screenshots": [],
+    "screenshots": [
+        {
+            "src": "/assets/og-preview.jpg",
+            "sizes": "1200x630",
+            "type": "image/jpeg",
+            "label": "iMots CI - Le jeu du jour"
+        }
+    ],
     "prefer_related_applications": false,
-    "id": "devinemot-ci-app"
+    "id": "imots-ci-app"
 }

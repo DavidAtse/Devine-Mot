@@ -85,7 +85,7 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscription – DevineMot CI 🇨🇮</title>
+    <title>iMots CI – Connexion</title>
     <meta name="robots" content="noindex, nofollow">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -189,7 +189,7 @@ $conn->close();
             <a href="../legal/conditions.php"      style="color:rgba(232,224,212,0.45);font-size:0.8rem;text-decoration:none;">📜 CGU</a>
             <a href="../legal/cookies.php"         style="color:rgba(232,224,212,0.45);font-size:0.8rem;text-decoration:none;">🍪 Cookies</a>
         </nav>
-        <p style="color:rgba(232,224,212,0.25);font-size:0.75rem;margin-top:10px;">© <?= date('Y') ?> DevineMot CI 🇨🇮</p>
+        <p style="color:rgba(232,224,212,0.25);font-size:0.75rem;margin-top:10px;">© <?= date('Y') ?> iMots CI 🇨🇮</p>
     </footer>
 </body>
 </html>

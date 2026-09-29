@@ -9,15 +9,16 @@
 /* ===== VARIABLES ===== */
 :root {
     --orange:   #F77F00;
-    --orange2:  #e06000;
-    --vert:     #009E60;
-    --vert2:    #006B40;
-    --or:       #FFD700;
-    --fond:     #0F0C07;
-    --fond2:    #181208;
-    --fond3:    #221A0E;
-    --texte:    #FDF8F0;
-    --gris:     rgba(253,248,240,0.45);
+    --orange2:  #D46A00;
+    --vert:     #1B7A3E;
+    --vert2:    #145C2E;
+    --vert3:    #0D3D1E;
+    --or:       #F5C518;
+    --fond:     #0A1A0F;
+    --fond2:    #0F2416;
+    --fond3:    #152E1C;
+    --texte:    #F2F7EE;
+    --gris:     rgba(242,247,238,0.45);
     --radius:   18px;
     --shadow:   0 8px 40px rgba(0,0,0,0.6);
 }
@@ -40,7 +41,7 @@ body::before {
     position: fixed; inset: 0;
     background-image:
         repeating-linear-gradient(0deg,   transparent, transparent 48px, rgba(247,127,0,0.04) 48px, rgba(247,127,0,0.04) 50px),
-        repeating-linear-gradient(90deg,  transparent, transparent 48px, rgba(0,158,96,0.04)  48px, rgba(0,158,96,0.04)  50px),
+        repeating-linear-gradient(90deg,  transparent, transparent 48px, rgba(27,122,62,0.06)  48px, rgba(27,122,62,0.06)  50px),
         repeating-linear-gradient(45deg,  transparent, transparent 24px, rgba(255,215,0,0.02) 24px, rgba(255,215,0,0.02) 25px);
     pointer-events: none; z-index: 0;
 }
@@ -52,7 +53,7 @@ body::after {
     top: 0; left: -120px;
     width: 420px; height: 420px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(247,127,0,0.14) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(27,122,62,0.18) 0%, transparent 70%);
     pointer-events: none; z-index: 0;
 }
 
@@ -802,4 +803,4 @@ th                  { color: rgba(253,248,240,0.85); font-weight:700; }
     background: rgba(0, 158, 96, 0.22) !important;
     transform: translateY(-2px);
     box-shadow: 0 4px 20px rgba(0, 158, 96, 0.25);
-}
+}

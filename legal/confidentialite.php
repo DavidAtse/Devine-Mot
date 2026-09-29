@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, follow">
-    <title>Politique de Confidentialité — DevineMot CI</title>
+    <title>Politique de Confidentialité — iMots CI</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -231,14 +231,14 @@
     <p class="meta">
         <strong>Version :</strong> 1.0 &nbsp;|&nbsp;
         <strong>Date d'entrée en vigueur :</strong> 29 septembre 2026 &nbsp;|&nbsp;
-        <strong>Applicable à :</strong> DevineMot CI (jeu en ligne)
+        <strong>Applicable à :</strong> iMots CI (jeu en ligne)
     </p>
 
     <!-- ─── 1. Introduction ─── -->
     <section>
         <h2>1. Introduction et cadre légal</h2>
         <p>
-            La présente Politique de Confidentialité décrit la manière dont <strong>DevineMot CI</strong>
+            La présente Politique de Confidentialité décrit la manière dont <strong>iMots CI</strong>
             collecte, utilise, stocke et protège vos données personnelles lorsque vous utilisez notre
             jeu de devinettes culturelles ivoirien.
         </p>
@@ -249,7 +249,7 @@
             de Côte d'Ivoire (ARTCI)</strong>.
         </p>
         <div class="info-box">
-            <strong>🇨🇮 Conformité ARTCI :</strong> DevineMot CI s'engage à respecter les droits des
+            <strong>🇨🇮 Conformité ARTCI :</strong> iMots CI s'engage à respecter les droits des
             utilisateurs définis aux articles 8 à 13 de la Loi n°2013-450, notamment le droit d'accès,
             de rectification et de suppression de vos données personnelles.
         </div>
@@ -262,7 +262,7 @@
             <div class="icon">👤</div>
             <div>
                 <h3>Responsable du traitement des données</h3>
-                <p><strong>Projet :</strong> DevineMot CI</p>
+                <p><strong>Projet :</strong> iMots CI</p>
                 <p><strong>Pays :</strong> Côte d'Ivoire</p>
                 <p><strong>Contact :</strong> <a href="mailto:daatsey24@gmail.com">daatsey24@gmail.com</a></p>
             </div>
@@ -440,7 +440,7 @@
     <section>
         <h2>10. Protection des mineurs</h2>
         <p>
-            DevineMot CI est déconseillé aux enfants de moins de <strong>13 ans</strong> sans
+            iMots CI est déconseillé aux enfants de moins de <strong>13 ans</strong> sans
             supervision parentale. Nous ne collectons pas sciemment de données personnelles
             provenant d'enfants de moins de 13 ans. Si vous pensez qu'un mineur nous a fourni
             des données sans consentement parental, contactez-nous immédiatement pour en demander
@@ -481,7 +481,7 @@
 
 <footer>
     <p>
-        &copy; <?php echo date('Y'); ?> DevineMot CI &mdash;
+        &copy; <?php echo date('Y'); ?> iMots CI &mdash;
         <a href="confidentialite.php">Confidentialité</a> &bull;
         <a href="conditions.php">CGU</a> &bull;
         <a href="cookies.php">Cookies</a> &bull;

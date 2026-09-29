@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, follow">
-    <title>Conditions Générales d'Utilisation — DevineMot CI</title>
+    <title>Conditions Générales d'Utilisation — iMots CI</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -270,7 +270,7 @@
     <p class="meta">
         <strong>Version :</strong> 1.0 &nbsp;|&nbsp;
         <strong>Date d'entrée en vigueur :</strong> 29 septembre 2026 &nbsp;|&nbsp;
-        <strong>Jeu :</strong> DevineMot CI
+        <strong>Jeu :</strong> iMots CI
     </p>
 
     <!-- Table des matières -->
@@ -298,14 +298,14 @@
     <section id="presentation">
         <h2>1. Présentation du jeu</h2>
         <p>
-            <strong>DevineMot CI</strong> est un jeu de devinettes en ligne inspiré de la culture
+            <strong>iMots CI</strong> est un jeu de devinettes en ligne inspiré de la culture
             ivoirienne, développé et exploité depuis la Côte d'Ivoire. Le jeu propose aux joueurs
             de deviner des mots liés à la culture, aux langues, aux traditions et à la vie
             quotidienne en Côte d'Ivoire.
         </p>
         <p>
             Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation
-            du jeu DevineMot CI, accessible en ligne. En utilisant le jeu, vous acceptez sans réserve
+            du jeu iMots CI, accessible en ligne. En utilisant le jeu, vous acceptez sans réserve
             les présentes CGU.
         </p>
     </section>
@@ -338,7 +338,7 @@
     <section id="gratuite">
         <h2>3. Gratuité du service <span class="badge badge-green">100% Gratuit</span></h2>
         <p>
-            DevineMot CI est un jeu <strong>entièrement gratuit</strong>. Aucun paiement n'est
+            iMots CI est un jeu <strong>entièrement gratuit</strong>. Aucun paiement n'est
             requis pour jouer, créer un compte ou accéder à l'ensemble des fonctionnalités
             actuellement disponibles.
         </p>
@@ -357,7 +357,7 @@
     <section id="age">
         <h2>4. Âge minimum et responsabilité parentale <span class="badge badge-orange">13 ans+</span></h2>
         <p>
-            L'utilisation de DevineMot CI est <strong>recommandée aux personnes âgées de 13 ans
+            L'utilisation de iMots CI est <strong>recommandée aux personnes âgées de 13 ans
             et plus</strong>. Les enfants de moins de 13 ans peuvent jouer sous la supervision
             et avec l'accord de leurs parents ou tuteurs légaux.
         </p>
@@ -373,7 +373,7 @@
     <section id="contenu">
         <h2>5. Contenu culturel ivoirien 🇨🇮</h2>
         <p>
-            DevineMot CI est un jeu ancré dans la <strong>richesse culturelle ivoirienne</strong>.
+            iMots CI est un jeu ancré dans la <strong>richesse culturelle ivoirienne</strong>.
             Le contenu du jeu peut inclure des références à :
         </p>
         <ul>
@@ -405,7 +405,7 @@
             <div class="rule-card">
                 <div class="rule-icon">🤝</div>
                 <h3>Respect mutuel</h3>
-                <p>Respectez les autres joueurs et la communauté DevineMot CI.</p>
+                <p>Respectez les autres joueurs et la communauté iMots CI.</p>
             </div>
             <div class="rule-card">
                 <div class="rule-icon">🎓</div>
@@ -490,14 +490,14 @@
     <section id="propriete">
         <h2>10. Propriété intellectuelle</h2>
         <p>
-            L'ensemble des éléments composant DevineMot CI (code source, design, textes, bases
+            L'ensemble des éléments composant iMots CI (code source, design, textes, bases
             de données de mots, logo) sont protégés par le droit de la propriété intellectuelle
             applicable en Côte d'Ivoire.
         </p>
         <p>
             Toute reproduction, représentation, modification, publication ou adaptation de tout
             ou partie des éléments du jeu, quel que soit le moyen ou le procédé utilisé, est
-            interdite sans autorisation écrite préalable de l'équipe DevineMot CI.
+            interdite sans autorisation écrite préalable de l'équipe iMots CI.
         </p>
     </section>
 
@@ -505,7 +505,7 @@
     <section id="responsabilite">
         <h2>11. Limitation de responsabilité</h2>
         <p>
-            DevineMot CI est fourni <strong>"tel quel"</strong>, sans garantie d'aucune sorte.
+            iMots CI est fourni <strong>"tel quel"</strong>, sans garantie d'aucune sorte.
             Nous ne pouvons être tenus responsables de :
         </p>
         <ul>
@@ -567,7 +567,7 @@
 
 <footer>
     <p>
-        &copy; <?php echo date('Y'); ?> DevineMot CI &mdash;
+        &copy; <?php echo date('Y'); ?> iMots CI &mdash;
         <a href="confidentialite.php">Confidentialité</a> &bull;
         <a href="conditions.php">CGU</a> &bull;
         <a href="cookies.php">Cookies</a> &bull;

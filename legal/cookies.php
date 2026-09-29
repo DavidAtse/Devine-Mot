@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, follow">
-    <title>Politique de Cookies — DevineMot CI</title>
+    <title>Politique de Cookies — iMots CI</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -296,7 +296,7 @@
     <p class="meta">
         <strong>Version :</strong> 1.0 &nbsp;|&nbsp;
         <strong>Date d'entrée en vigueur :</strong> 29 septembre 2026 &nbsp;|&nbsp;
-        <strong>Site :</strong> DevineMot CI
+        <strong>Site :</strong> iMots CI
     </p>
 
     <!-- ─── Bannière verte ─── -->
@@ -305,7 +305,7 @@
         <div>
             <h2>Aucune bannière de consentement requise</h2>
             <p>
-                DevineMot CI n'utilise que des cookies <strong>strictement nécessaires</strong> au
+                iMots CI n'utilise que des cookies <strong>strictement nécessaires</strong> au
                 fonctionnement du site (sessions PHP, sécurité CSRF). Conformément à la
                 Loi ivoirienne n°2013-450 et aux recommandations de l'ARTCI, ces cookies ne
                 requièrent pas votre consentement préalable explicite, car ils sont indispensables
@@ -325,7 +325,7 @@
         <p>
             Il existe plusieurs catégories de cookies : les cookies strictement nécessaires, les
             cookies de performance (analytics), les cookies de fonctionnalité et les cookies
-            publicitaires. <strong>DevineMot CI n'utilise que la première catégorie.</strong>
+            publicitaires. <strong>iMots CI n'utilise que la première catégorie.</strong>
         </p>
     </section>
 
@@ -368,9 +368,9 @@
 
     <!-- ─── 3. Cookies utilisés ─── -->
     <section>
-        <h2>3. Cookies utilisés par DevineMot CI</h2>
+        <h2>3. Cookies utilisés par iMots CI</h2>
         <p>
-            DevineMot CI utilise exclusivement des cookies générés par <strong>PHP</strong>,
+            iMots CI utilise exclusivement des cookies générés par <strong>PHP</strong>,
             de nature technique et de sécurité. Aucun cookie n'est partagé avec des tiers.
         </p>
 
@@ -437,7 +437,7 @@
             Conformément à ces textes, les cookies <strong>strictement nécessaires</strong> au
             fonctionnement d'un service explicitement demandé par l'utilisateur sont exemptés
             de l'obligation de recueil du consentement préalable. C'est le cas des cookies de
-            session et de sécurité utilisés par DevineMot CI.
+            session et de sécurité utilisés par iMots CI.
         </p>
         <div class="warn-box">
             <strong>📌 Engagement de transparence :</strong> Bien que la loi n'exige pas de
@@ -491,7 +491,7 @@
 
         <div class="info-box">
             <strong>⚠️ Conséquence du refus de cookies :</strong> Si vous désactivez complètement
-            les cookies dans votre navigateur, le jeu DevineMot CI ne pourra pas maintenir votre
+            les cookies dans votre navigateur, le jeu iMots CI ne pourra pas maintenir votre
             connexion entre les pages. Vous serez déconnecté à chaque navigation, et certaines
             fonctionnalités ne seront pas disponibles.
         </div>
@@ -501,7 +501,7 @@
     <section>
         <h2>6. Stockage local du navigateur (localStorage / Service Worker)</h2>
         <p>
-            En complément des cookies, DevineMot CI peut utiliser les technologies suivantes,
+            En complément des cookies, iMots CI peut utiliser les technologies suivantes,
             qui sont distinctes des cookies mais stockent des informations dans votre navigateur :
         </p>
         <ul>
@@ -523,7 +523,7 @@
     <section>
         <h2>7. Évolutions futures de cette politique</h2>
         <p>
-            Si DevineMot CI venait à intégrer de nouveaux types de cookies (par exemple, des
+            Si iMots CI venait à intégrer de nouveaux types de cookies (par exemple, des
             outils d'analyse anonymisés ou des fonctionnalités sociales), cette politique de
             cookies serait mise à jour <strong>avant</strong> leur déploiement, et vous en seriez
             informé clairement. Un mécanisme de consentement adapté serait alors mis en place.
@@ -546,7 +546,7 @@
 
 <footer>
     <p>
-        &copy; <?php echo date('Y'); ?> DevineMot CI &mdash;
+        &copy; <?php echo date('Y'); ?> iMots CI &mdash;
         <a href="confidentialite.php">Confidentialité</a> &bull;
         <a href="conditions.php">CGU</a> &bull;
         <a href="cookies.php">Cookies</a> &bull;

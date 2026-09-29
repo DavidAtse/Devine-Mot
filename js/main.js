@@ -440,18 +440,18 @@ function partagerScore() {
     const jourNum = jourNode ? jourNode.innerText.replace("Jour n�", "").trim() : "?";
     
     const txt = gagne
-        ? `DevineMot CI Jour ${jourNum} 🇨🇮 — ${nb}/6
+        ? `iMots CI Jour ${jourNum} 🇨🇮 — ${nb}/6
 
 ${grille}
 Joue sur devinemot.ci 🚀`
-        : `DevineMot CI Jour ${jourNum} 🇨🇮 — Échec 😔
+        : `iMots CI Jour ${jourNum} 🇨🇮 — Échec 😔
 
 ${grille}
 Tente ta chance sur devinemot.ci 🚀`;
     
     if (navigator.share) {
         navigator.share({
-            title: "DevineMot CI",
+            title: "iMots CI",
             text: txt
         }).catch(err => {
             window.open("https://wa.me/?text=" + encodeURIComponent(txt), "_blank");

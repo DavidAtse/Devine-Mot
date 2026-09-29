@@ -38,43 +38,45 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevineMot CI 🇨🇮 — Le mot ivoirien du jour</title>
-    <meta name="description" content="Devine le mot ivoirien du jour ! Un jeu de culture et de langue 100% ivoirien. Un nouveau défi chaque jour.">
+    <title>iMots CI 🇨🇮 – Les mots d'ici, un défi chaque jour</title>
+    <meta name="description" content="Les mots d ici, un defi chaque jour ! ! Le jeu de mots ivoirien 100% local. Un nouveau défi chaque jour.">
     <meta name="robots" content="noindex, nofollow"><!-- Protège les pages authentifiées des moteurs de recherche -->
 
     <!-- ===== Open Graph (Facebook, WhatsApp, LinkedIn) ===== -->
     <meta property="og:type"        content="website">
-    <meta property="og:url"         content="https://devine-mot-production.up.railway.app/">
-    <meta property="og:title"       content="DevineMot CI 🇨🇮 — Devine le mot ivoirien du jour">
-    <meta property="og:description" content="Un nouveau mot ivoirien à deviner chaque jour. Teste ta culture et ton vocabulaire !">
-    <meta property="og:image"       content="https://devine-mot-production.up.railway.app/assets/og-preview.jpg">
+    <meta property="og:url"         content="https://imots-production.up.railway.app/">
+    <meta property="og:title" content="iMots CI 🇨🇮 – Les mots d'ici, un défi chaque jour">
+    <meta property="og:description" content="Devine le mot ivoirien du jour ! Un défi culturel 100% local. Rejoins la communauté !">
+    <meta property="og:image"       content="https://imots-production.up.railway.app/assets/og-preview.jpg">
     <meta property="og:image:width"  content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt"   content="DevineMot CI — Jeu de mots ivoirien">
+    <meta property="og:image:alt"   content="iMots CI — Jeu de mots ivoirien">
     <meta property="og:locale"      content="fr_CI">
-    <meta property="og:site_name"   content="DevineMot CI">
+    <meta property="og:site_name" content="iMots CI">
 
     <!-- ===== Twitter / X Card ===== -->
     <meta name="twitter:card"        content="summary_large_image">
-    <meta name="twitter:title"       content="DevineMot CI 🇨🇮 — Devine le mot ivoirien du jour">
+    <meta name="twitter:title" content="iMots CI 🇨🇮 – Les mots d'ici, un défi chaque jour">
     <meta name="twitter:description" content="Un nouveau mot ivoirien à deviner chaque jour !">
-    <meta name="twitter:image"       content="https://devine-mot-production.up.railway.app/assets/og-preview.jpg">
-    <meta name="twitter:image:alt"   content="DevineMot CI — Jeu de mots ivoirien">
+    <meta name="twitter:image"       content="https://imots-production.up.railway.app/assets/og-preview.jpg">
+    <meta name="twitter:image:alt"   content="iMots CI — Jeu de mots ivoirien">
 
     <!-- ===== Favicons complets ===== -->
-    <link rel="icon"             type="image/svg+xml" href="/assets/icons/icon-192.svg">
+    <link rel="icon" type="image/png" href="/assets/icons/favicon-32.png" sizes="32x32">
     <link rel="icon"             type="image/png"     href="/assets/icons/icon-192.png" sizes="192x192">
-    <link rel="apple-touch-icon"                      href="/assets/icons/icon-192.png">
-    <link rel="mask-icon"                             href="/assets/icons/icon-192.svg" color="#F77F00">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/icon-180.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/assets/icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/assets/icons/icon-120.png">
+    
 
     <!-- ===== PWA ===== -->
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color"                   content="#F77F00">
+    <meta name="theme-color"                   content="#1B7A3E">
     <meta name="apple-mobile-web-app-capable"  content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title"    content="DevineMot CI">
+    <meta name="apple-mobile-web-app-title"    content="iMots CI">
     <meta name="mobile-web-app-capable"        content="yes">
-    <meta name="application-name"              content="DevineMot CI">
+    <meta name="application-name"              content="iMots CI">
 
     <!-- ===== Styles ===== -->
     <link rel="stylesheet" href="/style/main.css">
@@ -140,7 +142,7 @@ $conn->close();
                         <h3 id="defMotTitre"></h3>
                     </div>
                     <div id="defContenu" class="def-corps"></div>
-                    <p class="def-footer">Mot du Jour CI &#127464;&#127470;</p>
+                    <p class="def-footer">iMots CI &#127464;&#127470;</p>
                 </div>
             </div>
 
@@ -174,7 +176,7 @@ $conn->close();
         <!-- ===== ZONE JEU ===== -->
         <div class="game">
             <header>
-                <img src="assets/logo.svg" alt="logo Mot du Jour CI" style="max-width:340px;width:100%">
+                <img src="/assets/logo.png" alt="iMots CI - Les mots d'ici, un défi chaque jour" style="max-height:90px; width:auto;">
                 <p>Trouvez le mot secret du jour !</p>
                 <p id="countdown"></p>
                 <span class="bienvenue">👋 <?= $username ?></span>
@@ -276,7 +278,7 @@ $conn->close();
             <a href="legal/conditions.php"      style="color:rgba(232,224,212,0.35);font-size:0.78rem;text-decoration:none;">📜 CGU</a>
             <a href="legal/cookies.php"         style="color:rgba(232,224,212,0.35);font-size:0.78rem;text-decoration:none;">🍪 Cookies</a>
         </nav>
-        <p style="color:rgba(232,224,212,0.2);font-size:0.72rem;margin-top:8px;">© <?= date('Y') ?> DevineMot CI 🇨🇮 — Fait avec ❤️ en Côte d'Ivoire</p>
+        <p style="color:rgba(232,224,212,0.2);font-size:0.72rem;margin-top:8px;">© <?= date('Y') ?> iMots CI 🇨🇮 — Fait avec ❤️ en Côte d'Ivoire</p>
     </footer>
 
     <script>
