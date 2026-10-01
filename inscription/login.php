@@ -84,7 +84,7 @@ $conn->close();
     <link rel="icon" type="image/png" href="../assets/icons/icon-192.png" sizes="192x192">
     <link rel="apple-touch-icon" href="../assets/icons/icon-192.png">
     <link rel="mask-icon" href="../assets/icons/icon-192.svg" color="#F77F00">
-    <meta name="theme-color" content="#1A1008">
+    <meta name="theme-color" content="#0A1A0F">
 </head>
 <body>
     <div class="deco deco-1"></div>
@@ -95,8 +95,7 @@ $conn->close();
         <div class="flag-stripe"></div>
 
         <div class="card-header">
-            <span class="emoji">🇨🇮</span>
-            <h1>Mot du Jour <span>CI</span></h1>
+            <img src="../assets/logo.png" alt="iMots CI" style="max-height:70px; width:auto; display:block; margin:0 auto 8px;">
             <p>Connecte-toi pour jouer</p>
         </div>
 
