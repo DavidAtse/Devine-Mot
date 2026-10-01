@@ -666,3 +666,60 @@ document.querySelectorAll('.close, .close-modal').forEach(btn => {
 
 
 
+
+// ======================
+// PWA INSTALLATION PROMPT
+// ======================
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Empêcher l'affichage automatique du navigateur (Android)
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    // Si l'utilisateur a déjà fermé la bannière, on ne lui montre plus
+    if (localStorage.getItem('pwa_dismissed') === 'true') return;
+
+    const banner = document.getElementById('pwaInstallBanner');
+    const btn = document.getElementById('pwaInstallBtn');
+    const txt = document.getElementById('pwaInstallText');
+    
+    if (banner && btn) {
+        txt.innerHTML = "Joue plus facilement, installe le jeu directement sur ton écran d'accueil !";
+        banner.style.display = 'block';
+        btn.style.display = 'block';
+        
+        btn.addEventListener('click', async () => {
+            banner.style.display = 'none';
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            deferredPrompt = null;
+        });
+    }
+});
+
+// Détection iOS pour instruction manuelle (car Apple ne supporte pas beforeinstallprompt)
+const isIos = () => {
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    return /iphone|ipad|ipod/.test(userAgent);
+};
+const isStandalone = () => ('standalone' in window.navigator) && window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+
+// Afficher la bannière iOS si pas déjà installé et pas fermé
+if (isIos() && !isStandalone() && localStorage.getItem('pwa_dismissed') !== 'true') {
+    // Petit délai pour ne pas gêner immédiatement le chargement de la page
+    setTimeout(() => {
+        const banner = document.getElementById('pwaInstallBanner');
+        const txt = document.getElementById('pwaInstallText');
+        if (banner && txt) {
+            txt.innerHTML = "Pour installer l'app, touche l'icône de partage <i class='fa-solid fa-arrow-up-from-bracket' style='color:var(--orange);'></i> puis <br><b>Sur l'écran d'accueil <i class='fa-solid fa-plus' style='color:var(--orange);'></i></b>.";
+            banner.style.display = 'block';
+            // Le bouton n'est pas affiché sur iOS car c'est une action manuelle
+        }
+    }, 2000);
+}
+
+window.fermerPwaBanner = function() {
+    document.getElementById('pwaInstallBanner').style.display = 'none';
+    localStorage.setItem('pwa_dismissed', 'true');
+};
