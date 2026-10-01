@@ -51,6 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         'longueur'   => $longueur,
         'deja_gagne' => $dejaGagne,
         'tentatives' => $scoreRow ? (int)$scoreRow['tentatives'] : 0,
+        'mot'        => $dejaGagne ? $motDuJour : null,
         'definition' => $definition,
     ]);
     exit;

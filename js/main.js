@@ -252,6 +252,17 @@ async function init() {
             // SYNC MULTI-APPAREILS : si le serveur dit que l'utilisateur a déjà gagn�
             // mais que le localStorage de cet appareil ne le sait pas encore
             if (data.deja_gagne && !gagne) {
+                // Remplir la grille avec le mot gagnant si on a changé d'appareil/PWA
+                if (data.mot) {
+                    const positions = Array(data.longueur).fill(2);
+                    sauvegarder(data.mot, positions, "100.00", "🔥");
+                    ajouterLigne(data.mot, positions, "100.00", "🔥");
+                    mettreAJourTuiles(data.longueur, positions, data.mot);
+                }
+                if (data.definition) {
+                    _sauvegarderDefinition(data.mot || '', data.definition);
+                    _montrerBoutonDef(true);
+                }
                 // Bloquer le jeu proprement
                 bloquerJeu(data.tentatives || 1);
                 // Sauvegarder la définition localement pour ce device
