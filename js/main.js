@@ -667,6 +667,7 @@ document.querySelectorAll('.close, .close-modal').forEach(btn => {
 
 
 
+
 // ======================
 // PWA INSTALLATION PROMPT
 // ======================
@@ -698,7 +699,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
     }
 });
 
-// Détection iOS pour instruction manuelle (car Apple ne supporte pas beforeinstallprompt)
+// Détection iOS pour instruction manuelle
 const isIos = () => {
     const userAgent = window.navigator.userAgent.toLowerCase();
     return /iphone|ipad|ipod/.test(userAgent);
@@ -714,7 +715,6 @@ if (isIos() && !isStandalone() && localStorage.getItem('pwa_dismissed') !== 'tru
         if (banner && txt) {
             txt.innerHTML = "Pour installer l'app, touche l'icône de partage <i class='fa-solid fa-arrow-up-from-bracket' style='color:var(--orange);'></i> puis <br><b>Sur l'écran d'accueil <i class='fa-solid fa-plus' style='color:var(--orange);'></i></b>.";
             banner.style.display = 'block';
-            // Le bouton n'est pas affiché sur iOS car c'est une action manuelle
         }
     }, 2000);
 }
