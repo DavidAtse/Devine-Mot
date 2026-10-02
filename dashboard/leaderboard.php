@@ -59,7 +59,7 @@ $userId = (int) $_SESSION['user_id'];
                     <th>Joueur</th>
                     <th>🏆</th>
                     <th>⚡ Meilleur</th>
-                    <th>Moy.</th>
+                    
                 </tr>
             </thead>
             <tbody>
@@ -69,7 +69,7 @@ $userId = (int) $_SESSION['user_id'];
                     <td><?= htmlspecialchars($row['username']) ?></td>
                     <td><?= $row['victoires'] ?></td>
                     <td><?= $row['meilleur'] ?> essai<?= $row['meilleur'] > 1 ? 's' : '' ?></td>
-                    <td><?= $row['moy'] ?></td>
+                    
                 </tr>
             <?php endforeach; ?>
             </tbody>

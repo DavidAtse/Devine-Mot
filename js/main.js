@@ -507,12 +507,12 @@ async function _updateNotifButton() {
         const reg = window._swReg;
         const sub = reg ? await reg.pushManager.getSubscription() : null;
         if (sub) {
-            btn.textContent = '?? Désactiver les rappels';
+            btn.textContent = 'Désactiver les rappels';
             btn.style.background = 'rgba(255,80,80,0.1)';
             btn.style.borderColor = 'rgba(255,80,80,0.35)';
             btn.style.color = '#ff5050';
         } else {
-            btn.textContent = '🔔 Activer les rappels quotidiens';
+            btn.textContent = 'Activer les rappels';
             btn.style.background = '';
             btn.style.borderColor = '';
             btn.style.color = '#F77F00';
@@ -522,7 +522,7 @@ async function _updateNotifButton() {
         btn.disabled = true;
         btn.style.opacity = '0.5';
     } else {
-        btn.textContent = '🔔 Activer les rappels quotidiens';
+        btn.textContent = 'Activer les rappels';
     }
 }
 

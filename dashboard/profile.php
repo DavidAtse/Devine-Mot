@@ -91,11 +91,7 @@ function _calculer_serie(mysqli $conn, int $userId): int {
             <span class="stat-label">Victoires</span>
             <span class="highlight"><?= $victoires ?></span>
         </div>
-        <div class="stat">
-            <span class="stat-icon">📈</span>
-            <span class="stat-label">Taux de réussite</span>
-            <span class="highlight"><?= $taux ?>%</span>
-        </div>
+        
         <div class="stat">
             <span class="stat-icon">⚡</span>
             <span class="stat-label">Meilleur score</span>
