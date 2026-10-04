@@ -157,25 +157,27 @@ if ($recherche !== '') {
 $stmtMots->execute();
 $tousLesMots = $stmtMots->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// Prochains mots : 4 mots par jour (créneaux de 6h : 00h-06h, 06h-12h, 12h-18h, 18h-00h)
-// Affichage des 7 prochains jours (7 jours x 4 = 28 créneaux)
+// Prochains mots : groupés par jour (4 créneaux de 6h par jour)
+// Affichage des 4 prochains jours (Aujourd'hui + 3 jours = 16 créneaux)
 $creneauActuel = creneau_actuel();
-$calendrier = [];
+$calendrierParJour = [];
 $joursFr = ['Mon'=>'Lun', 'Tue'=>'Mar', 'Wed'=>'Mer', 'Thu'=>'Jeu', 'Fri'=>'Ven', 'Sat'=>'Sam', 'Sun'=>'Dim'];
 
-for ($d = 0; $d < 7; $d++) {
+for ($d = 0; $d < 4; $d++) {
     $dateObj = new DateTime("+{$d} day");
     $date    = $dateObj->format('Y-m-d');
 
     if ($d === 0) {
-        $jourLabel = "Aujourd'hui";
+        $jourTitre = "Aujourd'hui";
     } elseif ($d === 1) {
-        $jourLabel = "Demain";
+        $engDay    = $dateObj->format('D');
+        $jourTitre = "Demain (" . ($joursFr[$engDay] ?? $engDay) . " " . $dateObj->format('d/m') . ")";
     } else {
         $engDay    = $dateObj->format('D');
-        $jourLabel = ($joursFr[$engDay] ?? $engDay) . ' ' . $dateObj->format('d/m');
+        $jourTitre = ($joursFr[$engDay] ?? $engDay) . ' ' . $dateObj->format('d/m');
     }
 
+    $creneaux = [];
     for ($c = 0; $c < CRENEAUX_PAR_JOUR; $c++) {
         $cLibelle = creneau_libelle($c);
         $slotIdx  = (($jourNum + $d) * CRENEAUX_PAR_JOUR + $c) % max(1, $totalMots);
@@ -197,10 +199,8 @@ for ($d = 0; $d < 7; $d++) {
         $isActuel = ($d === 0 && $c === $creneauActuel);
         $isPasse  = ($d === 0 && $c < $creneauActuel);
 
-        $calendrier[] = [
-            'date'       => $date,
+        $creneaux[] = [
             'creneau'    => $c,
-            'jour_label' => $jourLabel,
             'slot_label' => $cLibelle,
             'mot'        => $mot,
             'confirme'   => ($assigne !== null),
@@ -208,6 +208,13 @@ for ($d = 0; $d < 7; $d++) {
             'passe'      => $isPasse,
         ];
     }
+
+    $calendrierParJour[] = [
+        'date'     => $date,
+        'titre'    => $jourTitre,
+        'est_auj'  => ($d === 0),
+        'creneaux' => $creneaux,
+    ];
 }
 
 // Stats globales
@@ -532,15 +539,42 @@ $conn->close();
         .table-wrapper::-webkit-scrollbar { width: 4px; }
         .table-wrapper::-webkit-scrollbar-thumb { background: rgba(247,127,0,0.3); border-radius: 4px; }
 
-        /* CALENDRIER */
-        .calendrier { padding: 12px; }
+        /* CALENDRIER SCROLLABLE ALIGNÉ AVEC LA TABLE */
+        .calendrier {
+            padding: 10px 12px;
+            max-height: 480px;
+            overflow-y: auto;
+        }
+        .calendrier::-webkit-scrollbar { width: 4px; }
+        .calendrier::-webkit-scrollbar-thumb { background: rgba(247,127,0,0.3); border-radius: 4px; }
+
+        .cal-group {
+            margin-bottom: 12px;
+        }
+        .cal-group:last-child {
+            margin-bottom: 0;
+        }
+        .cal-group-header {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--orange);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 5px 8px;
+            background: rgba(247,127,0,0.08);
+            border-radius: 6px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
         .cal-row {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 9px 10px;
-            border-radius: 10px;
-            margin-bottom: 4px;
+            gap: 8px;
+            padding: 7px 10px;
+            border-radius: 8px;
+            margin-bottom: 3px;
             border: 1px solid transparent;
             transition: background 0.15s;
         }
@@ -549,23 +583,21 @@ $conn->close();
             border-color: rgba(247,127,0,0.45);
         }
         .cal-row.past {
-            opacity: 0.5;
+            opacity: 0.45;
         }
         .cal-row:hover { background: rgba(253,248,240,0.04); }
-        .cal-date {
-            display: flex;
-            flex-direction: column;
-            width: 105px;
+        .cal-slot {
+            font-size: 11px;
+            color: var(--gris);
+            width: 78px;
             flex-shrink: 0;
-            line-height: 1.25;
+            font-weight: 600;
         }
-        .cal-day { font-size: 11px; font-weight: 700; color: #fdf8f0; }
-        .cal-slot { font-size: 10px; color: var(--gris); }
-        .cal-mot { font-weight: 800; font-size: 14px; letter-spacing: 1px; flex: 1; }
+        .cal-mot { font-weight: 800; font-size: 13px; letter-spacing: 1px; flex: 1; }
         .cal-badge {
             font-size: 10px;
             font-weight: 800;
-            padding: 2px 8px;
+            padding: 2px 7px;
             border-radius: 10px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -705,25 +737,30 @@ $conn->close();
             <div class="section">
                 <div class="section-head">
                     <h2><i class="fa-solid fa-clock"></i> Prochains mots</h2>
-                    <span class="count-badge">4 mots / jour</span>
+                    <span class="count-badge">4 jours · 16 mots</span>
                 </div>
                 <div class="calendrier">
-                    <?php foreach ($calendrier as $c): ?>
-                    <div class="cal-row <?= $c['actuel'] ? 'today' : ($c['passe'] ? 'past' : '') ?>">
-                        <div class="cal-date">
-                            <span class="cal-day"><?= $c['jour_label'] ?></span>
-                            <span class="cal-slot"><?= $c['slot_label'] ?></span>
+                    <?php foreach ($calendrierParJour as $jour): ?>
+                    <div class="cal-group">
+                        <div class="cal-group-header">
+                            <i class="fa-regular fa-calendar"></i>
+                            <span><?= htmlspecialchars($jour['titre']) ?></span>
                         </div>
-                        <span class="cal-mot"><?= htmlspecialchars($c['mot']) ?></span>
-                        <?php if ($c['actuel']): ?>
-                            <span class="cal-badge badge-today">En cours</span>
-                        <?php elseif ($c['passe']): ?>
-                            <span class="cal-badge badge-passe">Passé</span>
-                        <?php elseif ($c['confirme']): ?>
-                            <span class="cal-badge badge-confirme">Fixé</span>
-                        <?php else: ?>
-                            <span class="cal-badge badge-prevu">Prévu</span>
-                        <?php endif; ?>
+                        <?php foreach ($jour['creneaux'] as $c): ?>
+                        <div class="cal-row <?= $c['actuel'] ? 'today' : ($c['passe'] ? 'past' : '') ?>">
+                            <span class="cal-slot"><?= $c['slot_label'] ?></span>
+                            <span class="cal-mot"><?= htmlspecialchars($c['mot']) ?></span>
+                            <?php if ($c['actuel']): ?>
+                                <span class="cal-badge badge-today">En cours</span>
+                            <?php elseif ($c['passe']): ?>
+                                <span class="cal-badge badge-passe">Passé</span>
+                            <?php elseif ($c['confirme']): ?>
+                                <span class="cal-badge badge-confirme">Fixé</span>
+                            <?php else: ?>
+                                <span class="cal-badge badge-prevu">Prévu</span>
+                            <?php endif; ?>
+                        </div>
+                        <?php endforeach; ?>
                     </div>
                     <?php endforeach; ?>
                 </div>
