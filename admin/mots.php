@@ -92,11 +92,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'supprimer') {
         $motId = (int) ($_POST['mot_id'] ?? 0);
         if ($motId > 0) {
-            // Ne pas supprimer si c'est le mot du jour actuel
-            $motDuJour = $conn->query("SELECT UPPER(mot) FROM mots_du_jour WHERE date_jour = CURDATE()")->fetch_row()[0] ?? '';
+            // Ne pas supprimer si c'est le mot du créneau actuel
+            $creneauActuel = creneau_actuel();
+            $stmtActuel = $conn->prepare("SELECT UPPER(mot) FROM mots_du_jour WHERE date_jour = CURDATE() AND creneau = ?");
+            $stmtActuel->bind_param('i', $creneauActuel);
+            $stmtActuel->execute();
+            $motActuelRow = $stmtActuel->get_result()->fetch_row();
+            if ($motActuelRow) {
+                $motEnCours = $motActuelRow[0];
+            } else {
+                $total = (int) $conn->query('SELECT COUNT(*) FROM mots WHERE ordre IS NOT NULL')->fetch_row()[0];
+                if ($total > 0) {
+                    $idxActuel = index_mot_courant() % $total;
+                    $r = $conn->query("SELECT UPPER(mot) FROM mots WHERE ordre IS NOT NULL ORDER BY ordre ASC LIMIT 1 OFFSET {$idxActuel}")->fetch_row();
+                    $motEnCours = $r ? strtoupper($r[0]) : '';
+                } else {
+                    $motEnCours = '';
+                }
+            }
             $motASuppr = $conn->query("SELECT UPPER(mot) FROM mots WHERE id = $motId")->fetch_row()[0] ?? '';
-            if ($motASuppr === $motDuJour) {
-                $erreur = "Impossible de supprimer « {$motASuppr} » : c'est le mot du jour actuel.";
+            if ($motASuppr !== '' && $motASuppr === $motEnCours) {
+                $erreur = "Impossible de supprimer « {$motASuppr} » : c'est le mot en cours de jeu.";
             } else {
                 $del = $conn->prepare('DELETE FROM mots WHERE id = ?');
                 $del->bind_param('i', $motId);
@@ -141,24 +157,57 @@ if ($recherche !== '') {
 $stmtMots->execute();
 $tousLesMots = $stmtMots->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// Calendrier des 14 prochains jours
+// Prochains mots : 4 mots par jour (créneaux de 6h : 00h-06h, 06h-12h, 12h-18h, 18h-00h)
+// Affichage des 7 prochains jours (7 jours x 4 = 28 créneaux)
+$creneauActuel = creneau_actuel();
 $calendrier = [];
-for ($i = 0; $i < 14; $i++) {
-    $date  = date('Y-m-d', strtotime("+{$i} day"));
-    $label = date('D d/m', strtotime("+{$i} day"));
-    $idx   = ($jourNum + $i) % $totalMots;
-    $row   = $conn->query("SELECT mot FROM mots WHERE ordre IS NOT NULL ORDER BY ordre ASC LIMIT 1 OFFSET {$idx}")->fetch_row();
-    $mot   = $row ? strtoupper($row[0]) : '?';
-    // Est-ce qu'il est déjà assigné en DB ?
-    $assigneRow = $conn->query("SELECT mot FROM mots_du_jour WHERE date_jour = '$date'")->fetch_row();
-    $assigne    = $assigneRow ? strtoupper($assigneRow[0]) : null;
-    $calendrier[] = [
-        'date'    => $date,
-        'label'   => $label,
-        'mot'     => $assigne ?? $mot,
-        'confirme'=> $assigne !== null,
-        'aujourdhui' => $i === 0,
-    ];
+$joursFr = ['Mon'=>'Lun', 'Tue'=>'Mar', 'Wed'=>'Mer', 'Thu'=>'Jeu', 'Fri'=>'Ven', 'Sat'=>'Sam', 'Sun'=>'Dim'];
+
+for ($d = 0; $d < 7; $d++) {
+    $dateObj = new DateTime("+{$d} day");
+    $date    = $dateObj->format('Y-m-d');
+
+    if ($d === 0) {
+        $jourLabel = "Aujourd'hui";
+    } elseif ($d === 1) {
+        $jourLabel = "Demain";
+    } else {
+        $engDay    = $dateObj->format('D');
+        $jourLabel = ($joursFr[$engDay] ?? $engDay) . ' ' . $dateObj->format('d/m');
+    }
+
+    for ($c = 0; $c < CRENEAUX_PAR_JOUR; $c++) {
+        $cLibelle = creneau_libelle($c);
+        $slotIdx  = (($jourNum + $d) * CRENEAUX_PAR_JOUR + $c) % max(1, $totalMots);
+
+        // Mot fixé en base pour ce créneau ?
+        $stmtAssigne = $conn->prepare("SELECT mot FROM mots_du_jour WHERE date_jour = ? AND creneau = ?");
+        $stmtAssigne->bind_param('si', $date, $c);
+        $stmtAssigne->execute();
+        $assigneRow = $stmtAssigne->get_result()->fetch_row();
+        $assigne    = $assigneRow ? strtoupper(trim($assigneRow[0])) : null;
+
+        if ($assigne !== null) {
+            $mot = $assigne;
+        } else {
+            $row = $conn->query("SELECT mot FROM mots WHERE ordre IS NOT NULL ORDER BY ordre ASC LIMIT 1 OFFSET {$slotIdx}")->fetch_row();
+            $mot = $row ? strtoupper(trim($row[0])) : '?';
+        }
+
+        $isActuel = ($d === 0 && $c === $creneauActuel);
+        $isPasse  = ($d === 0 && $c < $creneauActuel);
+
+        $calendrier[] = [
+            'date'       => $date,
+            'creneau'    => $c,
+            'jour_label' => $jourLabel,
+            'slot_label' => $cLibelle,
+            'mot'        => $mot,
+            'confirme'   => ($assigne !== null),
+            'actuel'     => $isActuel,
+            'passe'      => $isPasse,
+        ];
+    }
 }
 
 // Stats globales
@@ -184,7 +233,7 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin – Mots du Jour CI</title>
+    <title>Admin – iMots CI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="../assets/1200x630wa-removebg-preview.png">
     <style>
@@ -496,11 +545,22 @@ $conn->close();
             transition: background 0.15s;
         }
         .cal-row.today {
-            background: rgba(247,127,0,0.12);
-            border-color: rgba(247,127,0,0.3);
+            background: rgba(247,127,0,0.15);
+            border-color: rgba(247,127,0,0.45);
+        }
+        .cal-row.past {
+            opacity: 0.5;
         }
         .cal-row:hover { background: rgba(253,248,240,0.04); }
-        .cal-date { font-size: 12px; color: var(--gris); width: 80px; flex-shrink: 0; }
+        .cal-date {
+            display: flex;
+            flex-direction: column;
+            width: 105px;
+            flex-shrink: 0;
+            line-height: 1.25;
+        }
+        .cal-day { font-size: 11px; font-weight: 700; color: #fdf8f0; }
+        .cal-slot { font-size: 10px; color: var(--gris); }
         .cal-mot { font-weight: 800; font-size: 14px; letter-spacing: 1px; flex: 1; }
         .cal-badge {
             font-size: 10px;
@@ -513,12 +573,13 @@ $conn->close();
         .badge-confirme { background: rgba(0,158,96,0.2); color: #6effc3; }
         .badge-prevu    { background: rgba(253,248,240,0.06); color: var(--gris); }
         .badge-today    { background: var(--orange); color: #fff; }
+        .badge-passe    { background: rgba(253,248,240,0.05); color: #888; }
     </style>
 </head>
 <body>
 
 <nav>
-    <span class="brand">🇨🇮 Admin Panel</span>
+    <span class="brand">🇨🇮 Admin iMots CI</span>
     <span class="admin-badge">👑 <?= $adminName ?></span>
     <a href="../index.php"><i class="fa-solid fa-gamepad"></i> Jeu</a>
     <a href="../inscription/logout.php"><i class="fa-solid fa-right-from-bracket"></i> Déconnexion</a>
@@ -643,18 +704,23 @@ $conn->close();
         <div>
             <div class="section">
                 <div class="section-head">
-                    <h2><i class="fa-solid fa-calendar-days"></i> Prochains mots</h2>
-                    <span class="count-badge">14 jours</span>
+                    <h2><i class="fa-solid fa-clock"></i> Prochains mots</h2>
+                    <span class="count-badge">4 mots / jour</span>
                 </div>
                 <div class="calendrier">
                     <?php foreach ($calendrier as $c): ?>
-                    <div class="cal-row <?= $c['aujourdhui'] ? 'today' : '' ?>">
-                        <span class="cal-date"><?= $c['label'] ?></span>
+                    <div class="cal-row <?= $c['actuel'] ? 'today' : ($c['passe'] ? 'past' : '') ?>">
+                        <div class="cal-date">
+                            <span class="cal-day"><?= $c['jour_label'] ?></span>
+                            <span class="cal-slot"><?= $c['slot_label'] ?></span>
+                        </div>
                         <span class="cal-mot"><?= htmlspecialchars($c['mot']) ?></span>
-                        <?php if ($c['aujourdhui']): ?>
-                            <span class="cal-badge badge-today">Aujourd'hui</span>
+                        <?php if ($c['actuel']): ?>
+                            <span class="cal-badge badge-today">En cours</span>
+                        <?php elseif ($c['passe']): ?>
+                            <span class="cal-badge badge-passe">Passé</span>
                         <?php elseif ($c['confirme']): ?>
-                            <span class="cal-badge badge-confirme">✓</span>
+                            <span class="cal-badge badge-confirme">Fixé</span>
                         <?php else: ?>
                             <span class="cal-badge badge-prevu">Prévu</span>
                         <?php endif; ?>
