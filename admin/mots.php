@@ -88,36 +88,89 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // --- Modifier le mot d'un créneau spécifique ---
+    if ($action === 'changer_mot_creneau') {
+        $dateSlot    = trim($_POST['date_jour'] ?? '');
+        $creneauSlot = (int)($_POST['creneau'] ?? 0);
+        $nouveauMot  = mb_strtoupper(trim($_POST['nouveau_mot'] ?? ''), 'UTF-8');
+        $mode        = $_POST['mode'] ?? 'choisir';
+
+        $creneauActuel = creneau_actuel();
+        $todayStr      = date('Y-m-d');
+        $isPasse       = ($dateSlot < $todayStr || ($dateSlot === $todayStr && $creneauSlot < $creneauActuel));
+
+        if ($isPasse) {
+            $erreur = "Impossible de modifier un créneau déjà passé.";
+        } elseif ($mode === 'random') {
+            $conn->query("DELETE FROM mots_du_jour WHERE date_jour = '{$dateSlot}' AND creneau = {$creneauSlot}");
+            $motAttribue = assigner_mot_creneau($conn, $dateSlot, $creneauSlot);
+            $message = "🎲 Nouveau mot attribué au créneau ({$dateSlot} · " . creneau_libelle($creneauSlot) . ") : « {$motAttribue} »";
+        } elseif ($nouveauMot === '') {
+            $erreur = "Veuillez indiquer un mot valide.";
+        } else {
+            // S'assurer que le mot existe dans le dictionnaire
+            $chkM = $conn->prepare("SELECT id FROM mots WHERE UPPER(mot) = ?");
+            $chkM->bind_param('s', $nouveauMot);
+            $chkM->execute();
+            $mRow = $chkM->get_result()->fetch_assoc();
+            if (!$mRow) {
+                $maxO = (int) $conn->query('SELECT MAX(ordre) FROM mots')->fetch_row()[0];
+                $nextO = $maxO + 1;
+                $insM = $conn->prepare("INSERT INTO mots (mot, ordre) VALUES (?, ?)");
+                $insM->bind_param('si', $nouveauMot, $nextO);
+                $insM->execute();
+            }
+
+            // Verrouiller dans mots_du_jour
+            $insMDJ = $conn->prepare("INSERT INTO mots_du_jour (date_jour, creneau, mot) VALUES (?, ?, ?)
+                                      ON DUPLICATE KEY UPDATE mot = VALUES(mot)");
+            $insMDJ->bind_param('sis', $dateSlot, $creneauSlot, $nouveauMot);
+            $insMDJ->execute();
+            $message = "✅ Mot du créneau ({$dateSlot} · " . creneau_libelle($creneauSlot) . ") fixé sur « {$nouveauMot} ».";
+        }
+    }
+
     // --- Supprimer un mot ---
     if ($action === 'supprimer') {
         $motId = (int) ($_POST['mot_id'] ?? 0);
         if ($motId > 0) {
-            // Ne pas supprimer si c'est le mot du créneau actuel
             $creneauActuel = creneau_actuel();
-            $stmtActuel = $conn->prepare("SELECT UPPER(mot) FROM mots_du_jour WHERE date_jour = CURDATE() AND creneau = ?");
-            $stmtActuel->bind_param('i', $creneauActuel);
-            $stmtActuel->execute();
-            $motActuelRow = $stmtActuel->get_result()->fetch_row();
-            if ($motActuelRow) {
-                $motEnCours = $motActuelRow[0];
-            } else {
-                $total = (int) $conn->query('SELECT COUNT(*) FROM mots WHERE ordre IS NOT NULL')->fetch_row()[0];
-                if ($total > 0) {
-                    $idxActuel = index_mot_courant() % $total;
-                    $r = $conn->query("SELECT UPPER(mot) FROM mots WHERE ordre IS NOT NULL ORDER BY ordre ASC LIMIT 1 OFFSET {$idxActuel}")->fetch_row();
-                    $motEnCours = $r ? strtoupper($r[0]) : '';
-                } else {
-                    $motEnCours = '';
-                }
-            }
-            $motASuppr = $conn->query("SELECT UPPER(mot) FROM mots WHERE id = $motId")->fetch_row()[0] ?? '';
+            $todayStr      = date('Y-m-d');
+
+            $motASupprRow = $conn->query("SELECT UPPER(mot) FROM mots WHERE id = $motId")->fetch_row();
+            $motASuppr    = $motASupprRow ? strtoupper(trim($motASupprRow[0])) : '';
+
+            // Vérifier si c'est le mot en cours de jeu pour le créneau d'aujourd'hui
+            $motEnCours = assigner_mot_creneau($conn, $todayStr, $creneauActuel);
             if ($motASuppr !== '' && $motASuppr === $motEnCours) {
-                $erreur = "Impossible de supprimer « {$motASuppr} » : c'est le mot en cours de jeu.";
+                $erreur = "Impossible de supprimer « {$motASuppr} » : c'est le mot actuellement en cours de jeu.";
             } else {
+                // Trouver si ce mot était prévu dans un créneau futur
+                $stmtFuture = $conn->prepare("
+                    SELECT id, date_jour, creneau 
+                    FROM mots_du_jour 
+                    WHERE UPPER(mot) = ? 
+                      AND (date_jour > ? OR (date_jour = ? AND creneau > ?))
+                ");
+                $stmtFuture->bind_param('sssi', $motASuppr, $todayStr, $todayStr, $creneauActuel);
+                $stmtFuture->execute();
+                $slotsImpactes = $stmtFuture->get_result()->fetch_all(MYSQLI_ASSOC);
+
+                // Supprimer le mot de la table générale
                 $del = $conn->prepare('DELETE FROM mots WHERE id = ?');
                 $del->bind_param('i', $motId);
                 $del->execute();
-                $message = "🗑️ Mot supprimé.";
+
+                // Remplacer UNIQUEMENT les créneaux futurs qui avaient ce mot précis
+                foreach ($slotsImpactes as $slot) {
+                    $conn->query("DELETE FROM mots_du_jour WHERE id = {$slot['id']}");
+                    assigner_mot_creneau($conn, $slot['date_jour'], (int)$slot['creneau']);
+                }
+
+                $message = "🗑️ « {$motASuppr} » supprimé.";
+                if (!empty($slotsImpactes)) {
+                    $message .= " Il a été réattribué dans les " . count($slotsImpactes) . " créneau(x) futur(s) sans modifier le reste du calendrier.";
+                }
             }
         }
     }
@@ -157,8 +210,10 @@ if ($recherche !== '') {
 $stmtMots->execute();
 $tousLesMots = $stmtMots->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// Prochains mots : groupés par jour (4 créneaux de 6h par jour)
-// Affichage des 4 prochains jours (Aujourd'hui + 3 jours = 16 créneaux)
+// Pré-planifier et verrouiller les mots pour les 4 prochains jours dans mots_du_jour
+// Garantit une stabilité totale : supprimer un mot ne décale JAMAIS les autres créneaux !
+garantir_mots_planifies($conn, 4);
+
 $creneauActuel = creneau_actuel();
 $calendrierParJour = [];
 $joursFr = ['Mon'=>'Lun', 'Tue'=>'Mar', 'Wed'=>'Mer', 'Thu'=>'Jeu', 'Fri'=>'Ven', 'Sat'=>'Sam', 'Sun'=>'Dim'];
@@ -180,21 +235,8 @@ for ($d = 0; $d < 4; $d++) {
     $creneaux = [];
     for ($c = 0; $c < CRENEAUX_PAR_JOUR; $c++) {
         $cLibelle = creneau_libelle($c);
-        $slotIdx  = (($jourNum + $d) * CRENEAUX_PAR_JOUR + $c) % max(1, $totalMots);
-
-        // Mot fixé en base pour ce créneau ?
-        $stmtAssigne = $conn->prepare("SELECT mot FROM mots_du_jour WHERE date_jour = ? AND creneau = ?");
-        $stmtAssigne->bind_param('si', $date, $c);
-        $stmtAssigne->execute();
-        $assigneRow = $stmtAssigne->get_result()->fetch_row();
-        $assigne    = $assigneRow ? strtoupper(trim($assigneRow[0])) : null;
-
-        if ($assigne !== null) {
-            $mot = $assigne;
-        } else {
-            $row = $conn->query("SELECT mot FROM mots WHERE ordre IS NOT NULL ORDER BY ordre ASC LIMIT 1 OFFSET {$slotIdx}")->fetch_row();
-            $mot = $row ? strtoupper(trim($row[0])) : '?';
-        }
+        // Le mot est déjà verrouillé de manière permanente dans mots_du_jour
+        $mot = assigner_mot_creneau($conn, $date, $c);
 
         $isActuel = ($d === 0 && $c === $creneauActuel);
         $isPasse  = ($d === 0 && $c < $creneauActuel);
@@ -203,7 +245,6 @@ for ($d = 0; $d < 4; $d++) {
             'creneau'    => $c,
             'slot_label' => $cLibelle,
             'mot'        => $mot,
-            'confirme'   => ($assigne !== null),
             'actuel'     => $isActuel,
             'passe'      => $isPasse,
         ];
@@ -586,6 +627,22 @@ $conn->close();
             opacity: 0.45;
         }
         .cal-row:hover { background: rgba(253,248,240,0.04); }
+        .btn-slot-edit {
+            background: rgba(253,248,240,0.07);
+            border: 1px solid rgba(253,248,240,0.2);
+            color: rgba(253,248,240,0.7);
+            border-radius: 6px;
+            padding: 3px 6px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.15s;
+            margin-left: 4px;
+        }
+        .btn-slot-edit:hover {
+            background: rgba(247,127,0,0.25);
+            border-color: var(--orange);
+            color: #fff;
+        }
         .cal-slot {
             font-size: 11px;
             color: var(--gris);
@@ -754,10 +811,18 @@ $conn->close();
                                 <span class="cal-badge badge-today">En cours</span>
                             <?php elseif ($c['passe']): ?>
                                 <span class="cal-badge badge-passe">Passé</span>
-                            <?php elseif ($c['confirme']): ?>
-                                <span class="cal-badge badge-confirme">Fixé</span>
                             <?php else: ?>
-                                <span class="cal-badge badge-prevu">Prévu</span>
+                                <span class="cal-badge badge-confirme">Prévu</span>
+                            <?php endif; ?>
+                            <?php if (!$c['passe']): ?>
+                                <button type="button" class="btn-slot-edit"
+                                        data-date="<?= $jour['date'] ?>"
+                                        data-creneau="<?= $c['creneau'] ?>"
+                                        data-creneautext="<?= htmlspecialchars($jour['titre']) ?> · <?= htmlspecialchars($c['slot_label']) ?>"
+                                        data-mot="<?= htmlspecialchars($c['mot']) ?>"
+                                        title="Changer le mot de ce créneau">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
                             <?php endif; ?>
                         </div>
                         <?php endforeach; ?>
@@ -880,6 +945,83 @@ document.getElementById('modalDef').addEventListener('click', e => {
     if (e.target === document.getElementById('modalDef')) fermerModalDef();
 });
 </script>
+
+
+    <!-- MODAL CHANGER MOT DU CRÉNEAU -->
+    <div id="modalSlot" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:300;justify-content:center;align-items:center;backdrop-filter:blur(4px);">
+        <div class="modal-def-inner">
+            <button type="button" class="btn-close-modal" id="closeModalSlot">&times;</button>
+            <h3 style="color:var(--orange);font-family:'Paytone One',sans-serif;margin-bottom:6px;font-size:18px;">
+                <i class="fa-solid fa-clock"></i> Modifier le mot du créneau
+            </h3>
+            <p id="slotInfoText" style="font-size:13px;color:var(--gris);margin-bottom:16px;font-weight:700;"></p>
+            
+            <form method="POST" id="formSlot">
+                <?= csrf_field() ?>
+                <input type="hidden" name="action" value="changer_mot_creneau">
+                <input type="hidden" name="date_jour" id="slotDate">
+                <input type="hidden" name="creneau" id="slotCreneau">
+                <input type="hidden" name="mode" id="slotMode" value="choisir">
+
+                <label style="display:block;font-size:12px;color:var(--gris);margin-bottom:6px;font-weight:700;">Choisir ou saisir un mot :</label>
+                <input type="text" name="nouveau_mot" id="slotNouveauMot" list="listeMotsDico"
+                       placeholder="Tape un mot…" autocomplete="off"
+                       style="width:100%;padding:10px 14px;background:rgba(253,248,240,0.05);border:2px solid rgba(247,127,0,0.25);border-radius:10px;color:var(--texte);font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;text-transform:uppercase;outline:none;margin-bottom:16px;">
+                <datalist id="listeMotsDico">
+                    <?php foreach ($tousLesMots as $mItem): ?>
+                        <option value="<?= htmlspecialchars($mItem['mot']) ?>"></option>
+                    <?php endforeach; ?>
+                </datalist>
+
+                <div class="modal-actions" style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <button type="submit" class="btn btn-vert" style="flex:1;">
+                        <i class="fa-solid fa-check"></i> Fixer ce mot
+                    </button>
+                    <button type="button" id="btnSlotRandom" class="btn" style="background:rgba(247,127,0,0.2);border:1px solid rgba(247,127,0,0.4);color:var(--orange);cursor:pointer;">
+                        <i class="fa-solid fa-shuffle"></i> Hasard
+                    </button>
+                    <button type="button" class="btn-cancel" id="cancelModalSlot">Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    // Gestion du modal pour changer le mot d'un créneau
+    const modalSlot      = document.getElementById('modalSlot');
+    const slotDate       = document.getElementById('slotDate');
+    const slotCreneau    = document.getElementById('slotCreneau');
+    const slotNouveauMot = document.getElementById('slotNouveauMot');
+    const slotInfoText   = document.getElementById('slotInfoText');
+    const slotMode       = document.getElementById('slotMode');
+
+    document.querySelectorAll('.btn-slot-edit').forEach(btn => {
+        btn.addEventListener('click', () => {
+            slotDate.value       = btn.dataset.date;
+            slotCreneau.value    = btn.dataset.creneau;
+            slotNouveauMot.value = btn.dataset.mot;
+            slotInfoText.textContent = btn.dataset.creneautext + ' (Mot actuel : ' + btn.dataset.mot + ')';
+            slotMode.value       = 'choisir';
+            modalSlot.style.display = 'flex';
+            slotNouveauMot.focus();
+        });
+    });
+
+    document.getElementById('btnSlotRandom')?.addEventListener('click', () => {
+        slotMode.value = 'random';
+        document.getElementById('formSlot').submit();
+    });
+
+    document.getElementById('closeModalSlot')?.addEventListener('click', () => {
+        modalSlot.style.display = 'none';
+    });
+    document.getElementById('cancelModalSlot')?.addEventListener('click', () => {
+        modalSlot.style.display = 'none';
+    });
+    modalSlot?.addEventListener('click', (e) => {
+        if (e.target === modalSlot) modalSlot.style.display = 'none';
+    });
+    </script>
 
 </body>
 </html>

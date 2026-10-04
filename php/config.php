@@ -130,4 +130,80 @@ function _assurer_schema_creneaux(mysqli $conn): void {
     }
 }
 
+
+/**
+ * Assure qu'un mot est assigné de façon stable et persistante à un créneau (date, créneau).
+ * Si le mot existe déjà dans mots_du_jour, il est retourné tel quel (aucun recalcul).
+ * Sinon, un mot disponible est choisi et verrouillé dans mots_du_jour.
+ */
+function assigner_mot_creneau(mysqli $conn, string $date, int $creneau): string {
+    // 1. Déjà présent et non vide ?
+    $stmt = $conn->prepare('SELECT UPPER(mot) AS mot FROM mots_du_jour WHERE date_jour = ? AND creneau = ?');
+    $stmt->bind_param('si', $date, $creneau);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    if ($row && !empty($row['mot'])) {
+        return strtoupper(trim($row['mot']));
+    }
+
+    // 2. Mots déjà assignés récemment pour éviter les doublons rapprochés
+    $dejaAssignes = [];
+    $resU = $conn->query("SELECT UPPER(mot) FROM mots_du_jour WHERE mot IS NOT NULL AND mot != '' ORDER BY date_jour DESC, creneau DESC LIMIT 120");
+    if ($resU) {
+        while ($rU = $resU->fetch_row()) {
+            if (!empty($rU[0])) $dejaAssignes[] = strtoupper(trim($rU[0]));
+        }
+    }
+
+    $total = (int) $conn->query('SELECT COUNT(*) FROM mots WHERE ordre IS NOT NULL')->fetch_row()[0];
+    if ($total === 0) return '';
+
+    // Calcul de l'index de départ déterministe
+    $launch = new DateTime(GAME_LAUNCH_DATE);
+    $dObj   = new DateTime($date);
+    $jNum   = (int) $launch->diff($dObj)->days;
+    $baseIdx = ($jNum * CRENEAUX_PAR_JOUR + $creneau) % $total;
+
+    $motChoisi = '';
+    // Trouver le premier mot non utilisé récemment
+    for ($attempt = 0; $attempt < min(80, $total); $attempt++) {
+        $idx = ($baseIdx + $attempt) % $total;
+        $q = $conn->query("SELECT UPPER(mot) FROM mots WHERE ordre IS NOT NULL ORDER BY ordre ASC LIMIT 1 OFFSET {$idx}");
+        if ($q && $r = $q->fetch_row()) {
+            $cand = strtoupper(trim($r[0] ?? ''));
+            if ($cand !== '' && (!in_array($cand, $dejaAssignes, true) || $attempt >= 50)) {
+                $motChoisi = $cand;
+                break;
+            }
+        }
+    }
+
+    if ($motChoisi === '') {
+        $q = $conn->query("SELECT UPPER(mot) FROM mots WHERE ordre IS NOT NULL ORDER BY ordre ASC LIMIT 1 OFFSET {$baseIdx}");
+        $motChoisi = $q ? strtoupper(trim($q->fetch_row()[0] ?? '')) : '';
+    }
+
+    if ($motChoisi !== '') {
+        $ins = $conn->prepare('INSERT INTO mots_du_jour (date_jour, creneau, mot) VALUES (?, ?, ?)
+                               ON DUPLICATE KEY UPDATE mot = VALUES(mot)');
+        $ins->bind_param('sis', $date, $creneau, $motChoisi);
+        $ins->execute();
+    }
+
+    return $motChoisi;
+}
+
+/**
+ * Pré-planifie et verrouille les mots pour les N prochains jours dans mots_du_jour.
+ * Garantit que la liste des prochains mots ne bouge JAMAIS quand un mot est supprimé ou ajouté.
+ */
+function garantir_mots_planifies(mysqli $conn, int $nbJours = 7): void {
+    for ($d = 0; $d < $nbJours; $d++) {
+        $date = date('Y-m-d', strtotime("+{$d} day"));
+        for ($c = 0; $c < CRENEAUX_PAR_JOUR; $c++) {
+            assigner_mot_creneau($conn, $date, $c);
+        }
+    }
+}
+
 ?>

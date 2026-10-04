@@ -182,30 +182,6 @@ echo json_encode([
 // Fonction interne : obtenir ou auto-assigner le mot du jour
 // ============================================================
 function _obtenir_mot_du_jour(mysqli $conn, string $date, int $creneau): string {
-    // Chercher dans le cache
-    $stmt = $conn->prepare('SELECT UPPER(mot) AS mot FROM mots_du_jour WHERE date_jour = ? AND creneau = ?');
-    $stmt->bind_param('si', $date, $creneau);
-    $stmt->execute();
-    $row = $stmt->get_result()->fetch_assoc();
-    if ($row) return trim($row['mot']);
-
-    // Sélection déterministe
-    $total = (int) $conn->query('SELECT COUNT(*) FROM mots WHERE ordre IS NOT NULL')->fetch_row()[0];
-    if ($total === 0) return '';
-
-    $index = index_mot_courant() % $total;
-    $s2    = $conn->prepare('SELECT mot FROM mots WHERE ordre IS NOT NULL ORDER BY ordre ASC LIMIT 1 OFFSET ?');
-    $s2->bind_param('i', $index);
-    $s2->execute();
-    $row2  = $s2->get_result()->fetch_assoc();
-    if (!$row2) return '';
-
-    $mot = strtoupper(trim($row2['mot']));
-
-    $ins = $conn->prepare('INSERT IGNORE INTO mots_du_jour (date_jour, creneau, mot) VALUES (?, ?, ?)');
-    $ins->bind_param('sis', $date, $creneau, $mot);
-    $ins->execute();
-
-    return $mot;
+    return assigner_mot_creneau($conn, $date, $creneau);
 }
 ?>
