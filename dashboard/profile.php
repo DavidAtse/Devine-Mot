@@ -38,8 +38,9 @@ $conn->close();
 // Dernier score du jour
 function _calculer_serie(mysqli $conn, int $userId): int {
     $stmt = $conn->prepare('
-        SELECT date_jour, trouve FROM scores
+        SELECT date_jour, MAX(trouve) AS trouve FROM scores
         WHERE user_id = ?
+        GROUP BY date_jour
         ORDER BY date_jour DESC
     ');
     $stmt->bind_param('i', $userId);

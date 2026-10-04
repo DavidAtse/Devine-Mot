@@ -24,11 +24,14 @@ const KEY_DEFINITION  = `mdj_v4_def_${username}`;  // définition du mot trouvé
 // RESET QUOTIDIEN
 // ======================
 const today    = new Date().toISOString().split("T")[0];
+// 4 mots par jour : créneau 0 (00h-06h), 1 (06h-12h), 2 (12h-18h), 3 (18h-00h) - heure d'Abidjan = UTC
+const creneau  = (typeof window.CRENEAU === "number") ? window.CRENEAU : Math.floor(new Date().getUTCHours() / 6);
+const stamp    = `${today}_${creneau}`;
 const lastDate = localStorage.getItem(KEY_DATE);
 
-if (lastDate !== today) {
+if (lastDate !== stamp) {
     [KEY_HISTORIQUE, KEY_CONFIRMES, KEY_LONGUEUR, KEY_DEFINITION].forEach(k => localStorage.removeItem(k));
-    localStorage.setItem(KEY_DATE, today);
+    localStorage.setItem(KEY_DATE, stamp);
 }
 
 // ======================
@@ -369,7 +372,7 @@ function bloquerJeu(nbEssais) {
     input.disabled  = true;
     bouton.disabled = true;
     bouton.textContent = "Valider";
-    showMsg(`🎉 Bravo ! Trouvé en ${nbEssais} essai${nbEssais > 1 ? "s" : ""} ! Reviens demain 🇨🇮`, "#22c55e");
+    showMsg(`🎉 Bravo ! Trouvé en ${nbEssais} essai${nbEssais > 1 ? "s" : ""} ! Reviens au prochain mot 🇨🇮`, "#22c55e");
     message.style.fontSize   = "16px";
     message.style.fontWeight = "bold";
 }
@@ -395,12 +398,14 @@ function animationVictoire() {
 }
 
 // ======================
-// COMPTEUR MINUIT
+// COMPTEUR PROCHAIN MOT (toutes les 6h)
 // ======================
+const PROCHAIN_MOT_FIN = (typeof window.PROCHAIN_MOT_DANS === "number")
+    ? Date.now() + window.PROCHAIN_MOT_DANS * 1000
+    : (() => { const d = new Date(); d.setUTCHours((Math.floor(d.getUTCHours() / 6) + 1) * 6, 0, 0, 0); return d.getTime(); })();
+
 function updateCountdown() {
-    const now = new Date();
-    const minuit = new Date(); minuit.setHours(24, 0, 0, 0);
-    const diff = minuit - now;
+    const diff = PROCHAIN_MOT_FIN - Date.now();
     if (diff <= 0) { countdownEl.textContent = "Nouveau mot ! ??"; setTimeout(() => location.reload(), 1500); return; }
     const h = Math.floor(diff / 3_600_000);
     const m = Math.floor((diff % 3_600_000) / 60_000);

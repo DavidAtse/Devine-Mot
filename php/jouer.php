@@ -21,18 +21,19 @@ if (!isset($_SESSION['user_id'])) {
 
 $conn       = db_connect();
 $aujourdhui = date('Y-m-d');
+$creneau    = creneau_actuel();
 
 // ============================================================
 // GET : retourner uniquement la longueur du mot du jour
 // ============================================================
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $motDuJour = _obtenir_mot_du_jour($conn, $aujourdhui);
+    $motDuJour = _obtenir_mot_du_jour($conn, $aujourdhui, $creneau);
     $longueur  = $motDuJour ? mb_strlen($motDuJour, 'UTF-8') : 0;
 
     // Vérifier si l'utilisateur a déjà gagné aujourd'hui (sync multi-appareils)
     $userId   = (int) $_SESSION['user_id'];
-    $chkScore = $conn->prepare('SELECT tentatives FROM scores WHERE user_id = ? AND date_jour = ? AND trouve = 1');
-    $chkScore->bind_param('is', $userId, $aujourdhui);
+    $chkScore = $conn->prepare('SELECT tentatives FROM scores WHERE user_id = ? AND date_jour = ? AND creneau = ? AND trouve = 1');
+    $chkScore->bind_param('isi', $userId, $aujourdhui, $creneau);
     $chkScore->execute();
     $scoreRow  = $chkScore->get_result()->fetch_assoc();
     $dejaGagne = !!$scoreRow;
@@ -53,6 +54,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         'tentatives' => $scoreRow ? (int)$scoreRow['tentatives'] : 0,
         'mot'        => $dejaGagne ? $motDuJour : null,
         'definition' => $definition,
+        'creneau'    => $creneau,
+        'fin_dans'   => creneau_secondes_restantes(),
     ]);
     exit;
 }
@@ -79,7 +82,7 @@ if ($motPropose === '' || !preg_match('/^[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ]{2,3
 }
 
 // --- Mot du jour ---
-$motDuJour = _obtenir_mot_du_jour($conn, $aujourdhui);
+$motDuJour = _obtenir_mot_du_jour($conn, $aujourdhui, $creneau);
 
 if (!$motDuJour) {
     echo json_encode(['ok' => false, 'message' => 'Mot du jour indisponible.']);
@@ -142,12 +145,12 @@ $userId     = (int) $_SESSION['user_id'];
 $tentatives = max(1, (int) ($_POST['tentatives'] ?? 1));
 
 if ($gagne) {
-    $chk = $conn->prepare('SELECT id FROM scores WHERE user_id = ? AND date_jour = ?');
-    $chk->bind_param('is', $userId, $aujourdhui);
+    $chk = $conn->prepare('SELECT id FROM scores WHERE user_id = ? AND date_jour = ? AND creneau = ?');
+    $chk->bind_param('isi', $userId, $aujourdhui, $creneau);
     $chk->execute();
     if ($chk->get_result()->num_rows === 0) {
-        $ins = $conn->prepare('INSERT INTO scores (user_id, date_jour, tentatives, trouve) VALUES (?, ?, ?, 1)');
-        $ins->bind_param('isi', $userId, $aujourdhui, $tentatives);
+        $ins = $conn->prepare('INSERT INTO scores (user_id, date_jour, creneau, tentatives, trouve) VALUES (?, ?, ?, ?, 1)');
+        $ins->bind_param('isii', $userId, $aujourdhui, $creneau, $tentatives);
         $ins->execute();
     }
 }
@@ -178,10 +181,10 @@ echo json_encode([
 // ============================================================
 // Fonction interne : obtenir ou auto-assigner le mot du jour
 // ============================================================
-function _obtenir_mot_du_jour(mysqli $conn, string $date): string {
+function _obtenir_mot_du_jour(mysqli $conn, string $date, int $creneau): string {
     // Chercher dans le cache
-    $stmt = $conn->prepare('SELECT UPPER(mot) AS mot FROM mots_du_jour WHERE date_jour = ?');
-    $stmt->bind_param('s', $date);
+    $stmt = $conn->prepare('SELECT UPPER(mot) AS mot FROM mots_du_jour WHERE date_jour = ? AND creneau = ?');
+    $stmt->bind_param('si', $date, $creneau);
     $stmt->execute();
     $row = $stmt->get_result()->fetch_assoc();
     if ($row) return trim($row['mot']);
@@ -190,7 +193,7 @@ function _obtenir_mot_du_jour(mysqli $conn, string $date): string {
     $total = (int) $conn->query('SELECT COUNT(*) FROM mots WHERE ordre IS NOT NULL')->fetch_row()[0];
     if ($total === 0) return '';
 
-    $index = jour_numero() % $total;
+    $index = index_mot_courant() % $total;
     $s2    = $conn->prepare('SELECT mot FROM mots WHERE ordre IS NOT NULL ORDER BY ordre ASC LIMIT 1 OFFSET ?');
     $s2->bind_param('i', $index);
     $s2->execute();
@@ -199,8 +202,8 @@ function _obtenir_mot_du_jour(mysqli $conn, string $date): string {
 
     $mot = strtoupper(trim($row2['mot']));
 
-    $ins = $conn->prepare('INSERT IGNORE INTO mots_du_jour (date_jour, mot) VALUES (?, ?)');
-    $ins->bind_param('ss', $date, $mot);
+    $ins = $conn->prepare('INSERT IGNORE INTO mots_du_jour (date_jour, creneau, mot) VALUES (?, ?, ?)');
+    $ins->bind_param('sis', $date, $creneau, $mot);
     $ins->execute();
 
     return $mot;

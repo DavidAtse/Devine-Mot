@@ -23,6 +23,7 @@ header('Content-Type: application/json; charset=utf-8');
 $now       = new DateTime();
 $heure     = (int) $now->format('G'); // 0-23
 $today     = $now->format('Y-m-d');
+$creneau   = creneau_actuel();
 
 // Pas de notif la nuit (23h → 7h)
 if ($heure < 8 || $heure > 22) {
@@ -42,17 +43,17 @@ $dead           = [];
 $stmt = $conn->prepare("
     SELECT ps.id, ps.endpoint, ps.p256dh, ps.auth
     FROM push_subscriptions ps
-    LEFT JOIN scores s ON s.user_id = ps.user_id AND s.date_jour = ?
+    LEFT JOIN scores s ON s.user_id = ps.user_id AND s.date_jour = ? AND s.creneau = ? AND s.trouve = 1
     WHERE s.id IS NULL
 ");
-$stmt->bind_param('s', $today);
+$stmt->bind_param('si', $today, $creneau);
 $stmt->execute();
 $nonJoue = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
 $messagesRappel = [
-    "🔥 T'as pas encore deviné le mot du jour ! Lance-toi !",
-    "🇨🇮 Le mot du jour t'attend ! Tu peux le trouver !",
-    "⏰ Il te reste du temps ! Viens deviner le mot du jour.",
+    "🔥 T'as pas encore deviné le mot en cours ! Lance-toi !",
+    "🇨🇮 Le mot du moment t'attend ! Tu peux le trouver !",
+    "⏰ Il te reste du temps ! Viens deviner le mot en cours.",
     "🧠 Ton cerveau est prêt ? Le mot du jour n'attend que toi !",
     "🎯 Reviens jouer ! Tu es à quelques lettres du mot mystère.",
 ];
@@ -77,16 +78,16 @@ if (in_array($heure, $heuresDemain)) {
     $stmt2 = $conn->prepare("
         SELECT ps.id, ps.endpoint, ps.p256dh, ps.auth
         FROM push_subscriptions ps
-        INNER JOIN scores s ON s.user_id = ps.user_id AND s.date_jour = ? AND s.trouve = 1
+        INNER JOIN scores s ON s.user_id = ps.user_id AND s.date_jour = ? AND s.creneau = ? AND s.trouve = 1
     ");
-    $stmt2->bind_param('s', $today);
+    $stmt2->bind_param('si', $today, $creneau);
     $stmt2->execute();
     $dejaGagne = $stmt2->get_result()->fetch_all(MYSQLI_ASSOC);
 
     $msgsDemain = [
-        "🌅 Bravo pour aujourd'hui ! Prépare-toi, un nouveau mot mystère arrive demain !",
-        "🏆 Tu as trouvé le mot ! Reviens demain pour un nouveau défi ivoirien.",
-        "🇨🇮 Tu t'en sors bien ! Sois prêt(e) pour le mot du jour de demain.",
+        "🌅 Bravo ! Prépare-toi, un nouveau mot mystère arrive dans quelques heures !",
+        "🏆 Tu as trouvé le mot ! Reviens au prochain créneau pour un nouveau défi ivoirien.",
+        "🇨🇮 Tu t'en sors bien ! Sois prêt(e) pour le prochain mot.",
     ];
     $msgDemain = $msgsDemain[$heure % count($msgsDemain)];
 

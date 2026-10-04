@@ -41,6 +41,7 @@ function db_connect(): mysqli {
     try {
         $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT);
         $conn->set_charset('utf8mb4');
+        _assurer_schema_creneaux($conn);
         return $conn;
     } catch (Exception $e) {
         // Journaliser l'erreur côté serveur SANS exposer les infos sensibles
@@ -76,4 +77,57 @@ function jour_numero(): int {
     $today  = new DateTime(date('Y-m-d'));
     return (int) $launch->diff($today)->days;
 }
+/**
+ * ====== 4 MOTS PAR JOUR (créneaux de 6h, heure d'Abidjan) ======
+ * 0 : 00h-06h | 1 : 06h-12h | 2 : 12h-18h | 3 : 18h-00h
+ */
+define('CRENEAUX_PAR_JOUR', 4);
+define('HEURES_PAR_CRENEAU', 6);
+
+/** Créneau courant (0 à 3). */
+function creneau_actuel(): int {
+    return intdiv((int) date('G'), HEURES_PAR_CRENEAU);
+}
+
+/** Secondes restantes avant le prochain mot. */
+function creneau_secondes_restantes(): int {
+    $depuisMinuit = ((int) date('G')) * 3600 + ((int) date('i')) * 60 + (int) date('s');
+    $fin = (intdiv((int) date('G'), HEURES_PAR_CRENEAU) + 1) * HEURES_PAR_CRENEAU * 3600;
+    return max(1, $fin - $depuisMinuit);
+}
+
+/** Libellé lisible d'un créneau, ex : "06h - 12h". */
+function creneau_libelle(int $c): string {
+    $debut = $c * HEURES_PAR_CRENEAU;
+    $fin   = ($debut + HEURES_PAR_CRENEAU) % 24;
+    return sprintf('%02dh - %02dh', $debut, $fin);
+}
+
+/** Position du mot dans la liste ordonnée (4 mots consommés par jour). */
+function index_mot_courant(): int {
+    return jour_numero() * CRENEAUX_PAR_JOUR + creneau_actuel();
+}
+
+/**
+ * Migration automatique et idempotente : ajoute la colonne `creneau`
+ * dans `scores` et `mots_du_jour` (les anciennes lignes = créneau 0).
+ */
+function _assurer_schema_creneaux(mysqli $conn): void {
+    try {
+        $r = $conn->query("SHOW COLUMNS FROM scores LIKE 'creneau'");
+        if ($r && $r->num_rows === 0) {
+            $conn->query("ALTER TABLE scores ADD COLUMN creneau TINYINT NOT NULL DEFAULT 0 AFTER date_jour");
+        }
+        $r = $conn->query("SHOW COLUMNS FROM mots_du_jour LIKE 'creneau'");
+        if ($r && $r->num_rows === 0) {
+            $conn->query("ALTER TABLE mots_du_jour
+                ADD COLUMN creneau TINYINT NOT NULL DEFAULT 0 AFTER date_jour,
+                DROP INDEX date_jour,
+                ADD UNIQUE KEY uq_date_creneau (date_jour, creneau)");
+        }
+    } catch (Throwable $e) {
+        error_log('[iMots] Migration créneaux : ' . $e->getMessage());
+    }
+}
+
 ?>

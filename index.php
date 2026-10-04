@@ -114,13 +114,13 @@ $conn->close();
                     <span class="close" data-close="rulesModal">&times;</span>
                     <h3>🇨🇮 Règles du jeu</h3>
                     <p>
-                        Devine le <strong>mot du jour</strong> ivoirien.<br>
+                        Devine le <strong>mot ivoirien</strong> en cours.<br>
                         Plus ton mot est proche, plus la température monte 🔥
                     </p>
-                    <p>On compare chaque lettre à la <strong>même position</strong> que dans le mot du jour.</p>
+                    <p>On compare chaque lettre à la <strong>même position</strong> que dans le mot à trouver.</p>
                     <p><strong>Exemple :</strong></p>
                     <ul>
-                        <li>Mot du jour : <strong>ABOBO</strong></li>
+                        <li>Mot à trouver : <strong>ABOBO</strong></li>
                         <li>Mot proposé : <strong>ABIDJAN</strong></li>
                         <li>Comparaison : A ✅, B ✅, I ❌, D ❌, J ❌</li>
                         <li>Lettres correctes : 2 sur 5 = 40%</li>
@@ -128,7 +128,9 @@ $conn->close();
                     <p>
                         🔹 Les lettres <span style="color:#22c55e;font-weight:bold">vertes</span> sont à la bonne position.<br>
                         🔹 Les mots les plus hauts sont les plus proches.<br>
-                        🔹 Le mot change chaque jour à minuit.
+                        🔹 Il y a <strong>4 mots par jour</strong> : un nouveau mot toutes les 6 heures.<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;🕛 00h - 06h &nbsp;|&nbsp; 🌅 06h - 12h &nbsp;|&nbsp; ☀️ 12h - 18h &nbsp;|&nbsp; 🌙 18h - 00h<br>
+                        🔹 Chaque mot trouvé te rapporte une victoire : plus tu joues, plus tu montes au classement !
                     </p>
                 </div>
             </div>
@@ -148,7 +150,7 @@ $conn->close();
 
             <!-- Bloc instruction + tableau température -->
             <div class="instruction">
-                <h3>Jour n°<?= $jourNum + 1 ?></h3>
+                <h3>Jour n°<?= $jourNum + 1 ?> · Mot <?= creneau_actuel() + 1 ?>/4 (<?= creneau_libelle(creneau_actuel()) ?>)</h3>
 
                 <p>🥶🥶🥶🥶🥶🥶🥶🥶🥶</p>
                 <h3>ÉCHELLE DE TEMPÉRATURE</h3>
@@ -291,6 +293,8 @@ $conn->close();
         
         // BASE_PATH calculé dynamiquement : '/' en prod Railway, chemin local en XAMPP
         window.BASE_PATH  = <?= json_encode(rtrim(dirname($_SERVER['SCRIPT_NAME']), '/')) ?>;
+        window.CRENEAU           = <?= creneau_actuel() ?>;
+        window.PROCHAIN_MOT_DANS = <?= creneau_secondes_restantes() ?>;
     </script>
     <script src="js/main.js"></script>
 
