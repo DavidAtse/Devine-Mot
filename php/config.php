@@ -125,6 +125,10 @@ function _assurer_schema_creneaux(mysqli $conn): void {
                 DROP INDEX date_jour,
                 ADD UNIQUE KEY uq_date_creneau (date_jour, creneau)");
         }
+        $r2 = $conn->query("SHOW COLUMNS FROM mots_du_jour LIKE 'est_partenaire'");
+        if ($r2 && $r2->num_rows === 0) {
+            $conn->query("ALTER TABLE mots_du_jour ADD COLUMN est_partenaire TINYINT(1) NOT NULL DEFAULT 0 AFTER mot");
+        }
     } catch (Throwable $e) {
         error_log('[iMots] Migration créneaux : ' . $e->getMessage());
     }
@@ -204,6 +208,31 @@ function garantir_mots_planifies(mysqli $conn, int $nbJours = 7): void {
             assigner_mot_creneau($conn, $date, $c);
         }
     }
+}
+
+
+/**
+ * Retourne les détails du créneau immédiatement suivant le créneau actif.
+ */
+function prochain_creneau(): array {
+    $c = creneau_actuel();
+    $today = date('Y-m-d');
+    if ($c < CRENEAUX_PAR_JOUR - 1) {
+        $nextDate  = $today;
+        $nextC     = $c + 1;
+        $labelJour = "Aujourd'hui";
+    } else {
+        $nextDate  = date('Y-m-d', strtotime('+1 day'));
+        $nextC     = 0;
+        $labelJour = "Demain";
+    }
+    return [
+        'date'       => $nextDate,
+        'creneau'    => $nextC,
+        'label_jour' => $labelJour,
+        'label_slot' => creneau_libelle($nextC),
+        'libelle'    => "{$labelJour} · " . creneau_libelle($nextC),
+    ];
 }
 
 ?>

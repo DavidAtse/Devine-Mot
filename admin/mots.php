@@ -88,11 +88,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // --- Programmer un mot (partenariat ou ordre personnalisé) ---
+    if ($action === 'programmer_partenariat') {
+        $motRaw = mb_strtoupper(trim($_POST['mot'] ?? ''), 'UTF-8');
+        $cible  = $_POST['cible'] ?? 'prochain';
+        $def    = trim($_POST['definition'] ?? '');
+        $isPart = isset($_POST['est_partenaire']) ? 1 : 0;
+
+        if ($motRaw === '' || !preg_match('/^[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ]{2,30}$/u', $motRaw)) {
+            $erreur = "Mot invalide (2 à 30 lettres, sans chiffres ni symboles).";
+        } else {
+            if ($cible === 'prochain') {
+                $nxt           = prochain_creneau();
+                $targetDate    = $nxt['date'];
+                $targetCreneau = $nxt['creneau'];
+            } else {
+                $targetDate    = trim($_POST['date_jour'] ?? '');
+                $targetCreneau = (int)($_POST['creneau'] ?? 0);
+            }
+
+            $creneauActuel = creneau_actuel();
+            $todayStr      = date('Y-m-d');
+            $isPasse       = ($targetDate < $todayStr || ($targetDate === $todayStr && $targetCreneau < $creneauActuel));
+
+            if ($targetDate === '' || $isPasse) {
+                $erreur = "Impossible de programmer un mot sur un créneau déjà passé.";
+            } else {
+                // 1. Ajouter ou mettre à jour dans mots
+                $chkM = $conn->prepare("SELECT id FROM mots WHERE UPPER(mot) = ?");
+                $chkM->bind_param('s', $motRaw);
+                $chkM->execute();
+                $mRow = $chkM->get_result()->fetch_assoc();
+                if (!$mRow) {
+                    $maxO = (int) $conn->query('SELECT MAX(ordre) FROM mots')->fetch_row()[0];
+                    $nextO = $maxO + 1;
+                    $insM = $conn->prepare("INSERT INTO mots (mot, ordre, definition) VALUES (?, ?, ?)");
+                    $defVal = $def !== '' ? $def : null;
+                    $insM->bind_param('sis', $motRaw, $nextO, $defVal);
+                    $insM->execute();
+                } elseif ($def !== '') {
+                    $updDef = $conn->prepare("UPDATE mots SET definition = ? WHERE UPPER(mot) = ?");
+                    $updDef->bind_param('ss', $def, $motRaw);
+                    $updDef->execute();
+                }
+
+                // 2. Fixer dans mots_du_jour avec flag partenaire
+                $insMDJ = $conn->prepare("INSERT INTO mots_du_jour (date_jour, creneau, mot, est_partenaire) VALUES (?, ?, ?, ?)
+                                          ON DUPLICATE KEY UPDATE mot = VALUES(mot), est_partenaire = VALUES(est_partenaire)");
+                $insMDJ->bind_param('sisi', $targetDate, $targetCreneau, $motRaw, $isPart);
+                $insMDJ->execute();
+
+                $typeTxt = $isPart ? "en partenariat 🤝" : "au programme 📅";
+                $message = "✨ « {$motRaw} » a été programmé avec succès {$typeTxt} pour ({$targetDate} · " . creneau_libelle($targetCreneau) . ").";
+            }
+        }
+    }
+
     // --- Modifier le mot d'un créneau spécifique ---
     if ($action === 'changer_mot_creneau') {
         $dateSlot    = trim($_POST['date_jour'] ?? '');
         $creneauSlot = (int)($_POST['creneau'] ?? 0);
         $nouveauMot  = mb_strtoupper(trim($_POST['nouveau_mot'] ?? ''), 'UTF-8');
+        $defSlot     = trim($_POST['definition'] ?? '');
+        $isPartSlot  = isset($_POST['est_partenaire']) ? 1 : 0;
         $mode        = $_POST['mode'] ?? 'choisir';
 
         $creneauActuel = creneau_actuel();
@@ -116,15 +174,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$mRow) {
                 $maxO = (int) $conn->query('SELECT MAX(ordre) FROM mots')->fetch_row()[0];
                 $nextO = $maxO + 1;
-                $insM = $conn->prepare("INSERT INTO mots (mot, ordre) VALUES (?, ?)");
-                $insM->bind_param('si', $nouveauMot, $nextO);
+                $insM = $conn->prepare("INSERT INTO mots (mot, ordre, definition) VALUES (?, ?, ?)");
+                $defVal = $defSlot !== '' ? $defSlot : null;
+                $insM->bind_param('sis', $nouveauMot, $nextO, $defVal);
                 $insM->execute();
+            } elseif ($defSlot !== '') {
+                $updDef = $conn->prepare("UPDATE mots SET definition = ? WHERE UPPER(mot) = ?");
+                $updDef->bind_param('ss', $defSlot, $nouveauMot);
+                $updDef->execute();
             }
 
             // Verrouiller dans mots_du_jour
-            $insMDJ = $conn->prepare("INSERT INTO mots_du_jour (date_jour, creneau, mot) VALUES (?, ?, ?)
-                                      ON DUPLICATE KEY UPDATE mot = VALUES(mot)");
-            $insMDJ->bind_param('sis', $dateSlot, $creneauSlot, $nouveauMot);
+            $insMDJ = $conn->prepare("INSERT INTO mots_du_jour (date_jour, creneau, mot, est_partenaire) VALUES (?, ?, ?, ?)
+                                      ON DUPLICATE KEY UPDATE mot = VALUES(mot), est_partenaire = VALUES(est_partenaire)");
+            $insMDJ->bind_param('sisi', $dateSlot, $creneauSlot, $nouveauMot, $isPartSlot);
             $insMDJ->execute();
             $message = "✅ Mot du créneau ({$dateSlot} · " . creneau_libelle($creneauSlot) . ") fixé sur « {$nouveauMot} ».";
         }
@@ -235,18 +298,32 @@ for ($d = 0; $d < 4; $d++) {
     $creneaux = [];
     for ($c = 0; $c < CRENEAUX_PAR_JOUR; $c++) {
         $cLibelle = creneau_libelle($c);
-        // Le mot est déjà verrouillé de manière permanente dans mots_du_jour
         $mot = assigner_mot_creneau($conn, $date, $c);
+
+        // Récupérer le statut partenaire et la définition
+        $stmtStat = $conn->prepare("SELECT est_partenaire FROM mots_du_jour WHERE date_jour = ? AND creneau = ?");
+        $stmtStat->bind_param('si', $date, $c);
+        $stmtStat->execute();
+        $stRow = $stmtStat->get_result()->fetch_assoc();
+        $isPart = $stRow ? (int)($stRow['est_partenaire'] ?? 0) : 0;
+
+        $defStmt = $conn->prepare("SELECT definition FROM mots WHERE UPPER(mot) = ?");
+        $defStmt->bind_param('s', $mot);
+        $defStmt->execute();
+        $dRow = $defStmt->get_result()->fetch_assoc();
+        $defText = $dRow['definition'] ?? '';
 
         $isActuel = ($d === 0 && $c === $creneauActuel);
         $isPasse  = ($d === 0 && $c < $creneauActuel);
 
         $creneaux[] = [
-            'creneau'    => $c,
-            'slot_label' => $cLibelle,
-            'mot'        => $mot,
-            'actuel'     => $isActuel,
-            'passe'      => $isPasse,
+            'creneau'        => $c,
+            'slot_label'     => $cLibelle,
+            'mot'            => $mot,
+            'definition'     => $defText,
+            'actuel'         => $isActuel,
+            'passe'          => $isPasse,
+            'est_partenaire' => $isPart,
         ];
     }
 
@@ -643,6 +720,55 @@ $conn->close();
             border-color: var(--orange);
             color: #fff;
         }
+        .badge-partenaire {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #120e06;
+            font-weight: 800;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            box-shadow: 0 2px 8px rgba(255, 140, 0, 0.4);
+        }
+        .btn-partenaire-header {
+            background: linear-gradient(135deg, #ff8c00, #e06000);
+            color: #fff;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 800;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .btn-partenaire-header:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(247,127,0,0.4);
+        }
+        .btn-prog-partenaire {
+            background: rgba(247,127,0,0.12);
+            border: 1px solid rgba(247,127,0,0.35);
+            color: var(--orange);
+            border-radius: 8px;
+            padding: 5px 8px;
+            cursor: pointer;
+            font-size: .85em;
+            font-weight: 700;
+            transition: background .2s;
+            margin-right: 4px;
+        }
+        .btn-prog-partenaire:hover {
+            background: rgba(247,127,0,0.3);
+            color: #fff;
+        }
         .cal-slot {
             font-size: 11px;
             color: var(--gris);
@@ -761,6 +887,12 @@ $conn->close();
                                     <?php endif; ?>
                                 </td>
                                 <td class="action-cell">
+                                    <button type="button" class="btn-prog-partenaire"
+                                            data-mot="<?= htmlspecialchars($m['mot'], ENT_QUOTES) ?>"
+                                            data-def="<?= htmlspecialchars($m['definition'] ?? '', ENT_QUOTES) ?>"
+                                            title="Programmer ce mot pour un créneau ou partenariat">
+                                        🤝 Programmer
+                                    </button>
                                     <button type="button" class="btn-edit-def"
                                             data-id="<?= $m['id'] ?>"
                                             data-mot="<?= htmlspecialchars($m['mot'], ENT_QUOTES) ?>"
@@ -793,8 +925,13 @@ $conn->close();
         <div>
             <div class="section">
                 <div class="section-head">
-                    <h2><i class="fa-solid fa-clock"></i> Prochains mots</h2>
-                    <span class="count-badge">4 jours · 16 mots</span>
+                    <div>
+                        <h2><i class="fa-solid fa-clock"></i> Prochains mots</h2>
+                        <span class="count-badge">4 jours · 16 mots</span>
+                    </div>
+                    <button type="button" id="btnOpenProgModal" class="btn-partenaire-header">
+                        <i class="fa-solid fa-handshake"></i> Programmer un mot
+                    </button>
                 </div>
                 <div class="calendrier">
                     <?php foreach ($calendrierParJour as $jour): ?>
@@ -807,7 +944,9 @@ $conn->close();
                         <div class="cal-row <?= $c['actuel'] ? 'today' : ($c['passe'] ? 'past' : '') ?>">
                             <span class="cal-slot"><?= $c['slot_label'] ?></span>
                             <span class="cal-mot"><?= htmlspecialchars($c['mot']) ?></span>
-                            <?php if ($c['actuel']): ?>
+                            <?php if ($c['est_partenaire']): ?>
+                                <span class="badge-partenaire"><i class="fa-solid fa-star"></i> Sponsor</span>
+                            <?php elseif ($c['actuel']): ?>
                                 <span class="cal-badge badge-today">En cours</span>
                             <?php elseif ($c['passe']): ?>
                                 <span class="cal-badge badge-passe">Passé</span>
@@ -820,7 +959,9 @@ $conn->close();
                                         data-creneau="<?= $c['creneau'] ?>"
                                         data-creneautext="<?= htmlspecialchars($jour['titre']) ?> · <?= htmlspecialchars($c['slot_label']) ?>"
                                         data-mot="<?= htmlspecialchars($c['mot']) ?>"
-                                        title="Changer le mot de ce créneau">
+                                        data-def="<?= htmlspecialchars($c['definition'] ?? '') ?>"
+                                        data-part="<?= $c['est_partenaire'] ? '1' : '0' ?>"
+                                        title="Modifier ou changer ce créneau">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
                             <?php endif; ?>
@@ -954,7 +1095,7 @@ document.getElementById('modalDef').addEventListener('click', e => {
             <h3 style="color:var(--orange);font-family:'Paytone One',sans-serif;margin-bottom:6px;font-size:18px;">
                 <i class="fa-solid fa-clock"></i> Modifier le mot du créneau
             </h3>
-            <p id="slotInfoText" style="font-size:13px;color:var(--gris);margin-bottom:16px;font-weight:700;"></p>
+            <p id="slotInfoText" style="font-size:13px;color:var(--gris);margin-bottom:14px;font-weight:700;"></p>
             
             <form method="POST" id="formSlot">
                 <?= csrf_field() ?>
@@ -966,12 +1107,16 @@ document.getElementById('modalDef').addEventListener('click', e => {
                 <label style="display:block;font-size:12px;color:var(--gris);margin-bottom:6px;font-weight:700;">Choisir ou saisir un mot :</label>
                 <input type="text" name="nouveau_mot" id="slotNouveauMot" list="listeMotsDico"
                        placeholder="Tape un mot…" autocomplete="off"
-                       style="width:100%;padding:10px 14px;background:rgba(253,248,240,0.05);border:2px solid rgba(247,127,0,0.25);border-radius:10px;color:var(--texte);font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;text-transform:uppercase;outline:none;margin-bottom:16px;">
-                <datalist id="listeMotsDico">
-                    <?php foreach ($tousLesMots as $mItem): ?>
-                        <option value="<?= htmlspecialchars($mItem['mot']) ?>"></option>
-                    <?php endforeach; ?>
-                </datalist>
+                       style="width:100%;padding:10px 14px;background:rgba(253,248,240,0.05);border:2px solid rgba(247,127,0,0.25);border-radius:10px;color:var(--texte);font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;text-transform:uppercase;outline:none;margin-bottom:12px;">
+
+                <label style="display:block;font-size:12px;color:var(--gris);margin-bottom:6px;font-weight:700;">Définition ou message du sponsor (optionnel) :</label>
+                <textarea name="definition" id="slotDef" rows="2" placeholder="Slogan ou définition affichée en fin de jeu..."
+                          style="width:100%;padding:10px 14px;background:rgba(253,248,240,0.05);border:2px solid rgba(247,127,0,0.25);border-radius:10px;color:var(--texte);font-family:'Nunito',sans-serif;font-size:13px;outline:none;margin-bottom:12px;resize:vertical;"></textarea>
+
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#ffd700;font-weight:700;margin-bottom:16px;cursor:pointer;">
+                    <input type="checkbox" name="est_partenaire" id="slotIsPartenaire" value="1" style="width:18px;height:18px;accent-color:var(--orange);">
+                    ⭐ Marquer comme mot Partenaire / Sponsorisé
+                </label>
 
                 <div class="modal-actions" style="display:flex;gap:10px;flex-wrap:wrap;">
                     <button type="submit" class="btn btn-vert" style="flex:1;">
@@ -986,6 +1131,76 @@ document.getElementById('modalDef').addEventListener('click', e => {
         </div>
     </div>
 
+    <!-- MODAL PROGRAMMER UN MOT / PARTENARIAT -->
+    <?php $nxt = prochain_creneau(); ?>
+    <div id="modalProgrammerPartenaire" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:300;justify-content:center;align-items:center;backdrop-filter:blur(4px);">
+        <div class="modal-def-inner" style="max-width:540px;">
+            <button type="button" class="btn-close-modal" id="closeModalProg">&times;</button>
+            <h3 style="color:var(--orange);font-family:'Paytone One',sans-serif;margin-bottom:4px;font-size:19px;">
+                <i class="fa-solid fa-handshake"></i> Programmer un mot (Partenariat)
+            </h3>
+            <p style="font-size:12.5px;color:var(--gris);margin-bottom:16px;">
+                Place un mot de marque ou un mot spécial en avant, immédiatement ou à une date choisie.
+            </p>
+
+            <form method="POST">
+                <?= csrf_field() ?>
+                <input type="hidden" name="action" value="programmer_partenariat">
+
+                <label style="display:block;font-size:12px;color:var(--gris);margin-bottom:6px;font-weight:700;">Mot à mettre en avant :</label>
+                <input type="text" name="mot" id="progMotInput" list="listeMotsDico" required
+                       placeholder="Ex: WAVE, ORANGE, SOLIBRA…" autocomplete="off"
+                       style="width:100%;padding:10px 14px;background:rgba(253,248,240,0.05);border:2px solid rgba(247,127,0,0.25);border-radius:10px;color:var(--texte);font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;text-transform:uppercase;outline:none;margin-bottom:14px;">
+
+                <label style="display:block;font-size:12px;color:var(--gris);margin-bottom:8px;font-weight:700;">Quand diffuser ce mot ?</label>
+                <div style="background:rgba(253,248,240,0.03);border:1px solid rgba(247,127,0,0.2);border-radius:10px;padding:12px;margin-bottom:14px;">
+                    <label style="display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:700;color:#fff;margin-bottom:10px;cursor:pointer;">
+                        <input type="radio" name="cible" value="prochain" id="radioProchain" checked style="accent-color:var(--orange);width:17px;height:17px;">
+                        <span>⚡ <strong>Au tout prochain créneau</strong> (<?= $nxt['libelle'] ?>)</span>
+                    </label>
+
+                    <label style="display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:700;color:#fff;margin-bottom:8px;cursor:pointer;">
+                        <input type="radio" name="cible" value="specifique" id="radioSpecifique" style="accent-color:var(--orange);width:17px;height:17px;">
+                        <span>📅 <strong>Choisir une date et un créneau précis</strong></span>
+                    </label>
+
+                    <div id="blocDateSpecifique" style="display:none;margin-top:10px;padding-top:10px;border-top:1px dashed rgba(247,127,0,0.2);display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                        <div>
+                            <span style="font-size:11px;color:var(--gris);display:block;margin-bottom:4px;">Date :</span>
+                            <input type="date" name="date_jour" value="<?= date('Y-m-d') ?>" min="<?= date('Y-m-d') ?>"
+                                   style="width:100%;padding:8px 10px;background:rgba(253,248,240,0.06);border:1px solid rgba(247,127,0,0.3);border-radius:8px;color:#fff;font-family:'Nunito',sans-serif;font-size:13px;outline:none;">
+                        </div>
+                        <div>
+                            <span style="font-size:11px;color:var(--gris);display:block;margin-bottom:4px;">Créneau horaire :</span>
+                            <select name="creneau" style="width:100%;padding:8px 10px;background:#221a0e;border:1px solid rgba(247,127,0,0.3);border-radius:8px;color:#fff;font-family:'Nunito',sans-serif;font-size:13px;outline:none;">
+                                <option value="0">🕛 00h - 06h</option>
+                                <option value="1">🌅 06h - 12h</option>
+                                <option value="2">☀️ 12h - 18h</option>
+                                <option value="3">🌙 18h - 00h</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <label style="display:block;font-size:12px;color:var(--gris);margin-bottom:6px;font-weight:700;">Définition ou slogan du partenaire :</label>
+                <textarea name="definition" id="progDefInput" rows="2" placeholder="Ex: Wave CI – Application de transfert d'argent sans frais..."
+                          style="width:100%;padding:10px 14px;background:rgba(253,248,240,0.05);border:2px solid rgba(247,127,0,0.25);border-radius:10px;color:var(--texte);font-family:'Nunito',sans-serif;font-size:13px;outline:none;margin-bottom:12px;resize:vertical;"></textarea>
+
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#ffd700;font-weight:700;margin-bottom:18px;cursor:pointer;">
+                    <input type="checkbox" name="est_partenaire" value="1" checked style="width:18px;height:18px;accent-color:var(--orange);">
+                    ⭐ Marquer comme mot Partenaire / Sponsorisé
+                </label>
+
+                <div class="modal-actions" style="display:flex;gap:10px;">
+                    <button type="submit" class="btn btn-vert" style="flex:1;">
+                        <i class="fa-solid fa-check"></i> Enregistrer et Programmer
+                    </button>
+                    <button type="button" class="btn-cancel" id="cancelProgModal">Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
     // Gestion du modal pour changer le mot d'un créneau
     const modalSlot      = document.getElementById('modalSlot');
@@ -995,16 +1210,66 @@ document.getElementById('modalDef').addEventListener('click', e => {
     const slotInfoText   = document.getElementById('slotInfoText');
     const slotMode       = document.getElementById('slotMode');
 
+    const slotDef          = document.getElementById('slotDef');
+    const slotIsPartenaire = document.getElementById('slotIsPartenaire');
+
     document.querySelectorAll('.btn-slot-edit').forEach(btn => {
         btn.addEventListener('click', () => {
-            slotDate.value       = btn.dataset.date;
-            slotCreneau.value    = btn.dataset.creneau;
-            slotNouveauMot.value = btn.dataset.mot;
+            slotDate.value          = btn.dataset.date;
+            slotCreneau.value       = btn.dataset.creneau;
+            slotNouveauMot.value    = btn.dataset.mot;
+            if (slotDef) slotDef.value = btn.dataset.def || '';
+            if (slotIsPartenaire) slotIsPartenaire.checked = (btn.dataset.part === '1');
             slotInfoText.textContent = btn.dataset.creneautext + ' (Mot actuel : ' + btn.dataset.mot + ')';
-            slotMode.value       = 'choisir';
+            slotMode.value          = 'choisir';
             modalSlot.style.display = 'flex';
             slotNouveauMot.focus();
         });
+    });
+
+    // Modal Programmer un partenariat
+    const modalProg          = document.getElementById('modalProgrammerPartenaire');
+    const btnOpenProgModal   = document.getElementById('btnOpenProgModal');
+    const closeModalProg     = document.getElementById('closeModalProg');
+    const cancelProgModal    = document.getElementById('cancelProgModal');
+    const progMotInput       = document.getElementById('progMotInput');
+    const progDefInput       = document.getElementById('progDefInput');
+    const radioProchain      = document.getElementById('radioProchain');
+    const radioSpecifique    = document.getElementById('radioSpecifique');
+    const blocDateSpecifique = document.getElementById('blocDateSpecifique');
+
+    function toggleDateSpecifique() {
+        if (blocDateSpecifique) {
+            blocDateSpecifique.style.display = radioSpecifique.checked ? 'grid' : 'none';
+        }
+    }
+    radioProchain?.addEventListener('change', toggleDateSpecifique);
+    radioSpecifique?.addEventListener('change', toggleDateSpecifique);
+
+    btnOpenProgModal?.addEventListener('click', () => {
+        progMotInput.value = '';
+        progDefInput.value = '';
+        radioProchain.checked = true;
+        toggleDateSpecifique();
+        modalProg.style.display = 'flex';
+        progMotInput.focus();
+    });
+
+    document.querySelectorAll('.btn-prog-partenaire').forEach(btn => {
+        btn.addEventListener('click', () => {
+            progMotInput.value = btn.dataset.mot || '';
+            progDefInput.value = btn.dataset.def || '';
+            radioProchain.checked = true;
+            toggleDateSpecifique();
+            modalProg.style.display = 'flex';
+            progMotInput.focus();
+        });
+    });
+
+    closeModalProg?.addEventListener('click', () => modalProg.style.display = 'none');
+    cancelProgModal?.addEventListener('click', () => modalProg.style.display = 'none');
+    modalProg?.addEventListener('click', (e) => {
+        if (e.target === modalProg) modalProg.style.display = 'none';
     });
 
     document.getElementById('btnSlotRandom')?.addEventListener('click', () => {

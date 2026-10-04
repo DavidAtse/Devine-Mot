@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 // ======================
 // R�F�RENCES DOM
@@ -92,8 +92,8 @@ function _chargerDefinition() {
     catch { return null; }
 }
 
-function _sauvegarderDefinition(mot, definition) {
-    localStorage.setItem(KEY_DEFINITION, JSON.stringify({ mot, definition }));
+function _sauvegarderDefinition(mot, definition, estPartenaire = false) {
+    localStorage.setItem(KEY_DEFINITION, JSON.stringify({ mot, definition, est_partenaire: !!estPartenaire }));
 }
 
 function _montrerBoutonDef(visible) {
@@ -101,7 +101,7 @@ function _montrerBoutonDef(visible) {
     if (btn) btn.style.display = visible ? 'block' : 'none';
 }
 
-function afficherDefinition(mot, definition) {
+function afficherDefinition(mot, definition, estPartenaire = false) {
     const modal = document.getElementById('definitionModal');
     if (!modal) return;
 
@@ -111,13 +111,30 @@ function afficherDefinition(mot, definition) {
 
     if (corps) {
         corps.innerHTML = '';
+        if (estPartenaire) {
+            const badgePart = document.createElement('div');
+            badgePart.style.display = 'inline-flex';
+            badgePart.style.alignItems = 'center';
+            badgePart.style.gap = '6px';
+            badgePart.style.background = 'linear-gradient(135deg, #ffd700, #ff8c00)';
+            badgePart.style.color = '#110e08';
+            badgePart.style.fontWeight = '800';
+            badgePart.style.fontSize = '12px';
+            badgePart.style.padding = '4px 12px';
+            badgePart.style.borderRadius = '12px';
+            badgePart.style.marginBottom = '12px';
+            badgePart.style.textTransform = 'uppercase';
+            badgePart.style.letterSpacing = '0.5px';
+            badgePart.innerHTML = '<i class="fa-solid fa-star"></i> Mot Partenaire Officiel';
+            corps.appendChild(badgePart);
+        }
         const p = document.createElement('p');
         if (definition && definition.trim()) {
             p.className   = 'def-texte';
             p.textContent = definition.trim();
         } else {
             p.className   = 'def-vide';
-            p.textContent = 'Pas encore de définition pour ce mot. L\'administrateur peut en ajouter une via le panel admin.';
+            p.textContent = "Pas encore de définition pour ce mot. L'administrateur peut en ajouter une via le panel admin.";
         }
         corps.appendChild(p);
         
@@ -150,7 +167,7 @@ function afficherDefinition(mot, definition) {
 
 function ouvrirDefinition() {
     const data = _chargerDefinition();
-    if (data) afficherDefinition(data.mot, data.definition);
+    if (data) afficherDefinition(data.mot, data.definition, data.est_partenaire);
 }
 
 // ======================
@@ -263,7 +280,7 @@ async function init() {
                     mettreAJourTuiles(data.longueur, positions, data.mot);
                 }
                 if (data.definition) {
-                    _sauvegarderDefinition(data.mot || '', data.definition);
+                    _sauvegarderDefinition(data.mot || '', data.definition, data.est_partenaire);
                     _montrerBoutonDef(true);
                 }
                 // Bloquer le jeu proprement
@@ -345,9 +362,9 @@ bouton.addEventListener("click", async () => {
             bloquerJeu(numEssai);
             animationVictoire();
             // Sauvegarder la définition et l'afficher apr�s les confettis
-            _sauvegarderDefinition(motPropose, data.definition || '');
+            _sauvegarderDefinition(motPropose, data.definition || '', data.est_partenaire);
             _montrerBoutonDef(true);
-            setTimeout(() => afficherDefinition(motPropose, data.definition || ''), 2500);
+            setTimeout(() => afficherDefinition(motPropose, data.definition || '', data.est_partenaire), 2500);
         } else {
             clearMsg();
         }
@@ -598,7 +615,7 @@ function _urlBase64ToUint8Array(base64String) {
 // Paiement via Lien Wave Business
 function openWaveLink() {
     if (!window.wavePaymentLink || window.wavePaymentLink.trim() === '') {
-        alert('Le lien de paiement Wave n\'est pas encore configur? ! Ajoute la variable WAVE_PAYMENT_LINK dans Railway (ex: https://pay.wave.com/m/ton-nom).');
+        alert("Le lien de paiement Wave n'est pas encore configuré ! Ajoute la variable WAVE_PAYMENT_LINK dans Railway (ex: https://pay.wave.com/m/ton-nom).");
         return;
     }
 

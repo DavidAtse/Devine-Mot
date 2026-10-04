@@ -47,15 +47,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $definition = $defRow ? ($defRow['definition'] ?? '') : '';
     }
 
+    // Mot partenaire ?
+    $stmtP = $conn->prepare("SELECT est_partenaire FROM mots_du_jour WHERE date_jour = ? AND creneau = ?");
+    $stmtP->bind_param('si', $aujourdhui, $creneau);
+    $stmtP->execute();
+    $pRow = $stmtP->get_result()->fetch_assoc();
+    $estPartenaire = $pRow ? (bool)$pRow['est_partenaire'] : false;
+
     $conn->close();
     echo json_encode([
-        'longueur'   => $longueur,
-        'deja_gagne' => $dejaGagne,
-        'tentatives' => $scoreRow ? (int)$scoreRow['tentatives'] : 0,
-        'mot'        => $dejaGagne ? $motDuJour : null,
-        'definition' => $definition,
-        'creneau'    => $creneau,
-        'fin_dans'   => creneau_secondes_restantes(),
+        'longueur'       => $longueur,
+        'deja_gagne'     => $dejaGagne,
+        'tentatives'     => $scoreRow ? (int)$scoreRow['tentatives'] : 0,
+        'mot'            => $dejaGagne ? $motDuJour : null,
+        'definition'     => $definition,
+        'creneau'        => $creneau,
+        'fin_dans'       => creneau_secondes_restantes(),
+        'est_partenaire' => $estPartenaire,
     ]);
     exit;
 }
@@ -165,17 +173,25 @@ if ($gagne) {
     $definition = $defRow ? ($defRow['definition'] ?? '') : '';
 }
 
+// Mot partenaire ?
+$stmtP2 = $conn->prepare("SELECT est_partenaire FROM mots_du_jour WHERE date_jour = ? AND creneau = ?");
+$stmtP2->bind_param('si', $aujourdhui, $creneau);
+$stmtP2->execute();
+$pRow2 = $stmtP2->get_result()->fetch_assoc();
+$estPartenairePost = $pRow2 ? (bool)$pRow2['est_partenaire'] : false;
+
 $conn->close();
 
 echo json_encode([
-    'ok'          => true,
-    'valide'      => true,
-    'positions'   => $positions,
-    'score'       => $score,
-    'emoji'       => $emoji,
-    'gagne'       => $gagne,
-    'longueurMDJ' => $longueurMDJ,
-    'definition'  => $definition,  // vide si non gagné ou pas de définition
+    'ok'             => true,
+    'valide'         => true,
+    'positions'      => $positions,
+    'score'          => $score,
+    'emoji'          => $emoji,
+    'gagne'          => $gagne,
+    'longueurMDJ'    => $longueurMDJ,
+    'definition'     => $definition,
+    'est_partenaire' => $estPartenairePost,
 ]);
 
 // ============================================================
