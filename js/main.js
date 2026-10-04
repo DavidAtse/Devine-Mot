@@ -94,6 +94,28 @@ function _chargerDefinition() {
 
 function _sauvegarderDefinition(mot, definition, estPartenaire = false) {
     localStorage.setItem(KEY_DEFINITION, JSON.stringify({ mot, definition, est_partenaire: !!estPartenaire }));
+    renderDefInline();
+}
+
+// Carte définition permanente : visible tant que le créneau en cours n'a pas changé
+// (KEY_DEFINITION est effacée automatiquement au changement de créneau).
+function renderDefInline() {
+    const box = document.getElementById('defInline');
+    if (!box) return;
+    const data = _chargerDefinition();
+    if (!data) { box.hidden = true; return; }
+    const motEl   = document.getElementById('defInlineMot');
+    const texteEl = document.getElementById('defInlineTexte');
+    const partEl  = document.getElementById('defInlinePartenaire');
+    if (motEl)   { motEl.textContent = data.mot || ''; motEl.hidden = !data.mot; }
+    if (partEl)  partEl.hidden = !data.est_partenaire;
+    if (texteEl) {
+        texteEl.textContent = (data.definition && data.definition.trim())
+            ? data.definition.trim()
+            : "Pas encore de définition pour ce mot.";
+        texteEl.classList.toggle('vide', !(data.definition && data.definition.trim()));
+    }
+    box.hidden = false;
 }
 
 function _montrerBoutonDef(visible) {
@@ -244,6 +266,7 @@ function reconstruireTableau() {
 async function init() {
     reconstruireTableau();
     chargerTuiles();
+    renderDefInline();
 
     // Si la partie est déjà gagn�e aujourd'hui (localStorage), afficher le bouton définition
     const hist  = chargerHistorique();
@@ -286,8 +309,8 @@ async function init() {
                 // Bloquer le jeu proprement
                 bloquerJeu(data.tentatives || 1);
                 // Sauvegarder la définition localement pour ce device
-                const motGagne = ""; // on n'a pas le mot côté client (s�curit�), on affiche juste la définition
-                _sauvegarderDefinition(motGagne, data.definition || '');
+                const motGagne = data.mot || ""; // on n'a pas le mot côté client (s�curit�), on affiche juste la définition
+                _sauvegarderDefinition(motGagne, data.definition || '', data.est_partenaire);
                 _montrerBoutonDef(true);
             }
         }

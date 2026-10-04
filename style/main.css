@@ -907,3 +907,81 @@ main { max-width: 1600px; margin-left: auto; margin-right: auto; }
     .def-icon { display: none; }
     .def-header { margin-bottom: 8px; }
 }
+
+/* ============================================================
+   CARTE DEFINITION PERMANENTE + MISE EN PAGE MOBILE ROBUSTE
+   ============================================================ */
+.def-inline[hidden] { display: none !important; }
+.def-inline {
+    background: linear-gradient(135deg, rgba(27,122,62,0.22), rgba(247,127,0,0.10));
+    border: 1px solid rgba(247,127,0,0.35);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+    animation: defModalIn 0.4s cubic-bezier(0.22,1,0.36,1) both;
+}
+.def-inline::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(to right, var(--orange) 33.3%, var(--texte) 33.3% 66.6%, var(--vert) 66.6%);
+}
+.def-inline-top {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    justify-content: space-between; margin: 4px 0 8px;
+}
+.def-inline-label { font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: rgba(253,248,240,0.75); }
+.def-inline-badge {
+    font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 12px;
+    background: linear-gradient(135deg, #ffd700, #ff8c00); color: #110e08; text-transform: uppercase;
+}
+.def-inline-badge[hidden], .def-inline-mot[hidden] { display: none; }
+.def-inline-mot {
+    font-family: 'Paytone One', sans-serif; font-size: 24px; letter-spacing: 3px;
+    color: var(--orange); margin: 0 0 8px; overflow-wrap: anywhere; text-transform: uppercase;
+}
+.def-inline-texte {
+    font-size: 14.5px; line-height: 1.7; color: var(--texte);
+    max-height: 260px; overflow-y: auto; overflow-wrap: anywhere; white-space: pre-line;
+    padding-right: 4px; -webkit-overflow-scrolling: touch;
+}
+.def-inline-texte.vide { color: var(--gris); font-style: italic; }
+.def-inline-note { font-size: 12px; color: var(--gris); margin: 10px 0 0 !important; }
+
+/* Les lignes de la grille ne s'etirent plus : plus de grand vide */
+main { align-content: start; }
+.infos { align-self: start; }
+.instruction { flex: 0 0 auto; }
+
+/* Tablette + mobile : une seule colonne, ordre logique, aucun trou */
+@media (max-width: 1024px) {
+    main { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+    .infos { display: contents; animation: none; }
+    .info-logo      { order: 1; width: 100%; }
+    .def-inline     { order: 2; }
+    .game           { order: 3; width: 100%; }
+    .instruction    { order: 4; width: 100%; flex: 0 0 auto; }
+    .def-inline-texte { max-height: 220px; }
+}
+@media (max-width: 640px) {
+    .def-inline { padding: 14px 12px; }
+    .def-inline-mot { font-size: 20px; letter-spacing: 2px; }
+    .def-inline-texte { font-size: 14px; max-height: 200px; }
+}
+
+/* Finitions petits ecrans (320 - 430px) */
+@media (max-width: 640px) {
+    .game > div[style*="padding:16px 24px"] { padding: 12px 12px 16px !important; gap: 10px !important; }
+    .game > div button { font-size: 14px !important; padding: 13px 12px !important; }
+    .info-logo { gap: 8px; }
+    .info-logo > a:first-child { font-size: 13px; }
+    #pwaInstallBanner { width: calc(100% - 24px) !important; bottom: calc(12px + env(safe-area-inset-bottom)) !important; }
+    header { padding: 16px 10px 14px; }
+    header > p { overflow-wrap: anywhere; }
+}
+@media (max-width: 360px) {
+    main { padding: 6px; }
+    .nav-links a { font-size: 10.5px; padding: 4px 7px; }
+    .info-logo { padding: 8px; }
+    .def-inline-mot { font-size: 18px; letter-spacing: 1px; }
+}
+body { padding-bottom: env(safe-area-inset-bottom); }
