@@ -392,3 +392,42 @@ body::after {
     }
     .card-header h1 { font-size: 24px; }
 }
+/* ============================================================
+   RESPONSIVITE CONNEXION / INSCRIPTION
+   ============================================================ */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 20px 14px;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+}
+.card { margin: 0 auto; }
+.logo-img {
+    display: block;
+    width: min(240px, 80%);
+    height: auto;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.4);
+    margin: 0 auto 10px;
+}
+/* 16px minimum : empêche le zoom automatique d'iOS au focus */
+.form-group input { font-size: 16px; min-width: 0; }
+.card-footer, .msg { overflow-wrap: anywhere; }
+footer { width: 100%; }
+
+@media (max-width: 480px) {
+    body { padding: 12px 10px; justify-content: flex-start; }
+    .card { padding: 32px 18px 24px; margin: 8px auto; border-radius: 20px; }
+    .card-header { margin-bottom: 22px; }
+    .logo-img { width: min(210px, 82%); }
+    .btn-principal { font-size: 16px; padding: 14px; }
+}
+@media (max-height: 520px) {
+    body { justify-content: flex-start; }
+    .logo-img { width: 150px; }
+}
+@media (min-width: 1200px) {
+    .card { max-width: 460px; }
+}

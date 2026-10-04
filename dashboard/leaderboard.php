@@ -33,11 +33,14 @@ $userId = (int) $_SESSION['user_id'];
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="../favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/icons/icon-180.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Classement – Mot du Jour CI</title>
     <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="icon" type="image/x-icon" href="../assets/1200x630wa-removebg-preview.png">
 </head>
 <body>
     <nav class="dash-nav">

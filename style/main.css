@@ -804,3 +804,106 @@ th                  { color: rgba(253,248,240,0.85); font-weight:700; }
     transform: translateY(-2px);
     box-shadow: 0 4px 20px rgba(0, 158, 96, 0.25);
 }
+
+/* ============================================================
+   RESPONSIVITE GLOBALE (grand écran / tablette / mobile)
+   ============================================================ */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+img  { max-width: 100%; }
+
+/* Logo du jeu (image fournie, fond blanc) */
+.logo-img {
+    display: block;
+    width: min(260px, 70%);
+    height: auto;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+    margin: 0 auto 10px;
+}
+header img.logo-img { width: min(260px, 70%); filter: none; }
+
+/* Très grands écrans : on centre le jeu */
+main { max-width: 1600px; margin-left: auto; margin-right: auto; }
+@media (min-width: 1700px) {
+    main { grid-template-columns: 540px 1fr; }
+}
+
+/* Éléments qui ne doivent jamais déborder */
+.guess-box input { min-width: 0; }
+.results-wrapper { overflow-x: auto; }
+.results tbody td:nth-child(2) { word-break: break-word; overflow-wrap: anywhere; }
+#message { overflow-wrap: anywhere; }
+.game, .instruction, .infos { min-width: 0; }
+
+/* ===== MODALES : jamais coupées, contenu scrollable ===== */
+.modal {
+    padding: 16px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.modal-content {
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    margin: auto;
+}
+.close { z-index: 5; }
+
+/* Modale définition : en-tête fixe, texte scrollable, bouton toujours visible */
+.def-modal-content {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    width: 100%;
+    max-width: 520px;
+}
+.def-modal-content .def-header { flex: 0 0 auto; }
+.def-modal-content .def-corps {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+.def-modal-content .def-footer { flex: 0 0 auto; }
+.def-texte { overflow-wrap: anywhere; white-space: pre-line; }
+.def-header h3 { overflow-wrap: anywhere; text-align: center; }
+
+/* ===== TABLETTE ===== */
+@media (max-width: 1024px) {
+    .infos > .instruction { min-width: 0; flex: 1 1 100%; }
+    .game { width: 100%; }
+    .logo-img, header img.logo-img { width: min(240px, 60%); }
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 640px) {
+    .def-modal-content { padding: 22px 14px 16px; }
+    .def-header h3 { font-size: 20px; letter-spacing: 2px; }
+    .def-header { margin-bottom: 12px; gap: 6px; }
+    .def-icon { font-size: 38px; }
+    .def-corps { padding: 14px 12px; }
+    .def-texte { font-size: 14px; line-height: 1.65; }
+    .logo-img, header img.logo-img { width: min(210px, 62%); }
+    .info-logo { justify-content: center; }
+    .tuiles { gap: 4px; }
+    .guess-box button { width: 100%; }
+    .instruction { padding: 16px 12px; }
+    .results-wrapper { padding: 10px 8px 14px; }
+}
+
+@media (max-width: 400px) {
+    .logo-img, header img.logo-img { width: min(180px, 60%); }
+    .def-header h3 { font-size: 17px; letter-spacing: 1px; }
+    .tuile { width: 28px; height: 28px; font-size: 12px; }
+}
+
+/* Paysage téléphone : peu de hauteur */
+@media (max-height: 480px) and (orientation: landscape) {
+    .def-modal-content { padding: 12px 18px; }
+    .def-icon { display: none; }
+    .def-header { margin-bottom: 8px; }
+}

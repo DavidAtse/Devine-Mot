@@ -3,6 +3,10 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="../favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/icons/icon-180.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, follow">
     <title>Conditions Générales d'Utilisation — iMots CI</title>
@@ -250,7 +254,9 @@
             h1 { font-size: 1.5rem; }
             header { flex-direction: column; align-items: flex-start; }
         }
-    </style>
+        .data-table, .cookie-table { display:block; max-width:100%; overflow-x:auto; }
+    img { max-width:100%; }
+</style>
 </head>
 <body>
 

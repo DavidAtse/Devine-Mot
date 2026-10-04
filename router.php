@@ -12,8 +12,10 @@ if ($uri !== '/' && file_exists(__DIR__ . $uri)) {
 }
 
 // 2. Redirection racine → page de connexion
+// (redirection HTTP et non require : sinon les chemins relatifs style.css,
+//  ../assets/... se résolvent depuis "/" et la page s'affiche sans CSS)
 if ($uri === '/') {
-    require __DIR__ . '/inscription/login.php';
+    header('Location: /inscription/login.php', true, 302);
     exit;
 }
 

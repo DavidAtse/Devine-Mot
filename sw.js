@@ -1,7 +1,7 @@
-/* Service Worker – iMots CI */
-const CACHE_NAME = 'imots-ci-v3';
+﻿/* Service Worker â€“ iMots CI */
+const CACHE_NAME = 'imots-ci-v4';
 
-/* Installation : on ne précache RIEN — les pages PHP sont dynamiques */
+/* Installation : on ne prÃ©cache RIEN â€” les pages PHP sont dynamiques */
 self.addEventListener('install', e => {
     e.waitUntil(self.skipWaiting());
 });
@@ -16,16 +16,16 @@ self.addEventListener('activate', e => {
 });
 
 /* Fetch : Network-first pour TOUT (PHP + CSS + JS)
-   → Le téléphone va toujours chercher la dernière version sur le serveur.
-   → En cas d'absence de réseau, on répond avec le cache si disponible. */
+   â†’ Le tÃ©lÃ©phone va toujours chercher la derniÃ¨re version sur le serveur.
+   â†’ En cas d'absence de rÃ©seau, on rÃ©pond avec le cache si disponible. */
 self.addEventListener('fetch', e => {
-    // Ne pas intercepter les requêtes non-GET (POST vers php/jouer.php etc.)
+    // Ne pas intercepter les requÃªtes non-GET (POST vers php/jouer.php etc.)
     if (e.request.method !== 'GET') return;
 
     e.respondWith(
         fetch(e.request)
             .then(response => {
-                // Mettre en cache les réponses statiques (CSS, JS, PNG)
+                // Mettre en cache les rÃ©ponses statiques (CSS, JS, PNG)
                 const url = new URL(e.request.url);
                 const isStatic = /\.(css|js|png|ico|json|jpg|svg)(\?|$)/.test(url.pathname);
                 if (isStatic && response.ok) {
@@ -38,7 +38,7 @@ self.addEventListener('fetch', e => {
     );
 });
 
-/* Push : reçoit la notification */
+/* Push : reÃ§oit la notification */
 self.addEventListener('push', e => {
     e.waitUntil(
         fetch('/php/notification-info.php')
@@ -56,11 +56,11 @@ self.addEventListener('push', e => {
                         { action: 'plus-tard', title: 'Plus tard' }
                     ]
                 };
-                return self.registration.showNotification(data.title || 'iMots CI 🇨🇮', opts);
+                return self.registration.showNotification(data.title || 'iMots CI ðŸ‡¨ðŸ‡®', opts);
             })
             .catch(() => {
-                return self.registration.showNotification('iMots CI 🇨🇮', {
-                    body: 'Le mot du jour t\'attend ! Viens deviner 🔥',
+                return self.registration.showNotification('iMots CI ðŸ‡¨ðŸ‡®', {
+                    body: 'Le mot du jour t\'attend ! Viens deviner ðŸ”¥',
                     icon: '/assets/icons/icon-192.png',
                     tag: 'imots-daily'
                 });

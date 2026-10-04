@@ -16,11 +16,14 @@ header('Pragma: no-cache');
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="../favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/icons/icon-180.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Déconnexion – Mot du Jour CI</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=3">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="icon" type="image/x-icon" href="assets/1200x630wa-removebg-preview.png">
     <script>
         // Ne PAS supprimer les données de jeu (hist, conf, len) :
         // elles sont nécessaires pour restaurer les tuiles et l'historique

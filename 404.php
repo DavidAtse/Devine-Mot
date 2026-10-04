@@ -9,9 +9,12 @@ http_response_code(404);
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/icon-180.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Page introuvable — DevineMot CI 🇨🇮</title>
-    <link rel="icon" type="image/svg+xml" href="/assets/icons/icon-192.svg">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body {

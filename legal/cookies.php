@@ -3,6 +3,10 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="../favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/icons/icon-180.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, follow">
     <title>Politique de Cookies — iMots CI</title>
@@ -276,7 +280,9 @@
             .cookie-table { font-size: 0.8rem; }
             .cookie-table th, .cookie-table td { padding: 8px 10px; }
         }
-    </style>
+        .data-table, .cookie-table { display:block; max-width:100%; overflow-x:auto; }
+    img { max-width:100%; }
+</style>
 </head>
 <body>
 

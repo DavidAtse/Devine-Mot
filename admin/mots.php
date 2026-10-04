@@ -357,10 +357,13 @@ $conn->close();
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="../favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/icons/icon-180.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin – iMots CI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="icon" type="image/x-icon" href="../assets/1200x630wa-removebg-preview.png">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Paytone+One&family=Nunito:wght@400;600;700;800&display=swap');
 
@@ -456,6 +459,9 @@ $conn->close();
         /* DEUX COLONNES */
         .cols { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
         @media(max-width:860px) { .cols { grid-template-columns: 1fr; } }
+        html { -webkit-text-size-adjust:100%; }
+        .table-mots { max-width:100%; }
+        @media(max-width:640px) { body { overflow-x:hidden; } .table-mots { display:block; overflow-x:auto; white-space:nowrap; } .modal-box, .modal-content { max-width:94vw; max-height:92dvh; overflow-y:auto; } }
 
         /* SECTION */
         .section {
