@@ -14,6 +14,9 @@
 # Données d'export de la base (peuvent contenir des mots de passe hashés)
 railway_import.sql
 jeu_mot.sql
+railway_live_dump.sql
+alwaysdata_import.sql
+*.sql
 *.sql.bak
 
 # Documents Word / PDF générés

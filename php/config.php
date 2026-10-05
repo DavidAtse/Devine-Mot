@@ -10,22 +10,43 @@
  * En local (XAMPP), les valeurs de fallback sont utilisées.
  */
 
-// 1. Tente de lire une URL complète (ex: mysql://user:pass@host:port/db)
-$dbUrl = getenv('MYSQL_PUBLIC_URL') ?: getenv('MYSQL_URL') ?: getenv('DATABASE_URL');
-if ($dbUrl) {
-    $parsed = parse_url($dbUrl);
-    define('DB_HOST', $parsed['host'] ?? 'localhost');
-    define('DB_PORT', (int)($parsed['port'] ?? 3306));
-    define('DB_USER', $parsed['user'] ?? 'root');
-    define('DB_PASS', $parsed['pass'] ?? '');
-    define('DB_NAME', ltrim($parsed['path'], '/') ?: 'jeu_mot');
+// 0. Environnement Alwaysdata (hôte imots.alwaysdata.net ou dossier /home/imots)
+$isAlwaysdata = (
+    str_contains($_SERVER['HTTP_HOST'] ?? '', 'alwaysdata.net') ||
+    is_dir('/home/imots') ||
+    getenv('ALWAYSDATA') !== false
+);
+
+if ($isAlwaysdata) {
+    // Mot de passe sécurisé : lu depuis variable d'environnement ou fichier externe hors webroot (/home/imots/env_db.php)
+    $adPass = getenv('ALWAYSDATA_DB_PASS');
+    if (!$adPass && file_exists('/home/imots/env_db.php')) {
+        $adConfig = require '/home/imots/env_db.php';
+        $adPass = $adConfig['DB_PASS'] ?? '';
+    }
+    define('DB_HOST', 'mysql-imots.alwaysdata.net');
+    define('DB_PORT', 3306);
+    define('DB_USER', 'imots');
+    define('DB_PASS', $adPass ?: (getenv('DB_PASS') ?: ''));
+    define('DB_NAME', 'imots_jeu');
 } else {
-    // 2. Sinon, utilise les variables séparées ou les valeurs locales
-    define('DB_HOST', getenv('MYSQLHOST')     ?: 'localhost');
-    define('DB_PORT', (int)(getenv('MYSQLPORT') ?: 3306));
-    define('DB_USER', getenv('MYSQLUSER')     ?: 'root');
-    define('DB_PASS', getenv('MYSQLPASSWORD') ?: '');
-    define('DB_NAME', getenv('MYSQLDATABASE') ?: 'jeu_mot');
+    // 1. Tente de lire une URL complète (ex: mysql://user:pass@host:port/db)
+    $dbUrl = getenv('MYSQL_PUBLIC_URL') ?: getenv('MYSQL_URL') ?: getenv('DATABASE_URL');
+    if ($dbUrl) {
+        $parsed = parse_url($dbUrl);
+        define('DB_HOST', $parsed['host'] ?? 'localhost');
+        define('DB_PORT', (int)($parsed['port'] ?? 3306));
+        define('DB_USER', $parsed['user'] ?? 'root');
+        define('DB_PASS', $parsed['pass'] ?? '');
+        define('DB_NAME', ltrim($parsed['path'], '/') ?: 'jeu_mot');
+    } else {
+        // 2. Sinon, utilise les variables séparées ou les valeurs locales (XAMPP)
+        define('DB_HOST', getenv('MYSQLHOST')     ?: 'localhost');
+        define('DB_PORT', (int)(getenv('MYSQLPORT') ?: 3306));
+        define('DB_USER', getenv('MYSQLUSER')     ?: 'root');
+        define('DB_PASS', getenv('MYSQLPASSWORD') ?: '');
+        define('DB_NAME', getenv('MYSQLDATABASE') ?: 'jeu_mot');
+    }
 }
 
 define('GAME_LAUNCH_DATE', '2026-01-01'); // date de référence pour le calcul du jour

@@ -1,0 +1,48 @@
+# ============================================================
+# .htaccess — Configuration Apache pour iMots CI (Alwaysdata)
+# ============================================================
+
+Options -Indexes
+DirectoryIndex index.php
+
+# 1. Protection des fichiers sensibles
+<FilesMatch "\.(sql|pem|env|log|md|json|lock)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Exception pour manifest.json (nécessaire pour PWA)
+<Files "manifest.json">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Allow from all
+    </IfModule>
+</Files>
+
+# 2. Réécriture d'URL
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Si le fichier ou dossier existe réellement, le servir directement
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Supprime l'extension .php si elle est omise dans l'URL
+    RewriteCond %{REQUEST_FILENAME}.php -f
+    RewriteRule ^(.*)$ $1.php [L]
+</IfModule>
+
+# 3. Page 404 personnalisée
+ErrorDocument 404 /404.php
+
+# 4. Encodage par défaut
+AddDefaultCharset UTF-8
