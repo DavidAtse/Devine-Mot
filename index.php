@@ -106,46 +106,6 @@ $conn->close();
                 </a>
             </div>
 
-            <!-- MODAL RÈGLES -->
-            <div class="modal" id="rulesModal">
-                <div class="modal-content">
-                    <span class="close" data-close="rulesModal">&times;</span>
-                    <h3>🇨🇮 Règles du jeu</h3>
-                    <p>
-                        Devine le <strong>mot ivoirien</strong> en cours.<br>
-                        Plus ton mot est proche, plus la température monte 🔥
-                    </p>
-                    <p>On compare chaque lettre à la <strong>même position</strong> que dans le mot à trouver.</p>
-                    <p><strong>Exemple :</strong></p>
-                    <ul>
-                        <li>Mot à trouver : <strong>ABOBO</strong></li>
-                        <li>Mot proposé : <strong>ABIDJAN</strong></li>
-                        <li>Comparaison : A ✅, B ✅, I ❌, D ❌, J ❌</li>
-                        <li>Lettres correctes : 2 sur 5 = 40%</li>
-                    </ul>
-                    <p>
-                        🔹 Les lettres <span style="color:#22c55e;font-weight:bold">vertes</span> sont à la bonne position.<br>
-                        🔹 Les mots les plus hauts sont les plus proches.<br>
-                        🔹 Il y a <strong>4 mots par jour</strong> : un nouveau mot toutes les 6 heures.<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;🕛 00h - 06h &nbsp;|&nbsp; 🌅 06h - 12h &nbsp;|&nbsp; ☀️ 12h - 18h &nbsp;|&nbsp; 🌙 18h - 00h<br>
-                        🔹 Chaque mot trouvé te rapporte une victoire : plus tu joues, plus tu montes au classement !
-                    </p>
-                </div>
-            </div>
-
-            <!-- MODAL DÉFINITION DU MOT -->
-            <div class="modal" id="definitionModal">
-                <div class="modal-content def-modal-content">
-                    <span class="close" data-close="definitionModal">&times;</span>
-                    <div class="def-header">
-                        <span class="def-icon">&#128218;</span>
-                        <h3 id="defMotTitre"></h3>
-                    </div>
-                    <div id="defContenu" class="def-corps"></div>
-                    <p class="def-footer">iMots CI &#127464;&#127470;</p>
-                </div>
-            </div>
-
             <!-- Bloc instruction + tableau température -->
             <div class="instruction">
                 <h3>Jour n°<?= $jourNum + 1 ?> · Mot <?= creneau_actuel() + 1 ?>/4 (<?= creneau_libelle(creneau_actuel()) ?>)</h3>
@@ -170,17 +130,6 @@ $conn->close();
                     </tbody>
                 </table>
                 <p>Bonne chance ! 💪</p>
-            </div>
-
-            <!-- DÉFINITION PERMANENTE (reste affichée jusqu'au prochain mot) -->
-            <div class="def-inline" id="defInline" hidden>
-                <div class="def-inline-top">
-                    <span class="def-inline-badge" id="defInlinePartenaire" hidden>⭐ Partenaire officiel</span>
-                    <span class="def-inline-label">📚 Mot trouvé</span>
-                </div>
-                <h3 id="defInlineMot" class="def-inline-mot"></h3>
-                <div id="defInlineTexte" class="def-inline-texte"></div>
-                <p class="def-inline-note">Un nouveau mot arrive au prochain créneau 🇨🇮</p>
             </div>
         </div>
 
@@ -239,7 +188,63 @@ $conn->close();
                 </button>
             </div>
         </div>
+
+
+            <!-- DÉFINITION PERMANENTE (reste affichée jusqu'au prochain mot) -->
+            <div class="def-inline" id="defInline" hidden>
+                <div class="def-inline-top">
+                    <span class="def-inline-badge" id="defInlinePartenaire" hidden>⭐ Partenaire officiel</span>
+                    <span class="def-inline-label">📚 Mot trouvé</span>
+                </div>
+                <h3 id="defInlineMot" class="def-inline-mot"></h3>
+                <div id="defInlineTexte" class="def-inline-texte"></div>
+                <p class="def-inline-note">Un nouveau mot arrive au prochain créneau 🇨🇮</p>
+            </div>
     </main>
+
+    
+
+            <!-- MODAL RÈGLES -->
+            <div class="modal" id="rulesModal">
+                <div class="modal-content">
+                    <span class="close" data-close="rulesModal">&times;</span>
+                    <h3>🇨🇮 Règles du jeu</h3>
+                    <p>
+                        Devine le <strong>mot ivoirien</strong> en cours.<br>
+                        Plus ton mot est proche, plus la température monte 🔥
+                    </p>
+                    <p>On compare chaque lettre à la <strong>même position</strong> que dans le mot à trouver.</p>
+                    <p><strong>Exemple :</strong></p>
+                    <ul>
+                        <li>Mot à trouver : <strong>ABOBO</strong></li>
+                        <li>Mot proposé : <strong>ABIDJAN</strong></li>
+                        <li>Comparaison : A ✅, B ✅, I ❌, D ❌, J ❌</li>
+                        <li>Lettres correctes : 2 sur 5 = 40%</li>
+                    </ul>
+                    <p>
+                        🔹 Les lettres <span style="color:#22c55e;font-weight:bold">vertes</span> sont à la bonne position.<br>
+                        🔹 Les mots les plus hauts sont les plus proches.<br>
+                        🔹 Il y a <strong>4 mots par jour</strong> : un nouveau mot toutes les 6 heures.<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;🕛 00h - 06h &nbsp;|&nbsp; 🌅 06h - 12h &nbsp;|&nbsp; ☀️ 12h - 18h &nbsp;|&nbsp; 🌙 18h - 00h<br>
+                        🔹 Chaque mot trouvé te rapporte une victoire : plus tu joues, plus tu montes au classement !
+                    </p>
+                </div>
+            </div>
+
+
+
+            <!-- MODAL DÉFINITION DU MOT -->
+            <div class="modal" id="definitionModal">
+                <div class="modal-content def-modal-content">
+                    <span class="close" data-close="definitionModal">&times;</span>
+                    <div class="def-header">
+                        <span class="def-icon">&#128218;</span>
+                        <h3 id="defMotTitre"></h3>
+                    </div>
+                    <div id="defContenu" class="def-corps"></div>
+                    <p class="def-footer">iMots CI &#127464;&#127470;</p>
+                </div>
+            </div>
 
     <!-- MODAL SOUTENIR (Dons) -->
     <div class="modal" id="donateModal">

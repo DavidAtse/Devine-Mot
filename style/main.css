@@ -57,23 +57,48 @@ body::after {
     pointer-events: none; z-index: 0;
 }
 
-/* ===== LAYOUT PRINCIPAL ===== */
+/* ===== LAYOUT PRINCIPAL (DESKTOP) ===== */
 main {
     display: grid;
-    grid-template-columns: 500px 1fr;
+    grid-template-columns: 460px 1fr;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+        "infos game"
+        "def   game";
     gap: 16px;
     min-height: 100vh;
+    max-width: 1400px;
+    margin: 0 auto;
     padding: 16px;
-    position: relative; z-index: 1;
+    position: relative;
+    z-index: 1;
+    align-items: start;
+    box-sizing: border-box;
 }
 
-/* ===== SIDEBAR GAUCHE ===== */
+/* ===== SIDEBAR GAUCHE (DESKTOP) ===== */
 .infos {
+    grid-area: infos;
     display: flex;
     flex-direction: column;
     gap: 14px;
+    width: 100%;
+    box-sizing: border-box;
     animation: fadeInLeft 0.6s cubic-bezier(0.22,1,0.36,1) both;
 }
+
+.game {
+    grid-area: game;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.def-inline {
+    grid-area: def;
+    width: 100%;
+    box-sizing: border-box;
+}
+
 
 @keyframes fadeInLeft {
     from { opacity: 0; transform: translateX(-30px); }
@@ -612,101 +637,305 @@ header > p:first-of-type {
     100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
 }
 
-/* ===== RESPONSIVE TABLETTE ===== */
+/* ============================================================
+   RESPONSIVITÉ & ALIGNEMENT MOBILE (TELEPHONE / TABLETTE)
+   1. Ordre naturel sur mobile :
+      - Bannière règles & navigation
+      - Bannière échelle de température
+      - Zone de jeu (où entrer les mots)
+      - Bannière définition du mot tout en bas
+   2. Zéro défilement sur l'axe X (alignement 100% largeur écran)
+   ============================================================ */
+
+/* ===== TABLETTE & MOBILE (<= 1024px) ===== */
 @media (max-width: 1024px) {
     main {
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-height: auto;
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 12px 10px;
+        box-sizing: border-box;
+        overflow-x: hidden;
     }
 
     .infos {
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: flex-start;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+        box-sizing: border-box;
+        animation: none;
     }
 
-    .info-logo { width: 100%; }
-
-    .instruction {
-        flex: 1;
-        min-width: 260px;
+    .info-logo,
+    .instruction,
+    .game,
+    .def-inline {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
     }
-
-    header img { width: 180px; }
 }
 
-/* ===== RESPONSIVE MOBILE ===== */
+/* ===== MOBILE CLASSIQUE (<= 640px) ===== */
 @media (max-width: 640px) {
-    main { padding: 8px; gap: 8px; }
+    main {
+        padding: 8px 6px;
+        gap: 10px;
+    }
 
-    .infos { flex-direction: column; }
+    /* 1. Bannière règles & navigation */
+    .info-logo {
+        padding: 8px 10px;
+        justify-content: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .info-logo a {
+        font-size: 12px;
+        padding: 5px 9px;
+    }
+
+    .nav-links {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    .nav-links a {
+        font-size: 11.5px;
+        padding: 5px 8px;
+    }
+
+    .info-logo .btn-deconnect {
+        font-size: 11.5px;
+        padding: 5px 9px;
+    }
+
+    /* 2. Bannière échelle de température */
+    .instruction {
+        padding: 14px 12px;
+    }
+
+    .instruction h3 {
+        font-size: 14px;
+        margin: 8px 0 6px;
+    }
+
+    .instruction table {
+        margin: 6px 0;
+    }
+
+    .instruction th, .instruction td {
+        padding: 6px 4px;
+        font-size: 12px;
+    }
+
+    /* 3. Zone de jeu */
+    header {
+        padding: 16px 10px 14px;
+    }
+
+    header img.logo-img {
+        width: min(200px, 60%);
+    }
+
+    header > p {
+        font-size: 13px;
+        overflow-wrap: anywhere;
+    }
+
+    #countdown {
+        font-size: 12px;
+    }
+
+    .bienvenue {
+        font-size: 12px;
+        padding: 4px 12px;
+    }
+
+    /* Tuiles d'indices */
+    .tuiles-wrapper {
+        padding: 10px 8px 0;
+        width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+
+    .tuiles {
+        gap: 4px;
+        max-width: 100%;
+    }
+
+    .tuile {
+        width: clamp(26px, 7.5vw, 38px);
+        height: clamp(26px, 7.5vw, 38px);
+        font-size: clamp(12px, 3.8vw, 16px);
+    }
+
+    .tuile-ok {
+        font-size: clamp(13px, 4vw, 18px);
+    }
+
+    /* Input et bouton de saisie */
+    .guess-box {
+        padding: 10px 8px 0;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .guess-box input {
+        width: 100%;
+        font-size: 16px; /* Empêche le zoom auto d'iOS Safari */
+        padding: 12px 14px;
+        box-sizing: border-box;
+    }
+
+    .guess-box button {
+        width: 100%;
+        font-size: 15px;
+        padding: 12px;
+        box-sizing: border-box;
+    }
+
+    /* Tableau des tentatives : aucun défilement X parasite */
+    .results-wrapper {
+        padding: 10px 6px 14px;
+        width: 100%;
+        box-sizing: border-box;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .results {
+        width: 100%;
+        max-width: 100%;
+        table-layout: fixed;
+    }
+
+    .results th, .results td {
+        padding: 8px 3px;
+        font-size: 12.5px;
+        box-sizing: border-box;
+    }
+
+    .results tbody td:nth-child(2) {
+        font-size: 13.5px;
+        letter-spacing: 1px;
+        word-break: break-all;
+    }
+
+    /* Boutons sous le jeu */
+    .game > div[style*="padding:16px 24px"] {
+        padding: 10px 8px 14px !important;
+        gap: 8px !important;
+    }
+
+    .game > div[style*="padding:16px 24px"] button {
+        font-size: 13.5px !important;
+        padding: 12px 10px !important;
+    }
+
+    /* 4. Bannière définition permanente (en bas) */
+    .def-inline {
+        padding: 14px 12px;
+    }
+
+    .def-inline-mot {
+        font-size: 19px;
+        letter-spacing: 1.5px;
+    }
+
+    .def-inline-texte {
+        font-size: 13.5px;
+        line-height: 1.6;
+        max-height: 200px;
+    }
+
+    /* Modales */
+    .modal-content {
+        padding: 20px 14px;
+    }
+
+    .modal-content h3 {
+        font-size: 17px;
+    }
+
+    .def-modal-content {
+        padding: 20px 14px;
+    }
+
+    .def-header h3 {
+        font-size: 19px;
+        letter-spacing: 1.5px;
+    }
+
+    .def-icon {
+        font-size: 36px;
+    }
+
+    #pwaInstallBanner {
+        width: calc(100% - 20px) !important;
+        bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+    }
+}
+
+/* ===== TRÈS PETIT ÉCRAN (<= 380px : iPhone SE, mini) ===== */
+@media (max-width: 380px) {
+    main {
+        padding: 6px 4px;
+    }
 
     .info-logo {
-        padding: 10px 12px;
-        flex-wrap: wrap;
-        gap: 8px;
+        padding: 6px;
+        gap: 4px;
     }
 
-    .nav-links { gap: 6px; }
-    .nav-links a { font-size: 12px; padding: 5px 10px; }
+    .info-logo a,
+    .nav-links a,
+    .info-logo .btn-deconnect {
+        font-size: 10.5px;
+        padding: 4px 6px;
+    }
 
-    .guess-box { padding: 12px 12px 0; flex-direction: column; gap: 8px; }
-    .guess-box input,
-    .guess-box button { width: 100%; }
+    header img.logo-img {
+        width: min(160px, 58%);
+    }
 
-    .guess-box input  { font-size: 18px; padding: 14px 16px; }
-    .guess-box button { font-size: 16px; padding: 14px; }
+    .tuile {
+        width: 26px;
+        height: 26px;
+        font-size: 11px;
+    }
 
-    .tuile { width: 36px; height: 36px; font-size: 14px; }
-    .tuile-ok { font-size: 16px; }
-    .tuiles { gap: 5px; }
-    .tuiles-wrapper { padding: 12px 12px 0; }
+    .results td {
+        padding: 6px 2px;
+        font-size: 11px;
+    }
 
-    .results-wrapper { padding: 10px 10px 16px; }
+    .results tbody td:nth-child(2) {
+        font-size: 12px;
+        letter-spacing: 0.5px;
+    }
 
-    .results td { padding: 9px 6px; font-size: 13px; }
-    .results tbody td:nth-child(2) { font-size: 15px; letter-spacing: 2px; }
-
-    header { padding: 16px 12px 14px; }
-    header img { width: 140px; }
-    header > p { font-size: 13px; }
-
-    #countdown { font-size: 12px; }
-    .bienvenue { font-size: 12px; padding: 4px 12px; }
-
-    .modal-content { padding: 22px 18px; }
-    .modal-content h3 { font-size: 17px; }
-
-    #shareButton { padding: 12px 20px; font-size: 14px; }
+    .def-inline-mot {
+        font-size: 17px;
+    }
 }
 
-/* ===== CORRECTIF CONTRASTES WCAG AA ===== */
-/* --gris (#FDF8F0 à 45%) sur fond sombre = ratio ~3.5:1 → pas WCAG AA */
-/* On force un ratio ≥4.5:1 sur les textes importants */
-.nav-links a        { color: rgba(253,248,240,0.80); }
-th                  { color: rgba(253,248,240,0.85); font-weight:700; }
-.tuiles-hint        { color: rgba(253,248,240,0.75); }
-#countdown          { color: rgba(253,248,240,0.80); }
-
-/* ===== RESPONSIVE TRÈS PETIT ÉCRAN (375px - iPhone SE) ===== */
-@media (max-width: 400px) {
-    main { padding: 6px; gap: 6px; }
-    .info-logo { padding: 8px 10px; }
-    .nav-links a { font-size: 11px; padding: 4px 8px; }
-    header img { width: 120px; }
-    .guess-box input  { font-size: 16px; padding: 12px 14px; }
-    .guess-box button { font-size: 15px; padding: 12px; }
-    .tuile { width: 30px; height: 30px; font-size: 12px; }
-    .results td { font-size: 12px; padding: 7px 4px; }
-    h3 { font-size: 14px; }
-    #shareButton { font-size: 13px; padding: 10px 16px; }
-}
-
-
-/* ===== MODAL DÉFINITION DU MOT GAGNÉ ===== */
+/* Modale définition popup */
 .def-modal-content {
-    max-width: 460px;
+    max-width: 480px;
     text-align: center;
-    padding: 32px 28px;
+    padding: 28px 24px;
     animation: defModalIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -720,57 +949,45 @@ th                  { color: rgba(253,248,240,0.85); font-weight:700; }
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    margin-bottom: 22px;
+    margin-bottom: 20px;
 }
 
 .def-icon {
-    font-size: 52px;
+    font-size: 48px;
     display: block;
-    animation: defIconPop 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
-}
-
-@keyframes defIconPop {
-    from { transform: scale(0) rotate(-20deg); opacity: 0; }
-    to   { transform: scale(1) rotate(0deg);   opacity: 1; }
 }
 
 .def-header h3 {
     font-family: 'Paytone One', sans-serif;
-    font-size: 26px;
+    font-size: 24px;
     color: var(--orange);
-    letter-spacing: 4px;
+    letter-spacing: 3px;
     margin: 0;
     text-shadow: 0 0 20px rgba(247, 127, 0, 0.5);
+    overflow-wrap: anywhere;
 }
 
 .def-corps {
     background: rgba(253, 248, 240, 0.04);
     border: 1px solid rgba(247, 127, 0, 0.2);
     border-radius: 14px;
-    padding: 18px 22px;
-    margin-bottom: 18px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
     text-align: left;
     position: relative;
-}
-
-.def-corps::before {
-    content: '"';
-    position: absolute;
-    top: -10px;
-    left: 16px;
-    font-size: 40px;
-    color: var(--orange);
-    font-family: Georgia, serif;
-    line-height: 1;
-    opacity: 0.4;
+    max-height: calc(70vh - 120px);
+    max-height: calc(70dvh - 120px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .def-texte {
-    font-size: 15px;
-    line-height: 1.8;
+    font-size: 14.5px;
+    line-height: 1.7;
     color: var(--texte);
     margin: 0;
-    padding-top: 8px;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
 }
 
 .def-vide {
@@ -779,7 +996,6 @@ th                  { color: rgba(253,248,240,0.85); font-weight:700; }
     font-style: italic;
     text-align: center;
     margin: 0;
-    padding: 6px 0;
 }
 
 .def-footer {
@@ -789,59 +1005,13 @@ th                  { color: rgba(253,248,240,0.85); font-weight:700; }
     letter-spacing: 0.5px;
 }
 
-/* Bouton voir définition */
-#defBtn {
-    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-    font-weight: 700;
-    font-size: 15px;
-    padding: 14px 20px;
-    border-radius: 14px;
-    cursor: pointer;
-}
-
-#defBtn:hover {
-    background: rgba(0, 158, 96, 0.22) !important;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(0, 158, 96, 0.25);
-}
-
-/* ============================================================
-   RESPONSIVITE GLOBALE (grand écran / tablette / mobile)
-   ============================================================ */
-html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
-img  { max-width: 100%; }
-
-/* Logo du jeu (image fournie, fond blanc) */
-.logo-img {
-    display: block;
-    width: min(260px, 70%);
-    height: auto;
-    border-radius: 16px;
-    background: #fff;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.35);
-    margin: 0 auto 10px;
-}
-header img.logo-img { width: min(260px, 70%); filter: none; }
-
-/* Très grands écrans : on centre le jeu */
-main { max-width: 1600px; margin-left: auto; margin-right: auto; }
-@media (min-width: 1700px) {
-    main { grid-template-columns: 540px 1fr; }
-}
-
-/* Éléments qui ne doivent jamais déborder */
-.guess-box input { min-width: 0; }
-.results-wrapper { overflow-x: auto; }
-.results tbody td:nth-child(2) { word-break: break-word; overflow-wrap: anywhere; }
-#message { overflow-wrap: anywhere; }
-.game, .instruction, .infos { min-width: 0; }
-
-/* ===== MODALES : jamais coupées, contenu scrollable ===== */
+/* Modale scrollable robuste */
 .modal {
     padding: 16px;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 }
+
 .modal-content {
     max-height: calc(100vh - 32px);
     max-height: calc(100dvh - 32px);
@@ -850,68 +1020,12 @@ main { max-width: 1600px; margin-left: auto; margin-right: auto; }
     overscroll-behavior: contain;
     margin: auto;
 }
-.close { z-index: 5; }
 
-/* Modale définition : en-tête fixe, texte scrollable, bouton toujours visible */
-.def-modal-content {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    width: 100%;
-    max-width: 520px;
-}
-.def-modal-content .def-header { flex: 0 0 auto; }
-.def-modal-content .def-corps {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-}
-.def-modal-content .def-footer { flex: 0 0 auto; }
-.def-texte { overflow-wrap: anywhere; white-space: pre-line; }
-.def-header h3 { overflow-wrap: anywhere; text-align: center; }
-
-/* ===== TABLETTE ===== */
-@media (max-width: 1024px) {
-    .infos > .instruction { min-width: 0; flex: 1 1 100%; }
-    .game { width: 100%; }
-    .logo-img, header img.logo-img { width: min(240px, 60%); }
+/* Carte définition permanente en bas */
+.def-inline[hidden] {
+    display: none !important;
 }
 
-/* ===== MOBILE ===== */
-@media (max-width: 640px) {
-    .def-modal-content { padding: 22px 14px 16px; }
-    .def-header h3 { font-size: 20px; letter-spacing: 2px; }
-    .def-header { margin-bottom: 12px; gap: 6px; }
-    .def-icon { font-size: 38px; }
-    .def-corps { padding: 14px 12px; }
-    .def-texte { font-size: 14px; line-height: 1.65; }
-    .logo-img, header img.logo-img { width: min(210px, 62%); }
-    .info-logo { justify-content: center; }
-    .tuiles { gap: 4px; }
-    .guess-box button { width: 100%; }
-    .instruction { padding: 16px 12px; }
-    .results-wrapper { padding: 10px 8px 14px; }
-}
-
-@media (max-width: 400px) {
-    .logo-img, header img.logo-img { width: min(180px, 60%); }
-    .def-header h3 { font-size: 17px; letter-spacing: 1px; }
-    .tuile { width: 28px; height: 28px; font-size: 12px; }
-}
-
-/* Paysage téléphone : peu de hauteur */
-@media (max-height: 480px) and (orientation: landscape) {
-    .def-modal-content { padding: 12px 18px; }
-    .def-icon { display: none; }
-    .def-header { margin-bottom: 8px; }
-}
-
-/* ============================================================
-   CARTE DEFINITION PERMANENTE + MISE EN PAGE MOBILE ROBUSTE
-   ============================================================ */
-.def-inline[hidden] { display: none !important; }
 .def-inline {
     background: linear-gradient(135deg, rgba(27,122,62,0.22), rgba(247,127,0,0.10));
     border: 1px solid rgba(247,127,0,0.35);
@@ -920,68 +1034,102 @@ main { max-width: 1600px; margin-left: auto; margin-right: auto; }
     position: relative;
     overflow: hidden;
     animation: defModalIn 0.4s cubic-bezier(0.22,1,0.36,1) both;
+    width: 100%;
+    box-sizing: border-box;
 }
+
 .def-inline::before {
-    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
     background: linear-gradient(to right, var(--orange) 33.3%, var(--texte) 33.3% 66.6%, var(--vert) 66.6%);
 }
+
 .def-inline-top {
-    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
-    justify-content: space-between; margin: 4px 0 8px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    justify-content: space-between;
+    margin: 4px 0 8px;
 }
-.def-inline-label { font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: rgba(253,248,240,0.75); }
+
+.def-inline-label {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(253,248,240,0.75);
+}
+
 .def-inline-badge {
-    font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 12px;
-    background: linear-gradient(135deg, #ffd700, #ff8c00); color: #110e08; text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    color: #110e08;
+    text-transform: uppercase;
 }
-.def-inline-badge[hidden], .def-inline-mot[hidden] { display: none; }
+
+.def-inline-badge[hidden],
+.def-inline-mot[hidden] {
+    display: none;
+}
+
 .def-inline-mot {
-    font-family: 'Paytone One', sans-serif; font-size: 24px; letter-spacing: 3px;
-    color: var(--orange); margin: 0 0 8px; overflow-wrap: anywhere; text-transform: uppercase;
+    font-family: 'Paytone One', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--orange);
+    margin: 0 0 8px;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    text-transform: uppercase;
 }
+
 .def-inline-texte {
-    font-size: 14.5px; line-height: 1.7; color: var(--texte);
-    max-height: 260px; overflow-y: auto; overflow-wrap: anywhere; white-space: pre-line;
-    padding-right: 4px; -webkit-overflow-scrolling: touch;
-}
-.def-inline-texte.vide { color: var(--gris); font-style: italic; }
-.def-inline-note { font-size: 12px; color: var(--gris); margin: 10px 0 0 !important; }
-
-/* Les lignes de la grille ne s'etirent plus : plus de grand vide */
-main { align-content: start; }
-.infos { align-self: start; }
-.instruction { flex: 0 0 auto; }
-
-/* Tablette + mobile : une seule colonne, ordre logique, aucun trou */
-@media (max-width: 1024px) {
-    main { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
-    .infos { display: contents; animation: none; }
-    .info-logo      { order: 1; width: 100%; }
-    .def-inline     { order: 4; }
-    .game           { order: 3; width: 100%; }
-    .instruction    { order: 2; width: 100%; flex: 0 0 auto; }
-    .def-inline-texte { max-height: 220px; }
-}
-@media (max-width: 640px) {
-    .def-inline { padding: 14px 12px; }
-    .def-inline-mot { font-size: 20px; letter-spacing: 2px; }
-    .def-inline-texte { font-size: 14px; max-height: 200px; }
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--texte);
+    max-height: 220px;
+    overflow-y: auto;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: pre-line;
+    padding-right: 4px;
+    -webkit-overflow-scrolling: touch;
 }
 
-/* Finitions petits ecrans (320 - 430px) */
-@media (max-width: 640px) {
-    .game > div[style*="padding:16px 24px"] { padding: 12px 12px 16px !important; gap: 10px !important; }
-    .game > div button { font-size: 14px !important; padding: 13px 12px !important; }
-    .info-logo { gap: 8px; }
-    .info-logo > a:first-child { font-size: 13px; }
-    #pwaInstallBanner { width: calc(100% - 24px) !important; bottom: calc(12px + env(safe-area-inset-bottom)) !important; }
-    header { padding: 16px 10px 14px; }
-    header > p { overflow-wrap: anywhere; }
+.def-inline-texte.vide {
+    color: var(--gris);
+    font-style: italic;
 }
-@media (max-width: 360px) {
-    main { padding: 6px; }
-    .nav-links a { font-size: 10.5px; padding: 4px 7px; }
-    .info-logo { padding: 8px; }
-    .def-inline-mot { font-size: 18px; letter-spacing: 1px; }
+
+.def-inline-note {
+    font-size: 12px;
+    color: var(--gris);
+    margin: 10px 0 0 !important;
 }
-body { padding-bottom: env(safe-area-inset-bottom); }
+
+/* Logo image */
+.logo-img {
+    display: block;
+    width: min(240px, 70%);
+    height: auto;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+    margin: 0 auto 10px;
+}
+
+header img.logo-img {
+    width: min(240px, 70%);
+    filter: none;
+}
+
+/* Safe area padding pour iPhone */
+body {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
