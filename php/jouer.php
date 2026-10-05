@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * jouer.php — endpoint principal du jeu.
  *
@@ -135,7 +135,15 @@ for ($i = 0; $i < $longueurMot; $i++) {
 }
 
 $gagne      = ($motPropose === $motDuJour);
-$score      = $gagne ? 100.0 : ($longueurMDJ > 0 ? round(($communes / $longueurMDJ) * 100, 2) : 0.0);
+if ($gagne) {
+    $score = 100.0;
+} else {
+    // Si ce n'est pas le mot exact, le score prend en compte les lettres en trop
+    // et ne peut JAMAIS atteindre 100.00%
+    $denominateur = max($longueurMDJ, $longueurMot);
+    $rawScore     = ($denominateur > 0) ? round(($communes / $denominateur) * 100, 2) : 0.0;
+    $score        = min(99.0, $rawScore);
+}
 
 // 3. Emoji
 if      ($gagne)        $emoji = '🥳';

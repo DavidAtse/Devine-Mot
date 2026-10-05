@@ -201,9 +201,9 @@ function chargerHistorique() {
     catch { return []; }
 }
 
-function sauvegarder(mot, positions, score, emoji) {
+function sauvegarder(mot, positions, score, emoji, gagne = false) {
     const hist = chargerHistorique();
-    hist.push({ mot, positions, score, emoji });
+    hist.push({ mot, positions, score, emoji, gagne: !!gagne });
     localStorage.setItem(KEY_HISTORIQUE, JSON.stringify(hist));
 }
 
@@ -247,6 +247,19 @@ function trierTableau() {
 // ======================
 // RECONSTRUCTION AU RECHARGEMENT
 // ======================
+function _estItemGagnant(item) {
+    if (!item) return false;
+    if (item.gagne === true) return true;
+    if (parseFloat(item.score) >= 100) {
+        // Pour être une vraie victoire, toutes les lettres doivent être bien placées
+        if (Array.isArray(item.positions) && item.positions.length > 0) {
+            return item.positions.every(p => p === 2 || p === true);
+        }
+        return true;
+    }
+    return false;
+}
+
 function reconstruireTableau() {
     const hist = chargerHistorique();
     resultsBody.innerHTML = "";
@@ -254,7 +267,7 @@ function reconstruireTableau() {
 
     hist.forEach(item => {
         ajouterLigne(item.mot, item.positions, item.score, item.emoji, false);
-        if (parseFloat(item.score) >= 100) gagne = true;
+        if (_estItemGagnant(item)) gagne = true;
     });
 
     if (gagne) bloquerJeu(hist.length);
@@ -270,7 +283,7 @@ async function init() {
 
     // Si la partie est déjà gagn�e aujourd'hui (localStorage), afficher le bouton définition
     const hist  = chargerHistorique();
-    const gagne = hist.some(i => parseFloat(i.score) >= 100);
+    const gagne = hist.some(_estItemGagnant);
     if (gagne) {
         const defData = _chargerDefinition();
         _montrerBoutonDef(!!defData);
@@ -378,7 +391,7 @@ bouton.addEventListener("click", async () => {
         input.value = "";
         input.focus();
         ajouterLigne(motPropose, data.positions, data.score, data.emoji, true);
-        sauvegarder(motPropose, data.positions, data.score, data.emoji);
+        sauvegarder(motPropose, data.positions, data.score, data.emoji, data.gagne);
         mettreAJourTuiles(data.longueurMDJ, data.positions, motPropose);
 
         if (data.gagne) {
