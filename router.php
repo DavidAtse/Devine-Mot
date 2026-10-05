@@ -6,9 +6,15 @@
 
 $uri = urldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
 
-// 1. Si l'URI correspond à un fichier ou dossier existant → le servir normalement
+// 1. Si le fichier PHP existe directement → l'exécuter
+if (str_ends_with($uri, '.php') && file_exists(__DIR__ . $uri)) {
+    require __DIR__ . $uri;
+    exit;
+}
+
+// 1b. Si l'URI correspond à un fichier statique existant → le servir
 if ($uri !== '/' && file_exists(__DIR__ . $uri)) {
-    return false; // Laisse PHP servir le fichier statique
+    return false;
 }
 
 // 2. Redirection racine → page de connexion
