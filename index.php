@@ -106,17 +106,6 @@ $conn->close();
                 </a>
             </div>
 
-            <!-- DÉFINITION PERMANENTE (reste affichée jusqu'au prochain mot) -->
-            <div class="def-inline" id="defInline" hidden>
-                <div class="def-inline-top">
-                    <span class="def-inline-badge" id="defInlinePartenaire" hidden>⭐ Partenaire officiel</span>
-                    <span class="def-inline-label">📚 Mot trouvé</span>
-                </div>
-                <h3 id="defInlineMot" class="def-inline-mot"></h3>
-                <div id="defInlineTexte" class="def-inline-texte"></div>
-                <p class="def-inline-note">Un nouveau mot arrive au prochain créneau 🇨🇮</p>
-            </div>
-
             <!-- MODAL RÈGLES -->
             <div class="modal" id="rulesModal">
                 <div class="modal-content">
@@ -181,6 +170,17 @@ $conn->close();
                     </tbody>
                 </table>
                 <p>Bonne chance ! 💪</p>
+            </div>
+
+            <!-- DÉFINITION PERMANENTE (reste affichée jusqu'au prochain mot) -->
+            <div class="def-inline" id="defInline" hidden>
+                <div class="def-inline-top">
+                    <span class="def-inline-badge" id="defInlinePartenaire" hidden>⭐ Partenaire officiel</span>
+                    <span class="def-inline-label">📚 Mot trouvé</span>
+                </div>
+                <h3 id="defInlineMot" class="def-inline-mot"></h3>
+                <div id="defInlineTexte" class="def-inline-texte"></div>
+                <p class="def-inline-note">Un nouveau mot arrive au prochain créneau 🇨🇮</p>
             </div>
         </div>
 

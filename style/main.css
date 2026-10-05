@@ -957,9 +957,9 @@ main { align-content: start; }
     main { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
     .infos { display: contents; animation: none; }
     .info-logo      { order: 1; width: 100%; }
-    .def-inline     { order: 2; }
+    .def-inline     { order: 4; }
     .game           { order: 3; width: 100%; }
-    .instruction    { order: 4; width: 100%; flex: 0 0 auto; }
+    .instruction    { order: 2; width: 100%; flex: 0 0 auto; }
     .def-inline-texte { max-height: 220px; }
 }
 @media (max-width: 640px) {
