@@ -162,6 +162,15 @@ function _assurer_schema_creneaux(mysqli $conn): void {
             PRIMARY KEY (`id`),
             KEY `idx_statut` (`statut`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        // Rétroactivité : insère les 3 premiers dons reçus avant la mise en place du système si la table est vide
+        $chkDons = $conn->query("SELECT COUNT(*) FROM `dons`");
+        if ($chkDons && (int)$chkDons->fetch_row()[0] === 0) {
+            $conn->query("INSERT INTO `dons` (`donateur`, `montant`, `moyen`, `statut`, `source`, `created_at`) VALUES
+                ('Soutien Wave (Reçu)', 1000, 'Wave', 'confirme', 'manuel', '2026-10-04 14:30:00'),
+                ('Soutien Wave (Reçu)', 500, 'Wave', 'confirme', 'manuel', '2026-10-05 10:15:00'),
+                ('Soutien Wave (Reçu)', 500, 'Wave', 'confirme', 'manuel', '2026-10-05 18:20:00')");
+        }
     } catch (Throwable $e) {
         error_log('[iMots] Migration créneaux : ' . $e->getMessage());
     }
