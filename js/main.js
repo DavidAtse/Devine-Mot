@@ -660,7 +660,21 @@ function openWaveLink() {
     document.getElementById('donateSuccess').style.display = 'block';
     
     // Le lien Wave officiel peut parfois prendre un param?tre mount selon l'API, on l'ajoute au cas o? (optionnel).
-    const amt = document.getElementById('customAmount') ? document.getElementById('customAmount').value : '';
+    const amt = document.getElementById('customAmount') ? document.getElementById('customAmount').value.trim() : '';
+
+    // Enregistrement du don côté serveur
+    if (amt && parseInt(amt) > 0) {
+        fetch('php/enregistrer-don.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-Token': window.csrfToken
+            },
+            body: `montant=${encodeURIComponent(amt)}&moyen=Wave`
+        }).catch(e => console.warn('Erreur don:', e));
+    }
+
     let finalLink = window.wavePaymentLink;
     if (finalLink.includes('?')) {
         finalLink += '&amount=' + amt;

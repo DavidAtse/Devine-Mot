@@ -150,6 +150,18 @@ function _assurer_schema_creneaux(mysqli $conn): void {
         if ($r2 && $r2->num_rows === 0) {
             $conn->query("ALTER TABLE mots_du_jour ADD COLUMN est_partenaire TINYINT(1) NOT NULL DEFAULT 0 AFTER mot");
         }
+        $conn->query("CREATE TABLE IF NOT EXISTS `dons` (
+            `id` INT NOT NULL AUTO_INCREMENT,
+            `user_id` INT DEFAULT NULL,
+            `donateur` VARCHAR(100) NOT NULL,
+            `montant` INT NOT NULL DEFAULT 0,
+            `moyen` VARCHAR(50) NOT NULL DEFAULT 'Wave',
+            `statut` VARCHAR(20) NOT NULL DEFAULT 'confirme',
+            `source` VARCHAR(50) NOT NULL DEFAULT 'site',
+            `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            KEY `idx_statut` (`statut`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
     } catch (Throwable $e) {
         error_log('[iMots] Migration créneaux : ' . $e->getMessage());
     }

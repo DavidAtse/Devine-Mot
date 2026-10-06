@@ -88,6 +88,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // --- Ajouter un don / dépôt manuel ---
+    if ($action === 'ajouter_don_manuel') {
+        $montant  = (int)($_POST['montant'] ?? 0);
+        $donateur = trim($_POST['donateur'] ?? 'Anonyme');
+        if ($donateur === '') $donateur = 'Anonyme';
+        $moyen    = trim($_POST['moyen'] ?? 'Wave');
+
+        if ($montant <= 0) {
+            $erreur = "Veuillez entrer un montant supérieur à 0 FCFA.";
+        } else {
+            $ins = $conn->prepare("INSERT INTO dons (donateur, montant, moyen, statut, source) VALUES (?, ?, ?, 'confirme', 'manuel')");
+            $ins->bind_param('sis', $donateur, $montant, $moyen);
+            if ($ins->execute()) {
+                $message = "💰 Dépôt de " . number_format($montant, 0, ',', ' ') . " FCFA ajouté avec succès au chiffre d'affaires.";
+            } else {
+                $erreur = "Erreur lors de l'enregistrement du don.";
+            }
+        }
+    }
+
+    // --- Supprimer un don ---
+    if ($action === 'supprimer_don') {
+        $donId = (int)($_POST['don_id'] ?? 0);
+        if ($donId > 0) {
+            $del = $conn->prepare("DELETE FROM dons WHERE id = ?");
+            $del->bind_param('i', $donId);
+            if ($del->execute()) {
+                $message = "🗑️ Don supprimé de l'historique.";
+            } else {
+                $erreur = "Erreur lors de la suppression.";
+            }
+        }
+    }
+
     // --- Programmer un mot (partenariat ou ordre personnalisé) ---
     if ($action === 'programmer_partenariat') {
         $motRaw = mb_strtoupper(trim($_POST['mot'] ?? ''), 'UTF-8');
@@ -338,6 +372,14 @@ for ($d = 0; $d < 4; $d++) {
 // Stats globales
 $statsRow = $conn->query("SELECT COUNT(*) AS parties, SUM(trouve) AS victoires FROM scores")->fetch_assoc();
 $nbJoueurs = $conn->query("SELECT COUNT(*) FROM users")->fetch_row()[0];
+
+// Stats dons et chiffre d'affaires
+$statsDons    = $conn->query("SELECT COALESCE(SUM(montant), 0) AS total, COUNT(*) AS nb FROM dons WHERE statut = 'confirme'")->fetch_assoc();
+$totalRevenus = (int) ($statsDons['total'] ?? 0);
+$nbDons       = (int) ($statsDons['nb'] ?? 0);
+
+// Liste des dons
+$dons = $conn->query("SELECT id, donateur, montant, moyen, statut, source, created_at FROM dons ORDER BY id DESC LIMIT 50")->fetch_all(MYSQLI_ASSOC);
 
 // Liste des joueurs
 $joueurs = $conn->query("
@@ -840,6 +882,13 @@ $conn->close();
             <div class="val"><?= $jourNum + 1 ?></div>
             <div class="lbl">Jour actuel</div>
         </div>
+        <div class="stat-card" style="border-color: rgba(34, 197, 94, 0.45); background: linear-gradient(145deg, var(--fond3), rgba(0, 158, 96, 0.12));">
+            <div class="val" style="color: #22c55e;">
+                <?= number_format($totalRevenus, 0, ',', ' ') ?> <span style="font-size: 14px; font-weight: 800; color: #4ade80;">FCFA</span>
+            </div>
+            <div class="lbl" style="color: #86efac; font-weight: 700;">💰 Total Soutiens (CA)</div>
+            <div style="font-size: 11px; color: rgba(253,248,240,0.5); margin-top: 4px;"><?= $nbDons ?> don<?= $nbDons > 1 ? 's' : '' ?> reçu<?= $nbDons > 1 ? 's' : '' ?></div>
+        </div>
     </div>
 
     <div class="cols">
@@ -1031,6 +1080,102 @@ $conn->close();
                         </td>
                     </tr>
                 <?php endforeach; ?>
+                </tbody>
+            </table>
+    </div>
+
+    <!-- ===== GESTION DES SOUTIENS & REVENUS ===== -->
+    <div class="section" style="margin-top:24px;">
+        <div class="section-header">
+            <h2><i class="fa-solid fa-hand-holding-dollar" style="color:#22c55e;"></i> Soutiens financiers & Chiffre d'affaires</h2>
+            <span class="badge-count" style="background:rgba(34,197,94,0.15); border-color:rgba(34,197,94,0.4); color:#4ade80;">
+                Total accumulé : <?= number_format($totalRevenus, 0, ',', ' ') ?> FCFA
+            </span>
+        </div>
+
+        <!-- Formulaire d'ajout manuel de dépôt -->
+        <form method="POST" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; padding:14px; background:rgba(0,158,96,0.08); border:1px solid rgba(0,158,96,0.25); border-radius:12px; align-items:center;">
+            <?= csrf_field() ?>
+            <input type="hidden" name="action" value="ajouter_don_manuel">
+            <span style="font-weight:700; font-size:13px; color:#4ade80;"><i class="fa-solid fa-plus-circle"></i> Ajouter un dépôt reçu :</span>
+            <input type="number" name="montant" placeholder="Montant FCFA (ex: 1000)" required min="50" style="padding:8px 12px; border-radius:8px; border:1px solid rgba(253,248,240,0.2); background:rgba(253,248,240,0.05); color:var(--texte); font-size:13px; outline:none; width:170px;">
+            <input type="text" name="donateur" placeholder="Nom ou pseudo (facultatif)" style="padding:8px 12px; border-radius:8px; border:1px solid rgba(253,248,240,0.2); background:rgba(253,248,240,0.05); color:var(--texte); font-size:13px; outline:none; width:200px;">
+            <select name="moyen" style="padding:8px 12px; border-radius:8px; border:1px solid rgba(253,248,240,0.2); background:var(--fond3); color:var(--texte); font-size:13px; outline:none;">
+                <option value="Wave">Wave</option>
+                <option value="Orange Money">Orange Money</option>
+                <option value="MTN MoMo">MTN MoMo</option>
+                <option value="Moov Money">Moov Money</option>
+                <option value="Autre">Autre</option>
+            </select>
+            <button type="submit" class="btn btn-vert" style="padding:8px 16px; font-size:13px;">
+                <i class="fa-solid fa-plus"></i> Enregistrer le dépôt
+            </button>
+        </form>
+
+        <div class="table-wrapper" style="overflow-x:auto">
+            <table class="table-mots" style="min-width:600px">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Date</th>
+                        <th>Donateur</th>
+                        <th>Montant</th>
+                        <th>Moyen</th>
+                        <th>Origine</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php if (empty($dons)): ?>
+                    <tr>
+                        <td colspan="7" style="text-align:center; padding:24px; color:var(--gris); font-style:italic;">
+                            ☕ Aucun soutien enregistré pour le moment. Dès qu'un joueur clique sur « Soutenir » ou que tu ajoutes un dépôt reçu, il s'affichera ici et s'accumulera automatiquement au total !
+                        </td>
+                    </tr>
+                <?php else: ?>
+                    <?php foreach ($dons as $d): ?>
+                        <tr>
+                            <td><?= $d['id'] ?></td>
+                            <td style="color:var(--gris); font-size:.85em">
+                                <?= date('d/m/Y H:i', strtotime($d['created_at'])) ?>
+                            </td>
+                            <td style="font-weight:700;">
+                                <?= htmlspecialchars($d['donateur']) ?>
+                            </td>
+                            <td style="font-weight:800; color:#22c55e; font-size:15px;">
+                                + <?= number_format($d['montant'], 0, ',', ' ') ?> FCFA
+                            </td>
+                            <td>
+                                <?php if (stripos($d['moyen'], 'wave') !== false): ?>
+                                    <span style="background:rgba(20,185,252,0.15); color:#14B9FC; border:1px solid rgba(20,185,252,0.35); padding:2px 8px; border-radius:10px; font-size:11px; font-weight:700;">
+                                        🌊 Wave
+                                    </span>
+                                <?php elseif (stripos($d['moyen'], 'orange') !== false): ?>
+                                    <span style="background:rgba(255,102,0,0.15); color:#ff8533; border:1px solid rgba(255,102,0,0.35); padding:2px 8px; border-radius:10px; font-size:11px; font-weight:700;">
+                                        🍊 Orange Money
+                                    </span>
+                                <?php else: ?>
+                                    <span style="background:rgba(253,248,240,0.1); color:var(--texte); border:1px solid rgba(253,248,240,0.2); padding:2px 8px; border-radius:10px; font-size:11px; font-weight:700;">
+                                        <?= htmlspecialchars($d['moyen']) ?>
+                                    </span>
+                                <?php endif; ?>
+                            </td>
+                            <td style="font-size:.85em; color:var(--gris);">
+                                <?= $d['source'] === 'site' ? '🌐 Bouton Soutenir' : '📱 Dépôt direct' ?>
+                            </td>
+                            <td>
+                                <form method="POST" onsubmit="return confirm('Supprimer ce don de <?= number_format($d['montant'], 0, ',', ' ') ?> FCFA de l\'historique ?');" style="display:inline;">
+                                    <?= csrf_field() ?>
+                                    <input type="hidden" name="action" value="supprimer_don">
+                                    <input type="hidden" name="don_id" value="<?= $d['id'] ?>">
+                                    <button type="submit" class="btn-del-joueur" title="Supprimer ce don">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
                 </tbody>
             </table>
         </div>
