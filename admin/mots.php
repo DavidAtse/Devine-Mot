@@ -1101,6 +1101,7 @@ $conn->close();
             <input type="number" name="montant" placeholder="Montant FCFA (ex: 1000)" required min="50" style="padding:8px 12px; border-radius:8px; border:1px solid rgba(253,248,240,0.2); background:rgba(253,248,240,0.05); color:var(--texte); font-size:13px; outline:none; width:170px;">
             <input type="text" name="donateur" placeholder="Nom ou pseudo (facultatif)" style="padding:8px 12px; border-radius:8px; border:1px solid rgba(253,248,240,0.2); background:rgba(253,248,240,0.05); color:var(--texte); font-size:13px; outline:none; width:200px;">
             <select name="moyen" style="padding:8px 12px; border-radius:8px; border:1px solid rgba(253,248,240,0.2); background:var(--fond3); color:var(--texte); font-size:13px; outline:none;">
+                <option value="Jeko">Jeko (Lien)</option>
                 <option value="Wave">Wave</option>
                 <option value="Orange Money">Orange Money</option>
                 <option value="MTN MoMo">MTN MoMo</option>
@@ -1146,13 +1147,21 @@ $conn->close();
                                 + <?= number_format($d['montant'], 0, ',', ' ') ?> FCFA
                             </td>
                             <td>
-                                <?php if (stripos($d['moyen'], 'wave') !== false): ?>
+                                <?php if (stripos($d['moyen'], 'jeko') !== false): ?>
+                                    <span style="background:rgba(16,185,129,0.15); color:#10B981; border:1px solid rgba(16,185,129,0.35); padding:2px 8px; border-radius:10px; font-size:11px; font-weight:700;">
+                                        ⚡ Jeko
+                                    </span>
+                                <?php elseif (stripos($d['moyen'], 'wave') !== false): ?>
                                     <span style="background:rgba(20,185,252,0.15); color:#14B9FC; border:1px solid rgba(20,185,252,0.35); padding:2px 8px; border-radius:10px; font-size:11px; font-weight:700;">
                                         🌊 Wave
                                     </span>
                                 <?php elseif (stripos($d['moyen'], 'orange') !== false): ?>
                                     <span style="background:rgba(255,102,0,0.15); color:#ff8533; border:1px solid rgba(255,102,0,0.35); padding:2px 8px; border-radius:10px; font-size:11px; font-weight:700;">
                                         🍊 Orange Money
+                                    </span>
+                                <?php elseif (stripos($d['moyen'], 'mtn') !== false): ?>
+                                    <span style="background:rgba(234,179,8,0.15); color:#facc15; border:1px solid rgba(234,179,8,0.35); padding:2px 8px; border-radius:10px; font-size:11px; font-weight:700;">
+                                        🟡 MTN MoMo
                                     </span>
                                 <?php else: ?>
                                     <span style="background:rgba(253,248,240,0.1); color:var(--texte); border:1px solid rgba(253,248,240,0.2); padding:2px 8px; border-radius:10px; font-size:11px; font-weight:700;">

@@ -28,8 +28,8 @@ $isAdmin   = (bool) ($user['is_admin'] ?? false);
 $csrfToken = csrf_token();
 $jourNum   = jour_numero();
 
-// Lien de paiement Wave (Wave Business)
-$wave_payment_link = getenv('WAVE_PAYMENT_LINK') ?: '';
+// Lien de paiement (Jeko / Mobile Money / Wave)
+$payment_link = getenv('PAYMENT_LINK') ?: getenv('JEKO_PAYMENT_LINK') ?: getenv('WAVE_PAYMENT_LINK') ?: 'https://pay.jeko.africa/pl/de22040e-0dc4-4558-870a-d08a4ffa8f79';
 
 $conn->close();
 ?>
@@ -247,42 +247,65 @@ $conn->close();
             </div>
 
     <!-- MODAL SOUTENIR (Dons) -->
+    <!-- MODAL SOUTENIR (Dons) -->
     <div class="modal" id="donateModal">
-        <div class="modal-content def-modal-content">
+        <div class="modal-content def-modal-content" style="max-width: 440px;">
             <span class="close" data-close="donateModal">&times;</span>
             <div class="def-header">
-                <span class="def-icon" style="font-size:42px;">☕</span>
-                <h3 style="font-size:20px;">Soutenir le jeu</h3>
+                <span class="def-icon" style="font-size:38px;">☕</span>
+                <h3 style="font-size:20px;">Soutenir iMots CI</h3>
             </div>
             <div class="def-corps" style="text-align: center; padding: 15px;">
-                <p style="font-size: 14px; margin-bottom: 20px; color: var(--texte);">Le jeu est 100% gratuit et sans pub. Offrez-nous un garba pour payer les serveurs !</p>
+                <p style="font-size: 14px; margin-bottom: 16px; color: var(--texte); opacity: 0.9;">
+                    Le jeu est 100% gratuit et sans publicité intrusive. Offrez-nous un garba pour soutenir les serveurs ! 🇨🇮
+                </p>
                 
                 <div id="donateStep1">
-                    <p style="font-size:13px; text-align:left; color:var(--orange); margin-bottom:5px; font-weight:bold;">Montant de ton don (FCFA) :</p>
-                    <input type="number" id="customAmount" placeholder="Saisis le montant..." value="" min="100" style="width:100%; padding:12px; border-radius:8px; border:2px solid rgba(247,127,0,0.5); background:rgba(253,248,240,0.05); color:var(--texte); font-size:18px; font-weight:bold; margin-bottom:20px; text-align:center; outline:none;">
+                    <p style="font-size:13px; text-align:left; color:var(--orange); margin-bottom:8px; font-weight:bold;">Choisis un montant :</p>
+                    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; margin-bottom:14px;">
+                        <button type="button" class="btn-preset-amt" data-amt="500" style="padding:10px 4px; border-radius:8px; border:1px solid rgba(247,127,0,0.4); background:rgba(247,127,0,0.12); color:#fff; font-weight:800; font-size:13px; cursor:pointer;">500 F</button>
+                        <button type="button" class="btn-preset-amt active" data-amt="1000" style="padding:10px 4px; border-radius:8px; border:1px solid var(--orange); background:var(--orange); color:#1a1008; font-weight:800; font-size:13px; cursor:pointer;">1 000 F</button>
+                        <button type="button" class="btn-preset-amt" data-amt="2000" style="padding:10px 4px; border-radius:8px; border:1px solid rgba(247,127,0,0.4); background:rgba(247,127,0,0.12); color:#fff; font-weight:800; font-size:13px; cursor:pointer;">2 000 F</button>
+                        <button type="button" class="btn-preset-amt" data-amt="5000" style="padding:10px 4px; border-radius:8px; border:1px solid rgba(247,127,0,0.4); background:rgba(247,127,0,0.12); color:#fff; font-weight:800; font-size:13px; cursor:pointer;">5 000 F</button>
+                    </div>
+
+                    <p style="font-size:12px; text-align:left; color:var(--gris); margin-bottom:6px;">Ou saisis un montant libre (FCFA) :</p>
+                    <input type="number" id="customAmount" placeholder="Ex: 1000" value="1000" min="100" style="width:100%; padding:12px; border-radius:8px; border:2px solid rgba(247,127,0,0.5); background:rgba(253,248,240,0.05); color:var(--texte); font-size:18px; font-weight:bold; margin-bottom:18px; text-align:center; outline:none;">
                     
-                    <button id="btnProceedDonate" class="btn-principal" style="width:100%;">Continuer</button>
+                    <button id="btnProceedDonate" class="btn-principal" style="width:100%; padding:14px; font-size:15px; font-weight:800; background:linear-gradient(135deg, #FF9900, #F77F00);">
+                        Continuer vers le paiement <i class="fa-solid fa-arrow-right" style="margin-left:6px;"></i>
+                    </button>
                 </div>
 
                 <div id="donateStep2" style="display:none; padding: 10px 0;">
-                    <p style="font-size: 13px; margin-bottom: 15px;">Moyen de paiement pour <strong id="donateAmountStr" style="color:var(--orange)"></strong> FCFA :</p>
-                    <button id="payWave" class="btn-principal" style="background: #14B9FC; color: white; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;">
-                        Wave Mobile Money
+                    <p style="font-size: 14px; margin-bottom: 14px;">Montant sélectionné : <strong id="donateAmountStr" style="color:var(--orange); font-size:18px;">1 000</strong> <span style="color:var(--orange); font-weight:700;">FCFA</span></p>
+                    
+                    <button id="payJeko" class="btn-principal" style="background: linear-gradient(135deg, #10B981, #059669); color: white; padding:14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; font-size:15px; font-weight:800; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);">
+                        <i class="fa-solid fa-lock"></i> Payer en toute sécurité (Jeko)
                     </button>
-                    <button id="payOrange" class="btn-principal" style="background: #FF6600; color: white; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;">
-                        Orange Money
+
+                    <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-top:8px;">
+                        <span style="background:rgba(20,185,252,0.15); color:#14B9FC; border:1px solid rgba(20,185,252,0.3); padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700;">🌊 Wave</span>
+                        <span style="background:rgba(255,102,0,0.15); color:#ff8533; border:1px solid rgba(255,102,0,0.3); padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700;">🍊 Orange</span>
+                        <span style="background:rgba(234,179,8,0.15); color:#facc15; border:1px solid rgba(234,179,8,0.3); padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700;">🟡 MTN</span>
+                        <span style="background:rgba(59,130,246,0.15); color:#60a5fa; border:1px solid rgba(59,130,246,0.3); padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700;">🔵 Moov</span>
+                        <span style="background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.2); padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700;">💳 Carte Visa/MC</span>
+                    </div>
+
+                    <button type="button" id="btnBackToStep1" style="margin-top:16px; background:none; border:none; color:var(--gris); font-size:12px; cursor:pointer; text-decoration:underline;">
+                        ← Modifier le montant
                     </button>
                 </div>
 
                 <div id="donateLoading" style="display:none; padding: 20px;">
                     <i class="fa-solid fa-spinner fa-spin" style="font-size: 34px; color: var(--orange); margin-bottom: 12px;"></i>
-                    <p style="font-size:14px;">Ouverture de l'application...</p>
+                    <p style="font-size:14px;">Ouverture du portail sécurisé Jeko...</p>
                 </div>
 
                 <div id="donateSuccess" style="display:none; padding: 20px;">
                     <span class="def-icon" style="font-size: 46px; margin-bottom: 10px;">🎉</span>
                     <h4 style="color: var(--vert); margin-bottom: 10px; font-size:18px;">Merci beaucoup !</h4>
-                    <p style="font-size: 14px;">Ton soutien fait toute la différence.</p>
+                    <p style="font-size: 14px;">Ton soutien fait grandir le jeu et motive toute l'équipe.</p>
                 </div>
             </div>
         </div>
@@ -302,8 +325,9 @@ $conn->close();
         window.csrfToken  = <?= json_encode($csrfToken) ?>;
         window.vapidKey   = 'BHpcuD9GQ0Q6PoQHujWBr3l-vKzQPr4YhBYY5HqJHK5Z6iFy23f-q8kmN22PKI3F8n3UYcHHpf2leBjP5GDe3-w';
         
-        // Lien Wave Business
-        window.wavePaymentLink = <?= json_encode($wave_payment_link) ?>;
+        // Lien de paiement (Jeko / Mobile Money / Wave)
+        window.paymentLink     = <?= json_encode($payment_link) ?>;
+        window.wavePaymentLink = <?= json_encode($payment_link) ?>; // alias
         
         // BASE_PATH calculé dynamiquement : '/' en prod Railway, chemin local en XAMPP
         window.BASE_PATH  = <?= json_encode(rtrim(dirname($_SERVER['SCRIPT_NAME']), '/')) ?>;

@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 csrf_check_ajax();
 
 $montant = (int) ($_POST['montant'] ?? 0);
-$moyen   = trim($_POST['moyen'] ?? 'Wave');
+$moyen   = trim($_POST['moyen'] ?? 'Jeko');
 
 if ($montant <= 0) {
     http_response_code(400);

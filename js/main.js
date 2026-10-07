@@ -648,22 +648,26 @@ function _urlBase64ToUint8Array(base64String) {
 // ======================
 // MODAL DONATION & PAIEMENT SIMUL?
 // ======================
-// Paiement via Lien Wave Business
-function openWaveLink() {
-    if (!window.wavePaymentLink || window.wavePaymentLink.trim() === '') {
-        alert("Le lien de paiement Wave n'est pas encore configuré ! Ajoute la variable WAVE_PAYMENT_LINK dans Railway (ex: https://pay.wave.com/m/ton-nom).");
+// MODAL DONATION & PAIEMENT SÉCURISÉ (JEKO)
+// ======================
+function openPaymentLink() {
+    const rawLink = window.paymentLink || window.wavePaymentLink || 'https://pay.jeko.africa/pl/de22040e-0dc4-4558-870a-d08a4ffa8f79';
+    if (!rawLink || rawLink.trim() === '') {
+        alert("Le lien de paiement n'est pas encore configuré !");
         return;
     }
 
-    // Affiche l'?cran de succ?s
-    document.getElementById('donateStep2').style.display = 'none';
-    document.getElementById('donateSuccess').style.display = 'block';
-    
-    // Le lien Wave officiel peut parfois prendre un param?tre mount selon l'API, on l'ajoute au cas o? (optionnel).
-    const amt = document.getElementById('customAmount') ? document.getElementById('customAmount').value.trim() : '';
+    const amtInput = document.getElementById('customAmount');
+    const amt = amtInput ? amtInput.value.trim() : '1000';
+
+    // Affiche l'écran de succès
+    const step2 = document.getElementById('donateStep2');
+    const success = document.getElementById('donateSuccess');
+    if (step2) step2.style.display = 'none';
+    if (success) success.style.display = 'block';
 
     // Enregistrement du don côté serveur
-    if (amt && parseInt(amt) > 0) {
+    if (amt && parseInt(amt, 10) > 0) {
         fetch('php/enregistrer-don.php', {
             method: 'POST',
             credentials: 'same-origin',
@@ -671,19 +675,20 @@ function openWaveLink() {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'X-CSRF-Token': window.csrfToken
             },
-            body: `montant=${encodeURIComponent(amt)}&moyen=Wave`
+            body: `montant=${encodeURIComponent(amt)}&moyen=Jeko`
         }).catch(e => console.warn('Erreur don:', e));
     }
 
-    let finalLink = window.wavePaymentLink;
-    if (finalLink.includes('?')) {
-        finalLink += '&amount=' + amt;
-    } else {
-        finalLink += '?amount=' + amt;
+    let finalLink = rawLink;
+    if (amt && parseInt(amt, 10) > 0) {
+        finalLink += (finalLink.includes('?') ? '&' : '?') + 'amount=' + encodeURIComponent(amt);
     }
 
     window.open(finalLink, '_blank');
 }
+
+// Alias pour compatibilité
+window.openWaveLink = openPaymentLink;
 
 function ouvrirDonate() {
     const modal = document.getElementById('donateModal');
@@ -696,31 +701,56 @@ function ouvrirDonate() {
     }
 }
 
+// Gestion des puces de montants prédéfinis
+document.querySelectorAll('.btn-preset-amt').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const amt = this.dataset.amt;
+        const input = document.getElementById('customAmount');
+        if (input) input.value = amt;
+        
+        document.querySelectorAll('.btn-preset-amt').forEach(b => {
+            b.classList.remove('active');
+            b.style.background = 'rgba(247,127,0,0.12)';
+            b.style.borderColor = 'rgba(247,127,0,0.4)';
+            b.style.color = '#fff';
+        });
+        this.classList.add('active');
+        this.style.background = 'var(--orange)';
+        this.style.borderColor = 'var(--orange)';
+        this.style.color = '#1a1008';
+    });
+});
+
 if (document.getElementById('btnProceedDonate')) {
-        document.getElementById('btnProceedDonate').addEventListener('click', () => {
+    document.getElementById('btnProceedDonate').addEventListener('click', () => {
         const amtInput = document.getElementById('customAmount');
         const amt = amtInput ? amtInput.value.trim() : '';
         
-        if (!amt || parseInt(amt) < 100) {
+        if (!amt || parseInt(amt, 10) < 100) {
             alert("Merci d'entrer un montant (minimum 100 FCFA) pour soutenir le jeu !");
             return;
         }
 
-        document.getElementById('donateAmountStr').textContent = amt;
+        const formattedAmt = Number(amt).toLocaleString('fr-FR');
+        const strEl = document.getElementById('donateAmountStr');
+        if (strEl) strEl.textContent = formattedAmt;
         
         document.getElementById('donateStep1').style.display = 'none';
         document.getElementById('donateStep2').style.display = 'block';
     });
 }
 
-if (document.getElementById('payWave')) {
-    document.getElementById('payWave').addEventListener('click', openWaveLink);
+// Retour à l'étape 1
+const btnBack = document.getElementById('btnBackToStep1');
+if (btnBack) {
+    btnBack.addEventListener('click', () => {
+        document.getElementById('donateStep2').style.display = 'none';
+        document.getElementById('donateStep1').style.display = 'block';
+    });
 }
 
-// On cache le bouton Orange Money puisqu'on utilise le lien Wave
-if (document.getElementById('payOrange')) {
-    document.getElementById('payOrange').style.display = 'none';
-}
+document.getElementById('payJeko')?.addEventListener('click', openPaymentLink);
+document.getElementById('payWave')?.addEventListener('click', openPaymentLink);
 
 // Fermeture des modales
 document.querySelectorAll('.close, .close-modal').forEach(btn => {
