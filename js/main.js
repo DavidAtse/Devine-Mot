@@ -701,26 +701,6 @@ function ouvrirDonate() {
     }
 }
 
-// Gestion des puces de montants prédéfinis
-document.querySelectorAll('.btn-preset-amt').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const amt = this.dataset.amt;
-        const input = document.getElementById('customAmount');
-        if (input) input.value = amt;
-        
-        document.querySelectorAll('.btn-preset-amt').forEach(b => {
-            b.classList.remove('active');
-            b.style.background = 'rgba(247,127,0,0.12)';
-            b.style.borderColor = 'rgba(247,127,0,0.4)';
-            b.style.color = '#fff';
-        });
-        this.classList.add('active');
-        this.style.background = 'var(--orange)';
-        this.style.borderColor = 'var(--orange)';
-        this.style.color = '#1a1008';
-    });
-});
-
 if (document.getElementById('btnProceedDonate')) {
     document.getElementById('btnProceedDonate').addEventListener('click', () => {
         const amtInput = document.getElementById('customAmount');

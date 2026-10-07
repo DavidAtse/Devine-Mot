@@ -261,16 +261,8 @@ $conn->close();
                 </p>
                 
                 <div id="donateStep1">
-                    <p style="font-size:13px; text-align:left; color:var(--orange); margin-bottom:8px; font-weight:bold;">Choisis un montant :</p>
-                    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; margin-bottom:14px;">
-                        <button type="button" class="btn-preset-amt" data-amt="500" style="padding:10px 4px; border-radius:8px; border:1px solid rgba(247,127,0,0.4); background:rgba(247,127,0,0.12); color:#fff; font-weight:800; font-size:13px; cursor:pointer;">500 F</button>
-                        <button type="button" class="btn-preset-amt active" data-amt="1000" style="padding:10px 4px; border-radius:8px; border:1px solid var(--orange); background:var(--orange); color:#1a1008; font-weight:800; font-size:13px; cursor:pointer;">1 000 F</button>
-                        <button type="button" class="btn-preset-amt" data-amt="2000" style="padding:10px 4px; border-radius:8px; border:1px solid rgba(247,127,0,0.4); background:rgba(247,127,0,0.12); color:#fff; font-weight:800; font-size:13px; cursor:pointer;">2 000 F</button>
-                        <button type="button" class="btn-preset-amt" data-amt="5000" style="padding:10px 4px; border-radius:8px; border:1px solid rgba(247,127,0,0.4); background:rgba(247,127,0,0.12); color:#fff; font-weight:800; font-size:13px; cursor:pointer;">5 000 F</button>
-                    </div>
-
-                    <p style="font-size:12px; text-align:left; color:var(--gris); margin-bottom:6px;">Ou saisis un montant libre (FCFA) :</p>
-                    <input type="number" id="customAmount" placeholder="Ex: 1000" value="1000" min="100" style="width:100%; padding:12px; border-radius:8px; border:2px solid rgba(247,127,0,0.5); background:rgba(253,248,240,0.05); color:var(--texte); font-size:18px; font-weight:bold; margin-bottom:18px; text-align:center; outline:none;">
+                    <p style="font-size:13px; text-align:left; color:var(--orange); margin-bottom:8px; font-weight:bold;">Montant de ton soutien (FCFA) :</p>
+                    <input type="number" id="customAmount" placeholder="Saisis le montant (ex: 1000)..." value="" min="100" style="width:100%; padding:12px; border-radius:8px; border:2px solid rgba(247,127,0,0.5); background:rgba(253,248,240,0.05); color:var(--texte); font-size:18px; font-weight:bold; margin-bottom:18px; text-align:center; outline:none;">
                     
                     <button id="btnProceedDonate" class="btn-principal" style="width:100%; padding:14px; font-size:15px; font-weight:800; background:linear-gradient(135deg, #FF9900, #F77F00);">
                         Continuer vers le paiement <i class="fa-solid fa-arrow-right" style="margin-left:6px;"></i>
