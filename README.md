@@ -153,5 +153,5 @@ devine-mot/
 ## 👨‍💻 Auteur
 
 * **David ATSÉ** ([@DavidAtse](https://github.com/DavidAtse)) — *Concepteur & Développeur Full-Stack*  
-* ✉️ Contact : `udje266@gmail.com`  
+* ✉️ Contact : `daatsey24@gmail.com`  
 * 🇨🇮 *Fait avec fierté et passion en Côte d'Ivoire.*
