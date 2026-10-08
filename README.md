@@ -39,7 +39,6 @@ Le jeu ne se limite pas à un seul mot par jour : il propose **4 défis quotidie
 2. **Saisie libre :** Le joueur saisit n'importe quel mot de la bonne longueur. Toutes les variantes d'orthographe nouchi sont acceptées.
 3. **Indices par couleurs (Tuiles) :**
    * 🟩 **Vert (Bien placé) :** La lettre est correcte et à la bonne position. Elle se verrouille en haut pour guider les essais suivants.
-   * 🟨 **Jaune / Orange (Mal placé) :** La lettre existe dans le mot secret mais se trouve à une autre position.
    * ⬛ **Gris (Absent) :** La lettre ne fait pas partie du mot secret.
 4. **Thermomètre de Proximité (%) & Emojis :**  
    Chaque proposition est évaluée selon sa proximité avec le mot secret :
