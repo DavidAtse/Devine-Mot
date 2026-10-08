@@ -45,13 +45,15 @@ if ($userId) {
     }
 }
 
-$stmtIns = $conn->prepare('INSERT INTO dons (user_id, donateur, montant, moyen, statut, source) VALUES (?, ?, ?, ?, "confirme", "site")');
+$stmtIns = $conn->prepare('INSERT INTO dons (user_id, donateur, montant, moyen, statut, source) VALUES (?, ?, ?, ?, "en_attente", "site")');
 $stmtIns->bind_param('isis', $userId, $pseudo, $montant, $moyen);
 $ok = $stmtIns->execute();
+$insertId = $stmtIns->insert_id;
 
 $conn->close();
 
 echo json_encode([
     'ok' => $ok,
-    'message' => 'Soutien enregistré.'
+    'don_id' => $insertId,
+    'message' => 'Intention de soutien enregistrée (en attente de confirmation).'
 ]);

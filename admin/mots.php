@@ -108,6 +108,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // --- Valider un don (passe de en_attente à confirme) ---
+    if ($action === 'valider_don') {
+        $donId = (int)($_POST['don_id'] ?? 0);
+        if ($donId > 0) {
+            $upd = $conn->prepare("UPDATE dons SET statut = 'confirme' WHERE id = ?");
+            $upd->bind_param('i', $donId);
+            if ($upd->execute()) {
+                $message = "✅ Don validé avec succès ! Il a été ajouté au chiffre d'affaires.";
+            } else {
+                $erreur = "Erreur lors de la validation du don.";
+            }
+        }
+    }
+
     // --- Supprimer un don ---
     if ($action === 'supprimer_don') {
         $donId = (int)($_POST['don_id'] ?? 0);
@@ -377,6 +391,10 @@ $nbJoueurs = $conn->query("SELECT COUNT(*) FROM users")->fetch_row()[0];
 $statsDons    = $conn->query("SELECT COALESCE(SUM(montant), 0) AS total, COUNT(*) AS nb FROM dons WHERE statut = 'confirme'")->fetch_assoc();
 $totalRevenus = (int) ($statsDons['total'] ?? 0);
 $nbDons       = (int) ($statsDons['nb'] ?? 0);
+
+$statsAttente = $conn->query("SELECT COALESCE(SUM(montant), 0) AS total, COUNT(*) AS nb FROM dons WHERE statut = 'en_attente'")->fetch_assoc();
+$totalAttente = (int) ($statsAttente['total'] ?? 0);
+$nbEnAttente  = (int) ($statsAttente['nb'] ?? 0);
 
 // Liste des dons
 $dons = $conn->query("SELECT id, donateur, montant, moyen, statut, source, created_at FROM dons ORDER BY id DESC LIMIT 50")->fetch_all(MYSQLI_ASSOC);
@@ -886,8 +904,13 @@ $conn->close();
             <div class="val" style="color: #22c55e;">
                 <?= number_format($totalRevenus, 0, ',', ' ') ?> <span style="font-size: 14px; font-weight: 800; color: #4ade80;">FCFA</span>
             </div>
-            <div class="lbl" style="color: #86efac; font-weight: 700;">💰 Total Soutiens (CA)</div>
-            <div style="font-size: 11px; color: rgba(253,248,240,0.5); margin-top: 4px;"><?= $nbDons ?> don<?= $nbDons > 1 ? 's' : '' ?> reçu<?= $nbDons > 1 ? 's' : '' ?></div>
+            <div class="lbl" style="color: #86efac; font-weight: 700;">💰 Total Soutiens Encaissés</div>
+            <div style="font-size: 11px; color: rgba(253,248,240,0.6); margin-top: 4px;">
+                <?= $nbDons ?> don<?= $nbDons > 1 ? 's' : '' ?> validé<?= $nbDons > 1 ? 's' : '' ?>
+                <?php if ($nbEnAttente > 0): ?>
+                    <span style="display:block; color:#f59e0b; font-weight:700; margin-top:3px;">⏳ <?= $nbEnAttente ?> en attente (<?= number_format($totalAttente, 0, ',', ' ') ?> F)</span>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 
@@ -1114,7 +1137,7 @@ $conn->close();
         </form>
 
         <div class="table-wrapper" style="overflow-x:auto">
-            <table class="table-mots" style="min-width:600px">
+            <table class="table-mots" style="min-width:680px">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -1122,20 +1145,21 @@ $conn->close();
                         <th>Donateur</th>
                         <th>Montant</th>
                         <th>Moyen</th>
+                        <th>Statut</th>
                         <th>Origine</th>
-                        <th>Action</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                 <?php if (empty($dons)): ?>
                     <tr>
-                        <td colspan="7" style="text-align:center; padding:24px; color:var(--gris); font-style:italic;">
-                            ☕ Aucun soutien enregistré pour le moment. Dès qu'un joueur clique sur « Soutenir » ou que tu ajoutes un dépôt reçu, il s'affichera ici et s'accumulera automatiquement au total !
+                        <td colspan="8" style="text-align:center; padding:24px; color:var(--gris); font-style:italic;">
+                            ☕ Aucun soutien enregistré pour le moment. Dès qu'un don est validé ou qu'un dépôt reçu est ajouté, il s'affichera ici et s'accumulera au chiffre d'affaires !
                         </td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($dons as $d): ?>
-                        <tr>
+                        <tr style="<?= $d['statut'] === 'en_attente' ? 'opacity:0.85; background:rgba(245,158,11,0.03);' : '' ?>">
                             <td><?= $d['id'] ?></td>
                             <td style="color:var(--gris); font-size:.85em">
                                 <?= date('d/m/Y H:i', strtotime($d['created_at'])) ?>
@@ -1143,8 +1167,8 @@ $conn->close();
                             <td style="font-weight:700;">
                                 <?= htmlspecialchars($d['donateur']) ?>
                             </td>
-                            <td style="font-weight:800; color:#22c55e; font-size:15px;">
-                                + <?= number_format($d['montant'], 0, ',', ' ') ?> FCFA
+                            <td style="font-weight:800; font-size:15px; color: <?= $d['statut'] === 'confirme' ? '#22c55e' : '#f59e0b' ?>;">
+                                <?= $d['statut'] === 'confirme' ? '+ ' : '' ?><?= number_format($d['montant'], 0, ',', ' ') ?> FCFA
                             </td>
                             <td>
                                 <?php if (stripos($d['moyen'], 'jeko') !== false): ?>
@@ -1169,18 +1193,47 @@ $conn->close();
                                     </span>
                                 <?php endif; ?>
                             </td>
+                            <td>
+                                <?php if ($d['statut'] === 'confirme'): ?>
+                                    <span style="background:rgba(34,197,94,0.15); color:#22c55e; border:1px solid rgba(34,197,94,0.35); padding:2px 8px; border-radius:10px; font-size:11px; font-weight:700;">
+                                        ✅ Encaissé
+                                    </span>
+                                <?php else: ?>
+                                    <span style="background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.35); padding:2px 8px; border-radius:10px; font-size:11px; font-weight:700;" title="Paiement non confirmé par l'utilisateur">
+                                        ⏳ En attente
+                                    </span>
+                                <?php endif; ?>
+                            </td>
                             <td style="font-size:.85em; color:var(--gris);">
-                                <?= $d['source'] === 'site' ? '🌐 Bouton Soutenir' : '📱 Dépôt direct' ?>
+                                <?php if ($d['source'] === 'jeko_webhook'): ?>
+                                    ⚡ Webhook Jeko
+                                <?php elseif ($d['source'] === 'site'): ?>
+                                    🌐 Clic Bouton
+                                <?php else: ?>
+                                    📱 Dépôt direct
+                                <?php endif; ?>
                             </td>
                             <td>
-                                <form method="POST" onsubmit="return confirm('Supprimer ce don de <?= number_format($d['montant'], 0, ',', ' ') ?> FCFA de l\'historique ?');" style="display:inline;">
-                                    <?= csrf_field() ?>
-                                    <input type="hidden" name="action" value="supprimer_don">
-                                    <input type="hidden" name="don_id" value="<?= $d['id'] ?>">
-                                    <button type="submit" class="btn-del-joueur" title="Supprimer ce don">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                </form>
+                                <div style="display:flex; gap:6px; align-items:center;">
+                                    <?php if ($d['statut'] === 'en_attente'): ?>
+                                        <form method="POST" style="display:inline;">
+                                            <?= csrf_field() ?>
+                                            <input type="hidden" name="action" value="valider_don">
+                                            <input type="hidden" name="don_id" value="<?= $d['id'] ?>">
+                                            <button type="submit" class="btn btn-vert" style="padding:4px 8px; font-size:11px; border-radius:6px;" title="Valider et ajouter au CA">
+                                                <i class="fa-solid fa-check"></i> Valider
+                                            </button>
+                                        </form>
+                                    <?php endif; ?>
+                                    <form method="POST" onsubmit="return confirm('Supprimer ce don de <?= number_format($d['montant'], 0, ',', ' ') ?> FCFA de l\'historique ?');" style="display:inline;">
+                                        <?= csrf_field() ?>
+                                        <input type="hidden" name="action" value="supprimer_don">
+                                        <input type="hidden" name="don_id" value="<?= $d['id'] ?>">
+                                        <button type="submit" class="btn-del-joueur" title="Supprimer">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>

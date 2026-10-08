@@ -171,6 +171,9 @@ function _assurer_schema_creneaux(mysqli $conn): void {
                 ('Soutien Wave (Reçu)', 500, 'Wave', 'confirme', 'manuel', '2026-10-05 10:15:00'),
                 ('Soutien Wave (Reçu)', 500, 'Wave', 'confirme', 'manuel', '2026-10-05 18:20:00')");
         }
+
+        // Rétroactivité / Nettoyage : les clics enregistrés depuis le site non validés passent en 'en_attente'
+        $conn->query("UPDATE `dons` SET `statut` = 'en_attente' WHERE `source` = 'site' AND `statut` = 'confirme'");
     } catch (Throwable $e) {
         error_log('[iMots] Migration créneaux : ' . $e->getMessage());
     }
