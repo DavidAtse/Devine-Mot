@@ -68,6 +68,7 @@ function db_connect(): mysqli {
     try {
         $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT);
         $conn->set_charset('utf8mb4');
+        $conn->query("SET time_zone = '+00:00'"); // Fuseau horaire Africa/Abidjan (UTC+0)
         _assurer_schema_creneaux($conn);
         return $conn;
     } catch (Exception $e) {
@@ -194,6 +195,15 @@ function _assurer_schema_creneaux(mysqli $conn): void {
             $conn->query("DELETE FROM `tentatives`");
             $conn->query("ALTER TABLE `tentatives` AUTO_INCREMENT = 1");
             $conn->query("INSERT INTO `system_flags` (`flag_key`) VALUES ('reset_lancement_officiel_20261009')");
+        }
+
+        // Migration fuseau horaire Abidjan (UTC+0) : correction du décalage de +2h hérité du serveur Alwaysdata (France UTC+2)
+        $chkTime = $conn->query("SELECT flag_key FROM `system_flags` WHERE flag_key = 'fix_timezone_abidjan_20261009'");
+        if ($chkTime && $chkTime->num_rows === 0) {
+            $conn->query("UPDATE `scores` SET `created_at` = DATE_SUB(`created_at`, INTERVAL 2 HOUR) WHERE `date_jour` = '2026-10-09'");
+            $conn->query("UPDATE `dons` SET `created_at` = DATE_SUB(`created_at`, INTERVAL 2 HOUR) WHERE DATE(`created_at`) = '2026-10-09'");
+            $conn->query("UPDATE `users` SET `created_at` = DATE_SUB(`created_at`, INTERVAL 2 HOUR) WHERE DATE(`created_at`) = '2026-10-09'");
+            $conn->query("INSERT INTO `system_flags` (`flag_key`) VALUES ('fix_timezone_abidjan_20261009')");
         }
     } catch (Throwable $e) {
         error_log('[iMots] Migration créneaux : ' . $e->getMessage());

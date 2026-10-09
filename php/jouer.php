@@ -165,8 +165,9 @@ if ($gagne) {
     $chk->bind_param('isi', $userId, $aujourdhui, $creneau);
     $chk->execute();
     if ($chk->get_result()->num_rows === 0) {
-        $ins = $conn->prepare('INSERT INTO scores (user_id, date_jour, creneau, tentatives, trouve) VALUES (?, ?, ?, ?, 1)');
-        $ins->bind_param('isii', $userId, $aujourdhui, $creneau, $tentatives);
+        $maintenant = date('Y-m-d H:i:s');
+        $ins = $conn->prepare('INSERT INTO scores (user_id, date_jour, creneau, tentatives, trouve, created_at) VALUES (?, ?, ?, ?, 1, ?)');
+        $ins->bind_param('isiis', $userId, $aujourdhui, $creneau, $tentatives, $maintenant);
         $ins->execute();
     }
 }
