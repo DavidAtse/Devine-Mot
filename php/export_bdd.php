@@ -12,7 +12,7 @@ if ($key !== 'imots2026' && $key !== 'imots_backup_2026') {
 
 $conn = db_connect();
 
-$tables = ['mots', 'mots_du_jour', 'push_log', 'push_subscriptions', 'scores', 'tentatives', 'users'];
+$tables = ['dons', 'mots', 'mots_du_jour', 'push_log', 'push_subscriptions', 'scores', 'tentatives', 'users'];
 
 header('Content-Type: text/plain; charset=utf-8');
 header('Content-Disposition: attachment; filename="railway_backup_' . date('Y-m-d_His') . '.sql"');

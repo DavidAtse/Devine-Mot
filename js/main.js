@@ -11,14 +11,20 @@ const countdownEl = document.getElementById("countdown");
 const tuilesEl    = document.getElementById("tuiles");
 
 // ======================
-// STOCKAGE PAR UTILISATEUR
+// ======================
+// STOCKAGE PAR UTILISATEUR (Lancement Officiel v1)
 // ======================
 const username        = window.username || "guest";
-const KEY_HISTORIQUE  = `mdj_v4_hist_${username}`;
-const KEY_DATE        = `mdj_v4_date_${username}`;
-const KEY_CONFIRMES   = `mdj_v4_conf_${username}`; // lettres confirm�es {pos: lettre}
-const KEY_LONGUEUR    = `mdj_v4_len_${username}`;  // longueur du mot du jour
-const KEY_DEFINITION  = `mdj_v4_def_${username}`;  // définition du mot trouvé
+const KEY_HISTORIQUE  = `imots_v1_hist_${username}`;
+const KEY_DATE        = `imots_v1_date_${username}`;
+const KEY_CONFIRMES   = `imots_v1_conf_${username}`; // lettres confirmées {pos: lettre}
+const KEY_LONGUEUR    = `imots_v1_len_${username}`;  // longueur du mot du jour
+const KEY_DEFINITION  = `imots_v1_def_${username}`;  // définition du mot trouvé
+
+// Nettoyage immédiat des anciennes clés de test
+['mdj_v4_hist_', 'mdj_v4_date_', 'mdj_v4_conf_', 'mdj_v4_len_', 'mdj_v4_def_'].forEach(prefix => {
+    try { localStorage.removeItem(prefix + username); } catch(e) {}
+});
 
 // ======================
 // RESET QUOTIDIEN

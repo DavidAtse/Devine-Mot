@@ -49,7 +49,7 @@ if ($isAlwaysdata) {
     }
 }
 
-define('GAME_LAUNCH_DATE', '2026-01-01'); // date de référence pour le calcul du jour
+define('GAME_LAUNCH_DATE', '2026-10-09'); // Lancement officiel aujourd'hui = Jour #1 !
 define('TIMEZONE', 'Africa/Abidjan');
 
 date_default_timezone_set(TIMEZONE);
@@ -174,6 +174,21 @@ function _assurer_schema_creneaux(mysqli $conn): void {
 
         // Rétroactivité / Nettoyage : les clics enregistrés depuis le site non validés passent en 'en_attente'
         $conn->query("UPDATE `dons` SET `statut` = 'en_attente' WHERE `source` = 'site' AND `statut` = 'confirme'");
+
+        // Lancement officiel du jeu : Jour 1 (2026-10-09 à 12h) - Remise à zéro de tous les scores et tentatives de test
+        $conn->query("CREATE TABLE IF NOT EXISTS `system_flags` (
+            `flag_key` VARCHAR(50) NOT NULL PRIMARY KEY,
+            `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        $chkReset = $conn->query("SELECT flag_key FROM `system_flags` WHERE flag_key = 'reset_lancement_officiel_20261009'");
+        if ($chkReset && $chkReset->num_rows === 0) {
+            $conn->query("DELETE FROM `scores`");
+            $conn->query("ALTER TABLE `scores` AUTO_INCREMENT = 1");
+            $conn->query("DELETE FROM `tentatives`");
+            $conn->query("ALTER TABLE `tentatives` AUTO_INCREMENT = 1");
+            $conn->query("INSERT INTO `system_flags` (`flag_key`) VALUES ('reset_lancement_officiel_20261009')");
+        }
     } catch (Throwable $e) {
         error_log('[iMots] Migration créneaux : ' . $e->getMessage());
     }
