@@ -17,6 +17,12 @@ $isAlwaysdata = (
     getenv('ALWAYSDATA') !== false
 );
 
+// Redirection automatique des requêtes depuis l'ancien serveur Railway vers le site officiel
+if (isset($_SERVER['HTTP_HOST']) && str_contains($_SERVER['HTTP_HOST'], 'railway.app')) {
+    header('Location: https://imots.alwaysdata.net' . ($_SERVER['REQUEST_URI'] ?? '/'), true, 302);
+    exit;
+}
+
 if ($isAlwaysdata) {
     // Mot de passe sécurisé : lu depuis variable d'environnement ou fichier externe hors webroot (/home/imots/env_db.php)
     $adPass = getenv('ALWAYSDATA_DB_PASS');

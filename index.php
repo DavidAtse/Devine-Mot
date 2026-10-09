@@ -226,7 +226,7 @@ $conn->close();
                         🔹 Les mots les plus hauts sont les plus proches.<br>
                         🔹 Il y a <strong>4 mots par jour</strong> : un nouveau mot toutes les 6 heures.<br>
                         &nbsp;&nbsp;&nbsp;&nbsp;🕛 00h - 06h &nbsp;|&nbsp; 🌅 06h - 12h &nbsp;|&nbsp; ☀️ 12h - 18h &nbsp;|&nbsp; 🌙 18h - 00h<br>
-                        🔹 Chaque mot trouvé te rapporte une victoire : plus tu joues, plus tu montes au classement !
+                        🔹 Chaque mot trouvé te rapporte une victoire : plus tu joues et plus vite tu trouves, plus tu montes au classement !
                     </p>
                 </div>
             </div>

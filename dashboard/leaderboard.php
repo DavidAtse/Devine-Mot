@@ -12,14 +12,16 @@ $conn = db_connect();
 $stmt = $conn->prepare('
     SELECT
         u.username,
-        COUNT(s.id)             AS victoires,
-        MIN(s.tentatives)       AS meilleur,
+        COUNT(s.id)                 AS victoires,
+        MIN(s.created_at)           AS premier_trouve,
+        MAX(s.created_at)           AS dernier_trouve,
+        MIN(s.tentatives)           AS meilleur,
         ROUND(AVG(s.tentatives), 1) AS moy
     FROM scores s
     JOIN users u ON u.id = s.user_id
     WHERE s.trouve = 1
     GROUP BY s.user_id, u.username
-    ORDER BY victoires DESC, meilleur ASC
+    ORDER BY victoires DESC, dernier_trouve ASC
     LIMIT 10
 ');
 $stmt->execute();
@@ -50,6 +52,9 @@ $userId = (int) $_SESSION['user_id'];
     </nav>
 
     <h1>🏆 Classement</h1>
+    <p style="text-align:center;font-size:13px;color:#aaa;margin-top:-6px;margin-bottom:22px;">
+        Classé par victoires, puis par ordre d'arrivée ⚡
+    </p>
 
     <div class="container">
         <?php if (empty($joueurs)): ?>
@@ -61,18 +66,19 @@ $userId = (int) $_SESSION['user_id'];
                     <th>#</th>
                     <th>Joueur</th>
                     <th>🏆</th>
-                    <th>⚡ Meilleur</th>
-                    
+                    <th>⏱️ Trouvé à</th>
                 </tr>
             </thead>
             <tbody>
-            <?php foreach ($joueurs as $i => $row): ?>
+            <?php foreach ($joueurs as $i => $row): 
+                $dateV = !empty($row['dernier_trouve']) ? new DateTime($row['dernier_trouve']) : null;
+                $heureTxt = $dateV ? ($dateV->format('Y-m-d') === date('Y-m-d') ? $dateV->format('H\hi') : $dateV->format('d/m H\hi')) : '-';
+            ?>
                 <tr class="<?= $i < 3 ? 'top-' . ($i + 1) : '' ?>">
                     <td><?= $medals[$i] ?? '#' . ($i + 1) ?></td>
                     <td><?= htmlspecialchars($row['username']) ?></td>
                     <td><?= $row['victoires'] ?></td>
-                    <td><?= $row['meilleur'] ?> essai<?= $row['meilleur'] > 1 ? 's' : '' ?></td>
-                    
+                    <td title="<?= (int)$row['meilleur'] ?> essai(s)"><?= $heureTxt ?></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>

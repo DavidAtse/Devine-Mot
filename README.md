@@ -61,7 +61,7 @@ Le jeu ne se limite pas à un seul mot par jour : il propose **4 défis quotidie
 
 ### 5. 🏆 Compétition & Statistiques
 * **Mon Profil :** Suivi du total de parties, taux de victoire, meilleur score (trouvé en 1 coup, 2 coups...) et série de victoires quotidiennes consécutives (*Streak*).
-* **Classement National (Leaderboard) :** Top 10 des meilleurs joueurs classés par nombre de victoires (🥇, 🥈, 🥉) et départagés par leur moyenne de tentatives.
+* **Classement National (Leaderboard) :** Top 10 des meilleurs joueurs classés par nombre de victoires (🥇, 🥈, 🥉) et départagés par l'ordre chronologique de découverte (les premiers à trouver sont en tête, sans pénalité sur le nombre d'essais).
 
 ---
 
