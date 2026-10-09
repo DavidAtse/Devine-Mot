@@ -517,10 +517,10 @@ function partagerScore() {
     const txt = gagne
         ? `J'ai trouvé le mot ivoirien du jour sur iMots CI en ${nb} essai${nb > 1 ? "s" : ""} ! 🇨🇮
 
-Viens tester ton vocabulaire et relève le défi ici : https://devine-mot-production.up.railway.app/`
+Viens tester ton vocabulaire et relève le défi ici : https://imots.alwaysdata.net/`
         : `Le mot ivoirien du jour sur iMots CI est vraiment chaud ! 🇨🇮🔥
 
-Viens tester ton vocabulaire et relève le défi ici : https://devine-mot-production.up.railway.app/`;
+Viens tester ton vocabulaire et relève le défi ici : https://imots.alwaysdata.net/`;
     
     if (navigator.share) {
         navigator.share({

@@ -48,10 +48,10 @@ $conn->close();
 
     <!-- ===== Open Graph (Facebook, WhatsApp, LinkedIn) ===== -->
     <meta property="og:type"        content="website">
-    <meta property="og:url"         content="https://imots-production.up.railway.app/">
+    <meta property="og:url"         content="https://imots.alwaysdata.net/">
     <meta property="og:title" content="iMots CI 🇨🇮 – Les mots d'ici, un défi chaque jour">
     <meta property="og:description" content="Devine le mot ivoirien du jour ! Un défi culturel 100% local. Rejoins la communauté !">
-    <meta property="og:image"       content="https://imots-production.up.railway.app/assets/og-preview.jpg">
+    <meta property="og:image"       content="https://imots.alwaysdata.net/assets/og-preview.jpg">
     <meta property="og:image:width"  content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt"   content="iMots CI — Jeu de mots ivoirien">
@@ -62,7 +62,7 @@ $conn->close();
     <meta name="twitter:card"        content="summary_large_image">
     <meta name="twitter:title" content="iMots CI 🇨🇮 – Les mots d'ici, un défi chaque jour">
     <meta name="twitter:description" content="Un nouveau mot ivoirien à deviner chaque jour !">
-    <meta name="twitter:image"       content="https://imots-production.up.railway.app/assets/og-preview.jpg">
+    <meta name="twitter:image"       content="https://imots.alwaysdata.net/assets/og-preview.jpg">
     <meta name="twitter:image:alt"   content="iMots CI — Jeu de mots ivoirien">
 
     
