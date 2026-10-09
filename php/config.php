@@ -205,6 +205,14 @@ function _assurer_schema_creneaux(mysqli $conn): void {
             $conn->query("UPDATE `users` SET `created_at` = DATE_SUB(`created_at`, INTERVAL 2 HOUR) WHERE DATE(`created_at`) = '2026-10-09'");
             $conn->query("INSERT INTO `system_flags` (`flag_key`) VALUES ('fix_timezone_abidjan_20261009')");
         }
+
+        // TIMESTAMP est automatiquement converti par SET time_zone = '+00:00'. Rétablissement de l'heure exacte.
+        $chkTimeFix = $conn->query("SELECT flag_key FROM `system_flags` WHERE flag_key = 'restore_timestamp_utc_20261009'");
+        if ($chkTimeFix && $chkTimeFix->num_rows === 0) {
+            $conn->query("UPDATE `scores` SET `created_at` = DATE_ADD(`created_at`, INTERVAL 2 HOUR) WHERE `date_jour` = '2026-10-09'");
+            $conn->query("UPDATE `users` SET `created_at` = DATE_ADD(`created_at`, INTERVAL 2 HOUR) WHERE DATE(`created_at`) = '2026-10-09'");
+            $conn->query("INSERT INTO `system_flags` (`flag_key`) VALUES ('restore_timestamp_utc_20261009')");
+        }
     } catch (Throwable $e) {
         error_log('[iMots] Migration créneaux : ' . $e->getMessage());
     }
