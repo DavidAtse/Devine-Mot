@@ -20,19 +20,86 @@ define('VAPID_PRIVATE_KEY', getenv('VAPID_PRIVATE_KEY') ?: __DIR__ . '/../keys/v
 
 header('Content-Type: application/json; charset=utf-8');
 
-$now       = new DateTime();
-$heure     = (int) $now->format('G'); // 0-23
-$today     = $now->format('Y-m-d');
-$creneau   = creneau_actuel();
+$now          = new DateTime();
+$heure        = (int) $now->format('G'); // 0-23
+$today        = $now->format('Y-m-d');
+$creneau      = creneau_actuel();
+$secRestantes = creneau_secondes_restantes();
+$is20MinWindow = ($secRestantes <= 1260 && $secRestantes > 0);
+$force20Min    = (isset($_GET['trigger']) && $_GET['trigger'] === '20min');
 
-// Pas de notif la nuit (23h → 7h)
-if ($heure < 8 || $heure > 22) {
-    echo json_encode(['ok' => true, 'skipped' => true, 'reason' => 'hors_plage_horaire']);
+$conn = db_connect();
+
+// ─── 0. RAPPEL SPÉCIFIQUE : 20 MINUTES AVANT LA FIN DU CRÉNEAU ───────────
+// Déclenché à 11h40, 17h40, 23h40 (et 05h40 si actif)
+if ($is20MinWindow || $force20Min) {
+    $flagKey = 'rappel_20min_' . $today . '_' . $creneau;
+    $chk = $conn->prepare('SELECT flag_key FROM system_flags WHERE flag_key = ?');
+    $chk->bind_param('s', $flagKey);
+    $chk->execute();
+    if ($chk->get_result()->num_rows > 0) {
+        echo json_encode(['ok' => true, 'skipped' => true, 'reason' => 'rappel_20min_deja_envoye_pour_ce_creneau']);
+        $conn->close();
+        exit;
+    }
+
+    $wp   = new WebPush(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+    $sent = 0;
+    $dead = [];
+
+    // Utilisateurs qui n'ont PAS encore trouvé le mot de ce créneau
+    $stmt = $conn->prepare("
+        SELECT ps.id, ps.endpoint, ps.p256dh, ps.auth
+        FROM push_subscriptions ps
+        LEFT JOIN scores s ON s.user_id = ps.user_id AND s.date_jour = ? AND s.creneau = ? AND s.trouve = 1
+        WHERE s.id IS NULL
+    ");
+    $stmt->bind_param('si', $today, $creneau);
+    $stmt->execute();
+    $destinataires = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+    foreach ($destinataires as $sub) {
+        $res = $wp->send([
+            'endpoint' => $sub['endpoint'],
+            'keys'     => ['p256dh' => $sub['p256dh'], 'auth' => $sub['auth']],
+        ]);
+        if ($res['ok']) {
+            $sent++;
+        } elseif (in_array($res['http_code'], [404, 410], true)) {
+            $dead[] = (int) $sub['id'];
+        }
+    }
+
+    // Marquer comme envoyé pour ce créneau
+    $ins = $conn->prepare("INSERT INTO system_flags (flag_key) VALUES (?)");
+    $ins->bind_param('s', $flagKey);
+    $ins->execute();
+
+    if ($dead) {
+        $ids = implode(',', array_unique($dead));
+        $conn->query("DELETE FROM push_subscriptions WHERE id IN ($ids)");
+    }
+
+    $conn->close();
+    echo json_encode([
+        'ok'            => true,
+        'type'          => 'rappel_20min',
+        'creneau'       => $creneau,
+        'destinataires' => count($destinataires),
+        'envoyes'       => $sent,
+        'dead_removed'  => count(array_unique($dead)),
+    ]);
     exit;
 }
 
-$conn = db_connect();
-$wp   = new WebPush(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+// Pas de notif générale la nuit (23h → 7h)
+if ($heure < 8 || $heure > 22) {
+    echo json_encode(['ok' => true, 'skipped' => true, 'reason' => 'hors_plage_horaire']);
+    $conn->close();
+    exit;
+}
+
+$wp = new WebPush(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 
 $sent_rappel    = 0;
 $sent_demain    = 0;

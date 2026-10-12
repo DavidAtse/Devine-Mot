@@ -81,8 +81,33 @@ $conn->close();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-</head>
 <body>
+    <!-- ===== BULLE DE NOTIFICATION EN HAUT DE L'APPLICATION ===== -->
+    <div id="topNotifBubble" class="top-notif-bubble" style="display:none;" role="alert" aria-live="polite">
+        <div class="bubble-content">
+            <div class="bubble-icon-wrap">
+                <span class="bubble-icon-pulse"></span>
+                <i class="fa-solid fa-clock bubble-icon" id="bubbleIcon"></i>
+            </div>
+            <div class="bubble-text-wrap">
+                <div class="bubble-tag" id="bubbleTag">⏰ DERNIÈRES 20 MINUTES</div>
+                <div class="bubble-message" id="bubbleMessage">
+                    Plus que <span id="bubbleTimer" class="bubble-timer">--:--</span> pour trouver le mot de ce créneau !
+                </div>
+            </div>
+            <div class="bubble-actions">
+                <button type="button" class="bubble-action-btn" id="bubbleActionBtn">🎯 Jouer</button>
+                <button type="button" class="bubble-close-btn" id="bubbleCloseBtn" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mini-pastille rétractable quand la bulle est minimisée -->
+    <div id="topNotifPill" class="top-notif-pill" style="display:none;" title="Cliquer pour afficher le rappel">
+        <span class="pill-pulse"></span>
+        <span id="pillText">⏰ 20m</span>
+    </div>
+
     <main>
         <!-- ===== SIDEBAR GAUCHE ===== -->
         <div class="infos">

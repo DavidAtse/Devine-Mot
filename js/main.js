@@ -403,6 +403,7 @@ bouton.addEventListener("click", async () => {
         if (data.gagne) {
             bloquerJeu(numEssai);
             animationVictoire();
+            if (typeof _notifierVictoireBulle === "function") _notifierVictoireBulle();
             // Sauvegarder la définition et l'afficher apr�s les confettis
             _sauvegarderDefinition(motPropose, data.definition || '', data.est_partenaire);
             _montrerBoutonDef(true);
@@ -465,19 +466,223 @@ const PROCHAIN_MOT_FIN = (typeof window.PROCHAIN_MOT_DANS === "number")
 
 function updateCountdown() {
     const diff = PROCHAIN_MOT_FIN - Date.now();
-    if (diff <= 0) { countdownEl.textContent = "Nouveau mot ! ??"; setTimeout(() => location.reload(), 1500); return; }
+    if (diff <= 0) { countdownEl.textContent = "Nouveau mot ! 🎉"; setTimeout(() => location.reload(), 1500); return; }
     const h = Math.floor(diff / 3_600_000);
     const m = Math.floor((diff % 3_600_000) / 60_000);
     const s = Math.floor((diff % 60_000) / 1000);
     countdownEl.textContent = `Prochain mot : ${String(h).padStart(2,"0")}h ${String(m).padStart(2,"0")}m ${String(s).padStart(2,"0")}s`;
+
+    // Bulle de rappel en haut de l'application
+    if (typeof _updateTopNotifBubble === "function") {
+        _updateTopNotifBubble(diff);
+    }
 }
 setInterval(updateCountdown, 1000);
 updateCountdown();
+
+// ===================================================
+// BULLE DE NOTIFICATION / RAPPEL EN HAUT DE L'APPLICATION
+// ===================================================
+let _bubbleMinimized = false;
+let _bubbleMode = null; // '20min' | 'prompt' | 'success'
+
+function _initTopNotifBubble() {
+    const bubble    = document.getElementById("topNotifBubble");
+    const pill      = document.getElementById("topNotifPill");
+    const actionBtn = document.getElementById("bubbleActionBtn");
+    const closeBtn  = document.getElementById("bubbleCloseBtn");
+
+    if (!bubble) return;
+
+    closeBtn?.addEventListener("click", () => {
+        if (_bubbleMode === "prompt") {
+            sessionStorage.setItem("notif_prompt_dismissed", "1");
+            bubble.style.display = "none";
+        } else {
+            // Mode 20 min : minimiser en petite pastille
+            _bubbleMinimized = true;
+            bubble.style.display = "none";
+            if (pill) pill.style.display = "flex";
+        }
+    });
+
+    pill?.addEventListener("click", () => {
+        _bubbleMinimized = false;
+        pill.style.display = "none";
+        bubble.style.display = "block";
+    });
+
+    actionBtn?.addEventListener("click", () => {
+        if (_bubbleMode === "prompt") {
+            toggleNotification();
+            bubble.style.display = "none";
+        } else {
+            // Focus sur le champ de jeu et scroll
+            const inp = document.getElementById("guessInput");
+            if (inp && !inp.disabled) {
+                inp.scrollIntoView({ behavior: "smooth", block: "center" });
+                inp.focus();
+            }
+        }
+    });
+}
+
+function _updateTopNotifBubble(diff) {
+    const bubble    = document.getElementById("topNotifBubble");
+    const pill      = document.getElementById("topNotifPill");
+    const tagEl     = document.getElementById("bubbleTag");
+    const msgEl     = document.getElementById("bubbleMessage");
+    const iconEl    = document.getElementById("bubbleIcon");
+    const actionBtn = document.getElementById("bubbleActionBtn");
+    const pillText  = document.getElementById("pillText");
+
+    if (!bubble) return;
+
+    // Vérifie si le mot de ce créneau a déjà été trouvé
+    const hist = (typeof chargerHistorique === "function") ? chargerHistorique() : [];
+    const estGagne = hist.some(_estItemGagnant);
+
+    if (estGagne) {
+        if (_bubbleMode === "20min") {
+            _notifierVictoireBulle();
+        } else if (_bubbleMode !== "success") {
+            bubble.style.display = "none";
+            if (pill) pill.style.display = "none";
+        }
+        return;
+    }
+
+    const VINGT_MINUTES = 20 * 60 * 1000;
+
+    // 1. DANS LES 20 DERNIÈRES MINUTES DU CRÉNEAU
+    if (diff <= VINGT_MINUTES && diff > 0) {
+        _bubbleMode = "20min";
+        const m = Math.floor(diff / 60_000);
+        const s = Math.floor((diff % 60_000) / 1000);
+        const chronoStr = `${String(m).padStart(2, "0")}m ${String(s).padStart(2, "0")}s`;
+
+        bubble.className = "top-notif-bubble urgent";
+        if (iconEl) iconEl.className = "fa-solid fa-bell bubble-icon";
+        if (tagEl) tagEl.innerHTML = `<i class="fa-solid fa-hourglass-half"></i> RAPPEL : FIN DU MOT DANS 20 MIN`;
+        if (msgEl) {
+            msgEl.innerHTML = `Vite ! Plus que <span class="bubble-timer" id="bubbleTimer">${chronoStr}</span> pour trouver le mot de ce créneau !`;
+        }
+        if (actionBtn) {
+            actionBtn.textContent = "🎯 Jouer";
+            actionBtn.style.display = "block";
+        }
+        if (pillText) pillText.textContent = `⏰ ${m + 1}m`;
+
+        if (!_bubbleMinimized) {
+            bubble.style.display = "block";
+            if (pill) pill.style.display = "none";
+        } else {
+            bubble.style.display = "none";
+            if (pill) pill.style.display = "flex";
+        }
+
+        // Déclencher la notification locale du navigateur si la permission est accordée
+        _declencherNotifLocale20Min(m + 1);
+
+        // Déclencher le lazy trigger serveur pour alerter les autres retardataires
+        _triggerLazyPush20Min();
+        return;
+    }
+
+    // 2. EN DEHORS DES 20 DERNIÈRES MINUTES
+    if (pill) pill.style.display = "none";
+
+    // Si les notifications push ne sont pas encore activées, proposer en douceur
+    if (window.Notification && Notification.permission === "default" && !sessionStorage.getItem("notif_prompt_dismissed")) {
+        _bubbleMode = "prompt";
+        bubble.className = "top-notif-bubble";
+        if (iconEl) iconEl.className = "fa-solid fa-bell bubble-icon";
+        if (tagEl) tagEl.innerHTML = `<i class="fa-solid fa-bell"></i> RAPPELS 20 MINUTES`;
+        if (msgEl) {
+            msgEl.innerHTML = `Active les rappels pour recevoir l'alerte 20 min avant la fin de chaque créneau !`;
+        }
+        if (actionBtn) {
+            actionBtn.textContent = "🔔 Activer";
+            actionBtn.style.display = "block";
+        }
+        bubble.style.display = "block";
+    } else if (_bubbleMode === "prompt") {
+        bubble.style.display = "none";
+    }
+}
+
+function _notifierVictoireBulle() {
+    const bubble    = document.getElementById("topNotifBubble");
+    const pill      = document.getElementById("topNotifPill");
+    const tagEl     = document.getElementById("bubbleTag");
+    const msgEl     = document.getElementById("bubbleMessage");
+    const actionBtn = document.getElementById("bubbleActionBtn");
+    const iconEl    = document.getElementById("bubbleIcon");
+
+    if (!bubble) return;
+    _bubbleMode = "success";
+    bubble.className = "top-notif-bubble success";
+    if (iconEl) iconEl.className = "fa-solid fa-trophy bubble-icon";
+    if (tagEl) tagEl.innerHTML = `🎉 MOT TROUVÉ !`;
+    if (msgEl) msgEl.innerHTML = `Bravo ! Rendez-vous au prochain créneau pour le mot suivant !`;
+    if (actionBtn) actionBtn.style.display = "none";
+    if (pill) pill.style.display = "none";
+    bubble.style.display = "block";
+
+    setTimeout(() => {
+        bubble.style.opacity = "0";
+        setTimeout(() => {
+            bubble.style.display = "none";
+            bubble.style.opacity = "1";
+        }, 300);
+    }, 4500);
+}
+
+// Notification locale (navigateur) sans avoir besoin d'installer la PWA
+function _declencherNotifLocale20Min(minutesRestantes) {
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
+    const creneauActuel = (typeof window.creneauActuel === "number") ? window.creneauActuel : Math.floor(new Date().getUTCHours() / 6);
+    const dateToday = new Date().toISOString().split("T")[0];
+    const key = `imots_notif_20m_${dateToday}_${creneauActuel}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+
+    try {
+        if (window._swReg && window._swReg.showNotification) {
+            window._swReg.showNotification("⏰ Plus que 20 minutes ! — iMots CI 🇨🇮", {
+                body: `Il te reste ${minutesRestantes} min pour trouver le mot avant le prochain créneau !`,
+                icon: "/assets/icons/icon-192.png",
+                badge: "/assets/icons/icon-76.png",
+                tag: "imots-20min-reminder",
+                vibrate: [200, 100, 200]
+            });
+        } else {
+            new Notification("⏰ Plus que 20 minutes ! — iMots CI 🇨🇮", {
+                body: `Il te reste ${minutesRestantes} min pour trouver le mot avant le prochain créneau !`,
+                icon: "/assets/icons/icon-192.png"
+            });
+        }
+    } catch (_) {}
+}
+
+// Lazy trigger serveur pour envoyer le push aux retardataires
+async function _triggerLazyPush20Min() {
+    const creneauActuel = (typeof window.creneauActuel === "number") ? window.creneauActuel : Math.floor(new Date().getUTCHours() / 6);
+    const dateToday = new Date().toISOString().split("T")[0];
+    const key = `imots_lazy_20m_${dateToday}_${creneauActuel}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+    try {
+        await fetch(window.BASE_PATH + "/php/push-schedule.php?trigger=20min", { credentials: "same-origin" });
+    } catch (_) {}
+}
 
 // ======================
 // MODALS
 // ======================
 document.addEventListener("DOMContentLoaded", () => {
+    _initTopNotifBubble();
+
     const openModal  = id => { const m = document.getElementById(id); if (m) m.style.display = "flex"; };
     const closeModal = m  => { if (m) m.style.display = "none"; };
 

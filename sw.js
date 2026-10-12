@@ -1,5 +1,5 @@
-﻿/* Service Worker â€“ iMots CI */
-const CACHE_NAME = 'imots-ci-v4';
+/* Service Worker — iMots CI */
+const CACHE_NAME = 'imots-ci-v5';
 
 /* Installation : on ne prÃ©cache RIEN â€” les pages PHP sont dynamiques */
 self.addEventListener('install', e => {
@@ -44,19 +44,21 @@ self.addEventListener('push', e => {
         fetch('/php/notification-info.php')
             .then(r => r.json())
             .then(data => {
+                const is20min = (data.title && data.title.includes('min'));
                 const opts = {
                     body: data.body || 'Un nouveau mot t\'attend !',
                     icon: '/assets/icons/icon-192.png',
                     badge: '/assets/icons/icon-76.png',
-                    tag: 'imots-daily',
-                    renotify: false,
+                    tag: is20min ? 'imots-20min-reminder' : 'imots-daily',
+                    renotify: true,
+                    vibrate: is20min ? [200, 100, 200, 100, 200] : [200, 100, 200],
                     data: { url: '/' },
                     actions: [
-                        { action: 'jouer', title: 'Jouer maintenant' },
+                        { action: 'jouer', title: '🎯 Jouer maintenant' },
                         { action: 'plus-tard', title: 'Plus tard' }
                     ]
                 };
-                return self.registration.showNotification(data.title || 'iMots CI ðŸ‡¨ðŸ‡®', opts);
+                return self.registration.showNotification(data.title || 'iMots CI 🇨🇮', opts);
             })
             .catch(() => {
                 return self.registration.showNotification('iMots CI ðŸ‡¨ðŸ‡®', {
