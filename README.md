@@ -30,7 +30,8 @@ Le jeu ne se limite pas à un seul mot par jour : il propose **4 défis quotidie
 * ☀️ **Créneau 3 : 12h - 18h** — L'après-midi & la pause déjeuner
 * 🌙 **Créneau 4 : 18h - 00h** — La soirée & détente
 
-> ⏳ Un **compte à rebours en temps réel** sur l'écran d'accueil indique précisément le temps restant avant l'arrivée du mot suivant.
+> ⏳ Un **compte à rebours en temps réel** sur l'écran d'accueil indique précisément le temps restant avant l'arrivée du mot suivant.  
+> 🔔 **Rappels 20 min avant la fin de chaque créneau :** Une **bulle de notification interactive** s'affiche en haut de l'application (même sans avoir installé la PWA) avec compte à rebours d'urgence en direct et pastille rétractable pour les joueurs n'ayant pas encore trouvé le mot, complétée par une alerte Web Push envoyée aux retardataires à 05h40, 11h40, 17h40 et 23h40.
 
 ---
 
@@ -80,7 +81,7 @@ Le jeu ne se limite pas à un seul mot par jour : il propose **4 défis quotidie
 | **Base de Données** | **MySQL / MariaDB** | Encodage complet `utf8mb4_unicode_ci` (support des émojis et caractères accentués). Migrations de schéma automatiques et idempotentes. |
 | **Frontend** | **HTML5 / CSS3 / Vanilla JS (ES6+)** | Aucun framework lourd (React/Vue) pour garantir un chargement ultra-rapide (moins de 1s) sur réseau mobile 3G/4G en Côte d'Ivoire. Dark mode natif (#1a1a1a / accent #F77F00). |
 | **PWA & Mobile** | **Service Workers & Web App Manifest** | Application installable sur l'écran d'accueil (Android, iOS, PC), cache hors-ligne pour les assets statiques. |
-| **Notifications** | **Web Push API / VAPID** | Notifications push natives navigateur pour alerter les joueurs au changement de créneau horaire. |
+| **Notifications** | **Web Push API / VAPID & In-App Toasts** | Système de rappels 20 min avant la fin de chaque créneau (11h40, 17h40, 23h40, 05h40), bulle de notification interactive flottante en haut de l'application (accessible avec ou sans PWA) et Web Push VAPID pur PHP. |
 | **Paiements & Soutien** | **Jeko Africa API & Webhooks** | Passerelle de paiement sécurisée multi-opérateurs : **Wave**, **Orange Money**, **MTN MoMo**, **Moov Money** et **Cartes bancaires (Visa/Mastercard)**. |
 | **Sécurité & Protection** | **CSRF, Bcrypt, Headers de sécurité** | Protection CSRF stricte par token de session sur tous les formulaires et requêtes AJAX, hashage de mot de passe `PASSWORD_BCRYPT`, en-têtes CSP/HSTS/X-Frame-Options. |
 | **Conformité Légale** | **Loi ARTCI n°2013-450** | Respect de la réglementation ivoirienne relative à la protection des données à caractère personnel (pages légales dédiées : Confidentialité, CGU, Cookies). |
@@ -95,7 +96,6 @@ devine-mot/
 ├── admin/
 │   └── mots.php                # Tableau de bord d'administration (gestion des mots, partenariats, revenus/dons)
 ├── assets/
-│   ├── css/                    # Feuilles de style (index, dashboard, dark mode)
 │   ├── icons/                  # Icônes de l'application et PWA
 │   └── images/                 # Visuels et logos
 ├── dashboard/
@@ -106,8 +106,7 @@ devine-mot/
 │   ├── register.php            # Inscription
 │   └── logout.php              # Déconnexion
 ├── js/
-│   ├── main.js                 # Logique frontend, saisie, tuiles, modales, paiement Jeko
-│   └── push.js                 # Gestion de l'abonnement aux notifications Web Push
+│   └── main.js                 # Logique frontend, saisie, tuiles, bulle de notification, modales, paiement Jeko
 ├── legal/
 │   ├── confidentialite.php     # Politique de confidentialité conforme ARTCI
 │   ├── conditions.php          # Conditions Générales d'Utilisation (CGU)
@@ -119,7 +118,12 @@ devine-mot/
 │   ├── jouer.php               # Moteur de validation des propositions et calcul du score
 │   ├── enregistrer-don.php     # Enregistrement des intentions de soutien (Jeko)
 │   ├── jeko_webhook.php        # Webhook de validation automatique des paiements Jeko
-│   └── push-send.php           # Envoi automatisé des rappels push
+│   ├── notification-info.php   # API dynamique fournissant le contenu des notifications push
+│   ├── push-schedule.php       # Planificateur et envoi des rappels 20 min et quotidiens
+│   ├── push-subscribe.php      # Gestion de l'abonnement/désabonnement Web Push
+│   └── push-send.php           # Envoi quotidien des notifications push
+├── style/
+│   └── main.css                # Feuille de style principale, dark mode, bulle de notification
 ├── index.php                   # Page d'accueil et plateau de jeu principal
 ├── manifest.json               # Manifeste PWA
 ├── sw.js                       # Service Worker PWA (mise en cache et gestion push)
