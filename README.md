@@ -50,6 +50,7 @@ Le jeu ne se limite pas à un seul mot par jour : il propose **4 défis quotidie
    * 🔥 **60 % à 79 %** : Très chaud
    * 😮 **80 % à 99 %** : Brûlant
    * 🥳 **100 %** : Victoire (Mot trouvé !)
+5. **Accents majuscules pris en charge (É, È, Ê, Ï, Ç, À...) :** La saisie d'accents est pleinement acceptée tout en restant facultative (saisir `ECOLE` ou `ÉCOLE` est équivalent). Dès qu'une lettre est validée, la tuile verte affiche son accentuation officielle.
 
 ---
 
@@ -115,6 +116,9 @@ devine-mot/
 │   ├── config.php              # Configuration DB, calcul des créneaux et migrations automatiques
 │   ├── csrf.php                # Gestion et vérification des jetons CSRF
 │   ├── security.php            # En-têtes de sécurité HTTP
+│   ├── lettres.php             # Normalisation et gestion robuste des accents majuscules (É, È, Ç...)
+│   ├── data/
+│   │   └── accents_mots.php    # Dictionnaire des orthographes officielles avec accents
 │   ├── jouer.php               # Moteur de validation des propositions et calcul du score
 │   ├── enregistrer-don.php     # Enregistrement des intentions de soutien (Jeko)
 │   ├── jeko_webhook.php        # Webhook de validation automatique des paiements Jeko
@@ -123,8 +127,8 @@ devine-mot/
 │   ├── push-subscribe.php      # Gestion de l'abonnement/désabonnement Web Push
 │   └── push-send.php           # Envoi quotidien des notifications push
 ├── style/
-│   └── main.css                # Feuille de style principale, dark mode, bulle de notification
-├── index.php                   # Page d'accueil et plateau de jeu principal
+│   └── main.css                # Feuille de style principale, responsive mobile/tablette/desktop, bulle de notification
+├── index.php                   # Page d'accueil, plateau de jeu et modale d'information
 ├── manifest.json               # Manifeste PWA
 ├── sw.js                       # Service Worker PWA (mise en cache et gestion push)
 └── webhook_deploy.php          # Déploiement continu automatique GitHub -> Alwaysdata

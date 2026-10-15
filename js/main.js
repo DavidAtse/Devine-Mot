@@ -1,3 +1,25 @@
+
+// ===================================================
+// ALERTE MISE À JOUR : ACCENTS AUTORISÉS (1 SEULE FOIS)
+// ===================================================
+function verifierAlerteAccents() {
+    const KEY_ACCENTS_SEEN = "imots_accents_v1_notified";
+    if (localStorage.getItem(KEY_ACCENTS_SEEN)) return;
+    const modal = document.getElementById("accentUpdateModal");
+    if (!modal) return;
+    setTimeout(() => {
+        modal.style.display = "flex";
+    }, 600);
+    const btn = document.getElementById("btnComprisAccents");
+    const closeBtn = modal.querySelector('[data-close="accentUpdateModal"]') || modal.querySelector(".close");
+    const fermer = () => {
+        modal.style.display = "none";
+        localStorage.setItem(KEY_ACCENTS_SEEN, "1");
+    };
+    if (btn) btn.onclick = fermer;
+    if (closeBtn) closeBtn.onclick = fermer;
+}
+
 "use strict";
 
 // ======================
@@ -74,12 +96,14 @@ function chargerTuiles() {
     if (lon) renderTuiles(lon, conf);
 }
 
-function mettreAJourTuiles(longueur, positions, motPropose) {
+function mettreAJourTuiles(longueur, positions, motPropose, lettresTrouvees = null) {
     localStorage.setItem(KEY_LONGUEUR, longueur);
-    const lettres  = [...motPropose];
+    const lettres   = [...motPropose];
     const confirmes = _chargerConfirmes();
     positions.forEach((ok, i) => {
-        if (ok === 2 && lettres[i]) confirmes[i] = lettres[i];
+        if (ok === 2) {
+            confirmes[i] = (lettresTrouvees && lettresTrouvees[i]) ? lettresTrouvees[i] : (lettres[i] || "");
+        }
     });
     localStorage.setItem(KEY_CONFIRMES, JSON.stringify(confirmes));
     renderTuiles(longueur, confirmes);
@@ -285,6 +309,7 @@ function reconstruireTableau() {
 async function init() {
     reconstruireTableau();
     chargerTuiles();
+    verifierAlerteAccents();
     renderDefInline();
 
     // Si la partie est déjà gagn�e aujourd'hui (localStorage), afficher le bouton définition
@@ -344,21 +369,24 @@ init();
 // BOUTON VALIDER
 // ======================
 bouton.addEventListener("click", async () => {
-    const motPropose = [...input.value].map(c => c.toUpperCase()).join("").trim();
+    const motPropose = (input.value || "")
+        .trim()
+        .normalize("NFC")
+        .toLocaleUpperCase("fr-FR");
 
     if (!motPropose) {
-        showMsg("?? Entre un mot pour jouer.", "orange");
+        showMsg("⚠️ Entre un mot pour jouer.", "orange");
         return;
     }
 
-    if (!/^[A-Z���������������]{2,30}$/u.test(motPropose)) {
-        showMsg("⚠️ Lettres uniquement (2 à 30 caractères).", "orange");
+    if (!/^[A-Z\u00C0\u00C2\u00C4\u00C9\u00C8\u00CA\u00CB\u00CE\u00CF\u00D4\u00D6\u00D9\u00DB\u00DC\u00C7\u0178\-]{2,30}$/u.test(motPropose)) {
+        showMsg("⚠️ Lettres uniquement (2 à 30 caractères, accents acceptés).", "orange");
         return;
     }
 
     const hist = chargerHistorique();
     if (hist.some(i => i.mot === motPropose)) {
-        showMsg("?? Mot déjà proposé.", "orange");
+        showMsg("⚠️ Mot déjà proposé.", "orange");
         return;
     }
 
@@ -398,16 +426,17 @@ bouton.addEventListener("click", async () => {
         input.focus();
         ajouterLigne(motPropose, data.positions, data.score, data.emoji, true);
         sauvegarder(motPropose, data.positions, data.score, data.emoji, data.gagne);
-        mettreAJourTuiles(data.longueurMDJ, data.positions, motPropose);
+        mettreAJourTuiles(data.longueurMDJ, data.positions, motPropose, data.lettresTrouvees);
 
         if (data.gagne) {
             bloquerJeu(numEssai);
             animationVictoire();
             if (typeof _notifierVictoireBulle === "function") _notifierVictoireBulle();
-            // Sauvegarder la définition et l'afficher apr�s les confettis
-            _sauvegarderDefinition(motPropose, data.definition || '', data.est_partenaire);
+            const motFinal = data.mot_correct || motPropose;
+            // Sauvegarder la définition et l'afficher après les confettis
+            _sauvegarderDefinition(motFinal, data.definition || '', data.est_partenaire);
             _montrerBoutonDef(true);
-            setTimeout(() => afficherDefinition(motPropose, data.definition || '', data.est_partenaire), 2500);
+            setTimeout(() => afficherDefinition(motFinal, data.definition || '', data.est_partenaire), 2500);
         } else {
             clearMsg();
         }
@@ -457,6 +486,12 @@ function animationVictoire() {
     }
 }
 
+// ===================================================
+// ÉTAT DE LA BULLE DE NOTIFICATION / RAPPEL (GLOBAL)
+// ===================================================
+let _bubbleMinimized = false;
+let _bubbleMode = null; // '20min' | 'prompt' | 'success'
+
 // ======================
 // COMPTEUR PROCHAIN MOT (toutes les 6h)
 // ======================
@@ -483,8 +518,6 @@ updateCountdown();
 // ===================================================
 // BULLE DE NOTIFICATION / RAPPEL EN HAUT DE L'APPLICATION
 // ===================================================
-let _bubbleMinimized = false;
-let _bubbleMode = null; // '20min' | 'prompt' | 'success'
 
 function _initTopNotifBubble() {
     const bubble    = document.getElementById("topNotifBubble");
@@ -612,30 +645,38 @@ function _updateTopNotifBubble(diff) {
 }
 
 function _notifierVictoireBulle() {
-    const bubble    = document.getElementById("topNotifBubble");
-    const pill      = document.getElementById("topNotifPill");
-    const tagEl     = document.getElementById("bubbleTag");
-    const msgEl     = document.getElementById("bubbleMessage");
-    const actionBtn = document.getElementById("bubbleActionBtn");
-    const iconEl    = document.getElementById("bubbleIcon");
+    try {
+        const bubble    = document.getElementById("topNotifBubble");
+        const pill      = document.getElementById("topNotifPill");
+        const tagEl     = document.getElementById("bubbleTag");
+        const msgEl     = document.getElementById("bubbleMessage");
+        const actionBtn = document.getElementById("bubbleActionBtn");
+        const iconEl    = document.getElementById("bubbleIcon");
 
-    if (!bubble) return;
-    _bubbleMode = "success";
-    bubble.className = "top-notif-bubble success";
-    if (iconEl) iconEl.className = "fa-solid fa-trophy bubble-icon";
-    if (tagEl) tagEl.innerHTML = `🎉 MOT TROUVÉ !`;
-    if (msgEl) msgEl.innerHTML = `Bravo ! Rendez-vous au prochain créneau pour le mot suivant !`;
-    if (actionBtn) actionBtn.style.display = "none";
-    if (pill) pill.style.display = "none";
-    bubble.style.display = "block";
+        if (!bubble) return;
+        _bubbleMode = "success";
+        bubble.className = "top-notif-bubble success";
+        if (iconEl) iconEl.className = "fa-solid fa-trophy bubble-icon";
+        if (tagEl) tagEl.innerHTML = `🎉 MOT TROUVÉ !`;
+        if (msgEl) msgEl.innerHTML = `Bravo ! Rendez-vous au prochain créneau pour le mot suivant !`;
+        if (actionBtn) actionBtn.style.display = "none";
+        if (pill) pill.style.display = "none";
+        bubble.style.display = "block";
 
-    setTimeout(() => {
-        bubble.style.opacity = "0";
         setTimeout(() => {
-            bubble.style.display = "none";
-            bubble.style.opacity = "1";
-        }, 300);
-    }, 4500);
+            try {
+                bubble.style.opacity = "0";
+                setTimeout(() => {
+                    try {
+                        bubble.style.display = "none";
+                        bubble.style.opacity = "1";
+                    } catch (_) {}
+                }, 300);
+            } catch (_) {}
+        }, 4500);
+    } catch (e) {
+        console.warn("Bulle victoire :", e);
+    }
 }
 
 // Notification locale (navigateur) sans avoir besoin d'installer la PWA
@@ -1016,3 +1057,13 @@ window.fermerPwaBanner = function() {
     document.getElementById('pwaInstallBanner').style.display = 'none';
     localStorage.setItem('pwa_dismissed', 'true');
 };
+
+// Fermeture en cliquant sur l'arrière-plan de la modale
+window.addEventListener('click', (e) => {
+    if (e.target && e.target.classList && e.target.classList.contains('modal')) {
+        e.target.style.display = 'none';
+        if (e.target.id === 'accentUpdateModal') {
+            localStorage.setItem("imots_accents_v1_notified", "1");
+        }
+    }
+});

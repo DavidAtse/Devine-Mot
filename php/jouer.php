@@ -8,6 +8,7 @@
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/csrf.php';
+require_once __DIR__ . '/lettres.php';
 
 session_start();
 header('Content-Type: application/json');
@@ -27,7 +28,7 @@ $creneau    = creneau_actuel();
 // GET : retourner uniquement la longueur du mot du jour
 // ============================================================
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $motDuJour = _obtenir_mot_du_jour($conn, $aujourdhui, $creneau);
+    $motDuJour = normaliser_saisie(_obtenir_mot_du_jour($conn, $aujourdhui, $creneau));
     $longueur  = $motDuJour ? mb_strlen($motDuJour, 'UTF-8') : 0;
 
     // Vérifier si l'utilisateur a déjà gagné aujourd'hui (sync multi-appareils)
@@ -40,8 +41,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     $definition = '';
     if ($dejaGagne && $motDuJour) {
-        $defStmt = $conn->prepare('SELECT definition FROM mots WHERE UPPER(mot) = ?');
-        $defStmt->bind_param('s', $motDuJour);
+        $defStmt = $conn->prepare('SELECT definition FROM mots WHERE UPPER(mot) = ? OR UPPER(mot) = ?');
+        $defBase = lettre_base($motDuJour);
+        $defStmt->bind_param('ss', $motDuJour, $defBase);
         $defStmt->execute();
         $defRow     = $defStmt->get_result()->fetch_assoc();
         $definition = $defRow ? ($defRow['definition'] ?? '') : '';
@@ -81,16 +83,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 csrf_check_ajax();
 
 // --- Entrée ---
-$motPropose = mb_strtoupper(trim($_POST['mot'] ?? ''), 'UTF-8');
+$motPropose = normaliser_saisie($_POST['mot'] ?? '');
 
-if ($motPropose === '' || !preg_match('/^[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ]{2,30}$/u', $motPropose)) {
-    echo json_encode(['ok' => false, 'message' => 'Mot invalide.']);
+if ($motPropose === '' || !mot_valide($motPropose)) {
+    echo json_encode(['ok' => false, 'message' => 'Mot invalide (2 à 30 caractères).']);
     $conn->close();
     exit;
 }
 
 // --- Mot du jour ---
-$motDuJour = _obtenir_mot_du_jour($conn, $aujourdhui, $creneau);
+$motDuJour = normaliser_saisie(_obtenir_mot_du_jour($conn, $aujourdhui, $creneau));
 
 if (!$motDuJour) {
     echo json_encode(['ok' => false, 'message' => 'Mot du jour indisponible.']);
@@ -107,24 +109,29 @@ $lettresMot  = preg_split('//u', $motPropose, -1, PREG_SPLIT_NO_EMPTY);
 $longueurMDJ = count($lettresMDJ);
 $longueurMot = count($lettresMot);
 
+// Lettres de base pour comparaison insensible aux accents (É == E, Ç == C, etc.)
+$baseMDJ = array_map('lettre_base', $lettresMDJ);
+$baseMot = array_map('lettre_base', $lettresMot);
+
 // 1. Initialiser le tableau des états (0 = gris, 1 = jaune, 2 = vert)
-$positions = array_fill(0, $longueurMot, 0);
-$lettresRestantesMDJ = [];
+$positions       = array_fill(0, $longueurMot, 0);
+$lettresTrouvees = [];
 
 // Passe 1 : Trouver les lettres bien placées (Vert = 2)
 for ($i = 0; $i < $longueurMot; $i++) {
-    if (isset($lettresMDJ[$i]) && $lettresMot[$i] === $lettresMDJ[$i]) {
-        $positions[$i] = 2;
+    if (isset($baseMDJ[$i]) && $baseMot[$i] === $baseMDJ[$i]) {
+        $positions[$i]       = 2;
+        $lettresTrouvees[$i] = $lettresMDJ[$i]; // Vraie lettre (accentuée si MDJ l'est)
     }
 }
 
-// 2. Score de proximité global (ancien système gardé pour la rétrocompatibilité des emojis)
-$copie      = $lettresMDJ;
-$communes   = 0;
-$utilises   = [];
+// 2. Score de proximité global (sur lettres de base)
+$copie    = $baseMDJ;
+$communes = 0;
+$utilises = [];
 
 for ($i = 0; $i < $longueurMot; $i++) {
-    $c = $lettresMot[$i];
+    $c = $baseMot[$i];
     foreach ($copie as $j => $l) {
         if ($l === $c && !in_array($j, $utilises, true)) {
             $communes++;
@@ -134,7 +141,8 @@ for ($i = 0; $i < $longueurMot; $i++) {
     }
 }
 
-$gagne      = ($motPropose === $motDuJour);
+// Victoire si le mot correspond exactement (avec ou sans accents)
+$gagne = (lettre_base($motPropose) === lettre_base($motDuJour));
 if ($gagne) {
     $score = 100.0;
 } else {
@@ -175,8 +183,9 @@ if ($gagne) {
 // Définition du mot (uniquement si gagné)
 $definition = '';
 if ($gagne) {
-    $defStmt = $conn->prepare('SELECT definition FROM mots WHERE UPPER(mot) = ?');
-    $defStmt->bind_param('s', $motDuJour);
+    $defStmt = $conn->prepare('SELECT definition FROM mots WHERE UPPER(mot) = ? OR UPPER(mot) = ?');
+    $defBase = lettre_base($motDuJour);
+    $defStmt->bind_param('ss', $motDuJour, $defBase);
     $defStmt->execute();
     $defRow = $defStmt->get_result()->fetch_assoc();
     $definition = $defRow ? ($defRow['definition'] ?? '') : '';
@@ -192,15 +201,17 @@ $estPartenairePost = $pRow2 ? (bool)$pRow2['est_partenaire'] : false;
 $conn->close();
 
 echo json_encode([
-    'ok'             => true,
-    'valide'         => true,
-    'positions'      => $positions,
-    'score'          => $score,
-    'emoji'          => $emoji,
-    'gagne'          => $gagne,
-    'longueurMDJ'    => $longueurMDJ,
-    'definition'     => $definition,
-    'est_partenaire' => $estPartenairePost,
+    'ok'              => true,
+    'valide'          => true,
+    'positions'       => $positions,
+    'score'           => $score,
+    'emoji'           => $emoji,
+    'gagne'           => $gagne,
+    'longueurMDJ'     => $longueurMDJ,
+    'definition'      => $definition,
+    'est_partenaire'  => $estPartenairePost,
+    'lettresTrouvees' => $lettresTrouvees,
+    'mot_correct'     => $gagne ? $motDuJour : null,
 ]);
 
 // ============================================================

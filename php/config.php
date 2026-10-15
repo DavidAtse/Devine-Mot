@@ -213,6 +213,45 @@ function _assurer_schema_creneaux(mysqli $conn): void {
             $conn->query("UPDATE `users` SET `created_at` = DATE_ADD(`created_at`, INTERVAL 2 HOUR) WHERE DATE(`created_at`) = '2026-10-09'");
             $conn->query("INSERT INTO `system_flags` (`flag_key`) VALUES ('restore_timestamp_utc_20261009')");
         }
+
+        // Migration accents 2026-10-15 : normalisation des accents et nettoyage mojibake
+        $chkAccents = $conn->query("SELECT flag_key FROM `system_flags` WHERE flag_key = 'accents_mots_20261015'");
+        if ($chkAccents && $chkAccents->num_rows === 0) {
+            $dictPath = __DIR__ . '/data/accents_mots.php';
+            if (file_exists($dictPath)) {
+                $dict = require $dictPath;
+                $stmtMots = $conn->prepare("UPDATE mots SET mot = ? WHERE UPPER(mot) = ?");
+                $stmtMDJ  = $conn->prepare("UPDATE mots_du_jour SET mot = ? WHERE UPPER(mot) = ?");
+                foreach ($dict as $sans => $avec) {
+                    $stmtMots->bind_param('ss', $avec, $sans);
+                    $stmtMots->execute();
+                    $stmtMDJ->bind_param('ss', $avec, $sans);
+                    $stmtMDJ->execute();
+                }
+            }
+            // Nettoyage spécifique des mots corrompus par un mauvais encodage passé
+            $conn->query("UPDATE mots SET mot = 'FÉTICHE' WHERE mot LIKE '%TICHE%'");
+            $conn->query("UPDATE mots SET mot = 'AWALÉ' WHERE mot LIKE 'AWAL%'");
+            $conn->query("UPDATE mots SET mot = 'TAÏ' WHERE mot LIKE 'TA%' AND LENGTH(mot) <= 6");
+            $conn->query("UPDATE mots SET mot = 'HIRÉ' WHERE mot LIKE 'HIR%'");
+            $conn->query("UPDATE mots SET mot = 'ADIAKÉ' WHERE mot LIKE 'ADIAK%'");
+            $conn->query("UPDATE mots SET mot = 'ATTÉCOUBÉ' WHERE mot LIKE 'ATT%COUB%'");
+            $conn->query("UPDATE mots SET mot = 'KONATÉ' WHERE mot LIKE 'KONAT%'");
+            $conn->query("UPDATE mots SET mot = 'DJÉKANOU' WHERE mot LIKE 'DJ%KANOU'");
+            $conn->query("UPDATE mots SET mot = 'YAKASSÉ' WHERE mot LIKE 'YAKASS%'");
+
+            $conn->query("UPDATE mots_du_jour SET mot = 'FÉTICHE' WHERE mot LIKE '%TICHE%'");
+            $conn->query("UPDATE mots_du_jour SET mot = 'AWALÉ' WHERE mot LIKE 'AWAL%'");
+            $conn->query("UPDATE mots_du_jour SET mot = 'TAÏ' WHERE mot LIKE 'TA%' AND LENGTH(mot) <= 6");
+            $conn->query("UPDATE mots_du_jour SET mot = 'HIRÉ' WHERE mot LIKE 'HIR%'");
+            $conn->query("UPDATE mots_du_jour SET mot = 'ADIAKÉ' WHERE mot LIKE 'ADIAK%'");
+            $conn->query("UPDATE mots_du_jour SET mot = 'ATTÉCOUBÉ' WHERE mot LIKE 'ATT%COUB%'");
+            $conn->query("UPDATE mots_du_jour SET mot = 'KONATÉ' WHERE mot LIKE 'KONAT%'");
+            $conn->query("UPDATE mots_du_jour SET mot = 'DJÉKANOU' WHERE mot LIKE 'DJ%KANOU'");
+            $conn->query("UPDATE mots_du_jour SET mot = 'YAKASSÉ' WHERE mot LIKE 'YAKASS%'");
+
+            $conn->query("INSERT INTO `system_flags` (`flag_key`) VALUES ('accents_mots_20261015')");
+        }
     } catch (Throwable $e) {
         error_log('[iMots] Migration créneaux : ' . $e->getMessage());
     }
@@ -226,20 +265,20 @@ function _assurer_schema_creneaux(mysqli $conn): void {
  */
 function assigner_mot_creneau(mysqli $conn, string $date, int $creneau): string {
     // 1. Déjà présent et non vide ?
-    $stmt = $conn->prepare('SELECT UPPER(mot) AS mot FROM mots_du_jour WHERE date_jour = ? AND creneau = ?');
+    $stmt = $conn->prepare('SELECT mot FROM mots_du_jour WHERE date_jour = ? AND creneau = ?');
     $stmt->bind_param('si', $date, $creneau);
     $stmt->execute();
     $row = $stmt->get_result()->fetch_assoc();
     if ($row && !empty($row['mot'])) {
-        return strtoupper(trim($row['mot']));
+        return mb_strtoupper(trim($row['mot']), 'UTF-8');
     }
 
     // 2. Mots déjà assignés récemment pour éviter les doublons rapprochés
     $dejaAssignes = [];
-    $resU = $conn->query("SELECT UPPER(mot) FROM mots_du_jour WHERE mot IS NOT NULL AND mot != '' ORDER BY date_jour DESC, creneau DESC LIMIT 120");
+    $resU = $conn->query("SELECT mot FROM mots_du_jour WHERE mot IS NOT NULL AND mot != '' ORDER BY date_jour DESC, creneau DESC LIMIT 120");
     if ($resU) {
         while ($rU = $resU->fetch_row()) {
-            if (!empty($rU[0])) $dejaAssignes[] = strtoupper(trim($rU[0]));
+            if (!empty($rU[0])) $dejaAssignes[] = mb_strtoupper(trim($rU[0]), 'UTF-8');
         }
     }
 
@@ -256,9 +295,9 @@ function assigner_mot_creneau(mysqli $conn, string $date, int $creneau): string 
     // Trouver le premier mot non utilisé récemment
     for ($attempt = 0; $attempt < min(80, $total); $attempt++) {
         $idx = ($baseIdx + $attempt) % $total;
-        $q = $conn->query("SELECT UPPER(mot) FROM mots WHERE ordre IS NOT NULL ORDER BY ordre ASC LIMIT 1 OFFSET {$idx}");
+        $q = $conn->query("SELECT mot FROM mots WHERE ordre IS NOT NULL ORDER BY ordre ASC LIMIT 1 OFFSET {$idx}");
         if ($q && $r = $q->fetch_row()) {
-            $cand = strtoupper(trim($r[0] ?? ''));
+            $cand = mb_strtoupper(trim($r[0] ?? ''), 'UTF-8');
             if ($cand !== '' && (!in_array($cand, $dejaAssignes, true) || $attempt >= 50)) {
                 $motChoisi = $cand;
                 break;
@@ -267,8 +306,8 @@ function assigner_mot_creneau(mysqli $conn, string $date, int $creneau): string 
     }
 
     if ($motChoisi === '') {
-        $q = $conn->query("SELECT UPPER(mot) FROM mots WHERE ordre IS NOT NULL ORDER BY ordre ASC LIMIT 1 OFFSET {$baseIdx}");
-        $motChoisi = $q ? strtoupper(trim($q->fetch_row()[0] ?? '')) : '';
+        $q = $conn->query("SELECT mot FROM mots WHERE ordre IS NOT NULL ORDER BY ordre ASC LIMIT 1 OFFSET {$baseIdx}");
+        $motChoisi = $q ? mb_strtoupper(trim($q->fetch_row()[0] ?? ''), 'UTF-8') : '';
     }
 
     if ($motChoisi !== '') {

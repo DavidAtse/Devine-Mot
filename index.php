@@ -256,7 +256,32 @@ $conn->close();
                 </div>
             </div>
 
-
+            <!-- MODAL NOUVEAUTÉ : ACCENTS & MAJUSCULES -->
+            <div class="modal" id="accentUpdateModal">
+                <div class="modal-content def-modal-content" style="max-width: 440px;">
+                    <span class="close" data-close="accentUpdateModal">&times;</span>
+                    <div class="def-header">
+                        <span class="def-icon" style="font-size:38px;">✨</span>
+                        <h3 style="font-size:20px; color:var(--orange);">Nouveauté : Les Accents !</h3>
+                    </div>
+                    <div class="def-corps" style="padding: 16px 18px; text-align: left;">
+                        <p style="font-size: 14.5px; line-height: 1.6; margin-bottom: 12px; color: var(--texte);">
+                            Bonne nouvelle ! Tu peux désormais jouer avec <strong>tous les accents</strong> en MAJUSCULES (<strong>É, È, Ê, Ï, Ç, À...</strong>) 🇨🇮
+                        </p>
+                        <div style="background: rgba(247,127,0,0.12); border-left: 3px solid var(--orange); padding: 10px 12px; border-radius: 6px; margin-bottom: 12px;">
+                            <p style="font-size: 13px; margin: 0; color: var(--texte); line-height: 1.5;">
+                                💡 <strong>Pas de panique :</strong> les accents restent <em>facultatifs</em>. Si tu écris <code>ECOLE</code> ou <code>ÉCOLE</code>, les deux sont acceptés !
+                            </p>
+                        </div>
+                        <p style="font-size: 13px; color: var(--gris); margin: 0;">
+                            Dès qu'une lettre est bien placée, son vrai accent ivoirien s'affiche sur la case verte !
+                        </p>
+                    </div>
+                    <button id="btnComprisAccents" class="btn-principal" style="width:100%; padding:14px; font-size:15px; font-weight:800; background:linear-gradient(135deg, var(--vert), var(--vert2)); border:none; border-radius:10px; color:#fff; cursor:pointer;">
+                        C'est compris, jouer ! 🎯
+                    </button>
+                </div>
+            </div>
 
             <!-- MODAL DÉFINITION DU MOT -->
             <div class="modal" id="definitionModal">
