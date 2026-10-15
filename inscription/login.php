@@ -38,10 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Un bot a rempli le champ caché → on ignore silencieusement
             $erreur = '❌ Pseudo ou mot de passe incorrect.';
         } elseif ($username === '' || $password === '') {
-            $erreur = '❌ Pseudo et mot de passe requis.';
+            $erreur = '❌ Pseudo (ou email) et mot de passe requis.';
         } else {
-            $stmt = $conn->prepare('SELECT id, username, password FROM users WHERE username = ?');
-            $stmt->bind_param('s', $username);
+            $stmt = $conn->prepare('SELECT id, username, password FROM users WHERE username = ? OR email = ?');
+            $stmt->bind_param('ss', $username, $username);
             $stmt->execute();
             $user = $stmt->get_result()->fetch_assoc();
 
@@ -114,15 +114,15 @@ $conn->close();
             </div>
 
             <div class="form-group">
-                <label for="username">Pseudo</label>
+                <label for="username">Pseudo ou Email</label>
                 <div class="input-wrap">
                     <input
                         type="text"
                         id="username"
                         name="username"
-                        placeholder="Ton nom de joueur"
+                        placeholder="Ton pseudo ou adresse email"
                         required
-                        maxlength="50"
+                        maxlength="100"
                         value="<?= isset($_POST['username']) ? htmlspecialchars($_POST['username']) : '' ?>"
                     >
                     <i class="fa-solid fa-user"></i>
