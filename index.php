@@ -77,7 +77,7 @@ $conn->close();
     <meta name="application-name"              content="iMots CI">
 
     <!-- ===== Styles ===== -->
-    <link rel="stylesheet" href="style/main.css">
+    <link rel="stylesheet" href="style/main.css?v=20261015">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -376,7 +376,7 @@ $conn->close();
         window.CRENEAU           = <?= creneau_actuel() ?>;
         window.PROCHAIN_MOT_DANS = <?= creneau_secondes_restantes() ?>;
     </script>
-    <script src="js/main.js"></script>
+    <script src="js/main.js?v=20261015"></script>
 
     <!-- BANNIERE PWA -->
     <div id="pwaInstallBanner" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); width:90%; max-width:400px; background:var(--sombre2); border: 2px solid var(--vert); border-radius:12px; padding:15px; box-shadow:0 10px 30px rgba(0,0,0,0.5); z-index:9999; text-align:center;">
