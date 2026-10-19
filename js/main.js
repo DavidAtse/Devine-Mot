@@ -760,13 +760,10 @@ function partagerScore() {
     const jourNode = document.querySelector(".instruction h3");
     const jourNum = jourNode ? jourNode.innerText.replace("Jour n�", "").trim() : "?";
     
+    const siteUrl = (window.location.origin || "https://davedev.alwaysdata.net") + "/";
     const txt = gagne
-        ? `J'ai trouvé le mot ivoirien du jour sur iMots CI en ${nb} essai${nb > 1 ? "s" : ""} ! 🇨🇮
-
-Viens tester ton vocabulaire et relève le défi ici : https://imots.alwaysdata.net/`
-        : `Le mot ivoirien du jour sur iMots CI est vraiment chaud ! 🇨🇮🔥
-
-Viens tester ton vocabulaire et relève le défi ici : https://imots.alwaysdata.net/`;
+        ? `J'ai trouvé le mot ivoirien du jour sur iMots CI en ${nb} essai${nb > 1 ? "s" : ""} ! 🇨🇮\n\nViens tester ton vocabulaire et relève le défi ici : ${siteUrl}`
+        : `Le mot ivoirien du jour sur iMots CI est vraiment chaud ! 🇨🇮🔥\n\nViens tester ton vocabulaire et relève le défi ici : ${siteUrl}`;
     
     if (navigator.share) {
         navigator.share({

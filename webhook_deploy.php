@@ -26,7 +26,8 @@ if (!$isGithub && $providedSecret !== $secret) {
 }
 
 // 2. Déploiement via Git
-$cmd = 'cd /home/imots/www && git fetch origin main 2>&1 && git reset --hard origin/main 2>&1';
+$repoDir = escapeshellarg(__DIR__);
+$cmd = "cd $repoDir && git fetch origin main 2>&1 && git reset --hard origin/main 2>&1";
 $output = shell_exec($cmd);
 
 // 3. Réponse

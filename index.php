@@ -31,6 +31,8 @@ $jourNum   = jour_numero();
 // Lien de paiement (Jeko / Mobile Money / Wave)
 $payment_link = getenv('PAYMENT_LINK') ?: getenv('JEKO_PAYMENT_LINK') ?: getenv('WAVE_PAYMENT_LINK') ?: 'https://pay.jeko.africa/pl/de22040e-0dc4-4558-870a-d08a4ffa8f79';
 
+$site_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'davedev.alwaysdata.net') . '/';
+
 $conn->close();
 ?>
 <!DOCTYPE html>
@@ -48,10 +50,10 @@ $conn->close();
 
     <!-- ===== Open Graph (Facebook, WhatsApp, LinkedIn) ===== -->
     <meta property="og:type"        content="website">
-    <meta property="og:url"         content="https://imots.alwaysdata.net/">
+    <meta property="og:url"         content="<?= htmlspecialchars($site_url) ?>">
     <meta property="og:title" content="iMots CI 🇨🇮 – Les mots d'ici, un défi chaque jour">
     <meta property="og:description" content="Devine le mot ivoirien du jour ! Un défi culturel 100% local. Rejoins la communauté !">
-    <meta property="og:image"       content="https://imots.alwaysdata.net/assets/og-preview.jpg">
+    <meta property="og:image"       content="<?= htmlspecialchars($site_url) ?>assets/og-preview.jpg">
     <meta property="og:image:width"  content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt"   content="iMots CI — Jeu de mots ivoirien">
@@ -62,7 +64,7 @@ $conn->close();
     <meta name="twitter:card"        content="summary_large_image">
     <meta name="twitter:title" content="iMots CI 🇨🇮 – Les mots d'ici, un défi chaque jour">
     <meta name="twitter:description" content="Un nouveau mot ivoirien à deviner chaque jour !">
-    <meta name="twitter:image"       content="https://imots.alwaysdata.net/assets/og-preview.jpg">
+    <meta name="twitter:image"       content="<?= htmlspecialchars($site_url) ?>assets/og-preview.jpg">
     <meta name="twitter:image:alt"   content="iMots CI — Jeu de mots ivoirien">
 
     

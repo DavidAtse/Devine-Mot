@@ -10,31 +10,40 @@
  * En local (XAMPP), les valeurs de fallback sont utilisées.
  */
 
-// 0. Environnement Alwaysdata (hôte imots.alwaysdata.net ou dossier /home/imots)
+// 0. Environnement Alwaysdata (hôte alwaysdata.net ou dossier /home/davedev ou /home/imots)
 $isAlwaysdata = (
     str_contains($_SERVER['HTTP_HOST'] ?? '', 'alwaysdata.net') ||
+    is_dir('/home/davedev') ||
     is_dir('/home/imots') ||
     getenv('ALWAYSDATA') !== false
 );
 
-// Redirection automatique des requêtes depuis l'ancien serveur Railway vers le site officiel
+// Redirection automatique des requêtes depuis l'ancien serveur Railway vers le site Alwaysdata
 if (isset($_SERVER['HTTP_HOST']) && str_contains($_SERVER['HTTP_HOST'], 'railway.app')) {
-    header('Location: https://imots.alwaysdata.net' . ($_SERVER['REQUEST_URI'] ?? '/'), true, 302);
+    $targetHost = str_contains($_SERVER['HTTP_HOST'] ?? '', 'alwaysdata.net') ? $_SERVER['HTTP_HOST'] : 'davedev.alwaysdata.net';
+    header('Location: https://' . $targetHost . ($_SERVER['REQUEST_URI'] ?? '/'), true, 302);
     exit;
 }
 
 if ($isAlwaysdata) {
-    // Mot de passe sécurisé : lu depuis variable d'environnement ou fichier externe hors webroot (/home/imots/env_db.php)
+    // Détection dynamique du compte Alwaysdata (davedev ou imots)
+    $homeDir = getenv('HOME') ?: (is_dir('/home/davedev') ? '/home/davedev' : (is_dir('/home/imots') ? '/home/imots' : ''));
+    $adAccount = basename($homeDir ?: '') ?: 'davedev';
+    if ($adAccount === '' || $adAccount === 'home') $adAccount = 'davedev';
+
+    // Mot de passe sécurisé : lu depuis variable d'environnement ou fichier externe hors webroot
     $adPass = getenv('ALWAYSDATA_DB_PASS');
-    if (!$adPass && file_exists('/home/imots/env_db.php')) {
-        $adConfig = require '/home/imots/env_db.php';
+    $envDbFile = $homeDir ? ($homeDir . '/env_db.php') : ('/home/' . $adAccount . '/env_db.php');
+    if (!$adPass && file_exists($envDbFile)) {
+        $adConfig = require $envDbFile;
         $adPass = $adConfig['DB_PASS'] ?? '';
     }
-    define('DB_HOST', 'mysql-imots.alwaysdata.net');
+
+    define('DB_HOST', "mysql-{$adAccount}.alwaysdata.net");
     define('DB_PORT', 3306);
-    define('DB_USER', 'imots');
+    define('DB_USER', $adAccount);
     define('DB_PASS', $adPass ?: (getenv('DB_PASS') ?: ''));
-    define('DB_NAME', 'imots_jeu');
+    define('DB_NAME', "{$adAccount}_jeu");
 } else {
     // 1. Tente de lire une URL complète (ex: mysql://user:pass@host:port/db)
     $dbUrl = getenv('MYSQL_PUBLIC_URL') ?: getenv('MYSQL_URL') ?: getenv('DATABASE_URL');
