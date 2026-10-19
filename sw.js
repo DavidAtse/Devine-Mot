@@ -38,21 +38,22 @@ self.addEventListener('fetch', e => {
     );
 });
 
-/* Push : reÃ§oit la notification */
+/* Push : reçoit la notification */
 self.addEventListener('push', e => {
+    const scopeUrl = (self.registration && self.registration.scope) ? self.registration.scope : '/';
     e.waitUntil(
-        fetch('/php/notification-info.php')
+        fetch(new URL('php/notification-info.php', scopeUrl).href)
             .then(r => r.json())
             .then(data => {
                 const is20min = (data.title && data.title.includes('min'));
                 const opts = {
                     body: data.body || 'Un nouveau mot t\'attend !',
-                    icon: '/assets/icons/icon-192.png',
-                    badge: '/assets/icons/icon-76.png',
+                    icon: new URL('assets/icons/icon-192.png', scopeUrl).href,
+                    badge: new URL('assets/icons/icon-76.png', scopeUrl).href,
                     tag: is20min ? 'imots-20min-reminder' : 'imots-daily',
                     renotify: true,
                     vibrate: is20min ? [200, 100, 200, 100, 200] : [200, 100, 200],
-                    data: { url: '/' },
+                    data: { url: scopeUrl },
                     actions: [
                         { action: 'jouer', title: '🎯 Jouer maintenant' },
                         { action: 'plus-tard', title: 'Plus tard' }
@@ -61,10 +62,11 @@ self.addEventListener('push', e => {
                 return self.registration.showNotification(data.title || 'iMots CI 🇨🇮', opts);
             })
             .catch(() => {
-                return self.registration.showNotification('iMots CI ðŸ‡¨ðŸ‡®', {
-                    body: 'Le mot du jour t\'attend ! Viens deviner ðŸ”¥',
-                    icon: '/assets/icons/icon-192.png',
-                    tag: 'imots-daily'
+                return self.registration.showNotification('iMots CI 🇨🇮', {
+                    body: 'Le mot du jour t\'attend ! Viens deviner 🔥',
+                    icon: new URL('assets/icons/icon-192.png', scopeUrl).href,
+                    tag: 'imots-daily',
+                    data: { url: scopeUrl }
                 });
             })
     );
@@ -75,9 +77,10 @@ self.addEventListener('notificationclick', e => {
     e.notification.close();
     if (e.action === 'plus-tard') return;
 
+    const scopeUrl = (self.registration && self.registration.scope) ? self.registration.scope : '/';
     const target = (e.notification.data && e.notification.data.url)
         ? e.notification.data.url
-        : '/';
+        : scopeUrl;
 
     e.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {

@@ -31,7 +31,8 @@ $jourNum   = jour_numero();
 // Lien de paiement (Jeko / Mobile Money / Wave)
 $payment_link = getenv('PAYMENT_LINK') ?: getenv('JEKO_PAYMENT_LINK') ?: getenv('WAVE_PAYMENT_LINK') ?: 'https://pay.jeko.africa/pl/de22040e-0dc4-4558-870a-d08a4ffa8f79';
 
-$site_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'davedev.alwaysdata.net') . '/';
+$base_dir = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
+$site_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'davedev.alwaysdata.net') . $base_dir . '/';
 
 $conn->close();
 ?>
