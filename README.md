@@ -1,7 +1,7 @@
 # 🇨🇮 iMots CI (DevineMot CI)
 
 > **Le premier jeu web de devinette de mots 100 % ancré dans la culture, le nouchi et le quotidien de la Côte d'Ivoire.**  
-> 🌐 **Jouer en direct :** [https://imots.alwaysdata.net/](https://imots.alwaysdata.net/)
+> 🌐 **Jouer en direct :** [https://davedev.alwaysdata.net/imots/inscription/login.php](https://davedev.alwaysdata.net/imots/inscription/login.php)
 
 ---
 
