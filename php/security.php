@@ -1,16 +1,20 @@
 <?php
 /**
- * security.php — Headers de sécurité HTTP centralisés.
+ * security.php — Headers de sécurité HTTP centralisés & Durcissement PHP.
  * À inclure en PREMIER dans tous les fichiers PHP publics.
- *
- * Protections :
- * - X-Frame-Options       : empêche le clickjacking (intégration dans une iframe)
- * - X-Content-Type-Options: empêche le MIME-sniffing
- * - Referrer-Policy       : limite les infos transmises lors de clics sur liens externes
- * - Permissions-Policy    : désactive les APIs navigateur non utilisées (caméra, micro...)
- * - Strict-Transport-Security : force HTTPS (HSTS)
- * - Content-Security-Policy   : empêche l'injection de scripts non autorisés (XSS)
  */
+
+// 1. Durcissement PHP : Ne jamais divulguer d'erreurs ou détails système aux visiteurs
+ini_set('display_errors', '0');
+ini_set('display_startup_errors', '0');
+error_reporting(E_ALL);
+
+// 2. Blocage des uploads inattendus (protection contre les failles d'upload / OOM)
+if (!empty($_FILES)) {
+    http_response_code(400);
+    exit('Requête invalide.');
+}
+
 function appliquer_headers_securite(bool $estAjax = false): void {
     // Empêche l'affichage du site dans une <iframe> (anti-clickjacking)
     header('X-Frame-Options: DENY');
